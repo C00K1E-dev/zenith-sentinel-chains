@@ -9,6 +9,7 @@ import AIAuditMint from '@/components/AIAuditMint';
 import MintSuccessOverlay from '@/components/MintSuccessOverlay';
 import genesisNFT from '@/assets/genesisNFT.svg';
 import aiAuditNFT from '@/assets/AIAuditNFT.svg';
+import aidaNFT from '@/assets/aida.svg';
 
 const SidebarNFTsiNFTsHub = () => {
   const [mintSuccessData, setMintSuccessData] = useState<{tokenId?: bigint, txHash?: string, imageUrl?: string} | null>(null);
@@ -347,9 +348,11 @@ const SidebarNFTsiNFTsHub = () => {
               <div className="relative lg:w-[360px] xl:w-[420px] flex-shrink-0">
                 <div className="aspect-square lg:aspect-auto lg:h-full relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/20"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Sparkles size={80} className="text-muted-foreground/40" />
-                  </div>
+                  <img 
+                    src={aidaNFT} 
+                    alt="AIDA Collection" 
+                    className="absolute inset-0 w-full h-full object-cover opacity-60"
+                  />
                   {/* Coming Soon Badge */}
                   <div className="absolute top-4 left-4 px-4 py-2 rounded-full bg-background/90 backdrop-blur-md border border-muted/30 flex items-center gap-2">
                     <Rocket size={16} className="text-muted-foreground" />
@@ -367,8 +370,11 @@ const SidebarNFTsiNFTsHub = () => {
                       AIDA Collection
                       <Sparkles size={24} className="text-muted-foreground" />
                     </h3>
+                    <p className="text-sm text-muted-foreground/80 mb-2 italic">
+                      Artificial Intelligence for Doctors and Assistants
+                    </p>
                     <p className="text-base text-muted-foreground leading-relaxed">
-                      AI-powered intelligent NFTs (iNFTs) with autonomous capabilities. The future of smart contract interaction and AI agents.
+                      A standalone project implementing AI in medical offices across Romania. Connected to SmartSentinels backend, AIDA NFT holders earn PoUW rewards from real-world AI medical assistance services.
                     </p>
                   </div>
 
@@ -376,35 +382,35 @@ const SidebarNFTsiNFTsHub = () => {
                   <div className="mb-6">
                     <h4 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
                       <Rocket size={16} className="text-muted-foreground" />
-                      Planned Features
+                      Key Features
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
-                        <Bot size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <Shield size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                         <div>
-                          <div className="text-sm font-semibold text-foreground mb-1">AI Autonomy</div>
-                          <div className="text-xs text-muted-foreground">Self-learning capabilities</div>
+                          <div className="text-sm font-semibold text-foreground mb-1">Medical AI</div>
+                          <div className="text-xs text-muted-foreground">Healthcare assistance in Romania</div>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
                         <Zap size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                         <div>
-                          <div className="text-sm font-semibold text-foreground mb-1">Dynamic Traits</div>
-                          <div className="text-xs text-muted-foreground">Evolving characteristics</div>
+                          <div className="text-sm font-semibold text-foreground mb-1">PoUW Rewards</div>
+                          <div className="text-xs text-muted-foreground">Earn from real-world AI work</div>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
                         <Target size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                         <div>
-                          <div className="text-sm font-semibold text-foreground mb-1">Task Automation</div>
-                          <div className="text-xs text-muted-foreground">Execute smart contracts</div>
+                          <div className="text-sm font-semibold text-foreground mb-1">SmartSentinels Backend</div>
+                          <div className="text-xs text-muted-foreground">Integrated with SS ecosystem</div>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
-                        <Sparkles size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <Bot size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                         <div>
-                          <div className="text-sm font-semibold text-foreground mb-1">AI Marketplace</div>
-                          <div className="text-xs text-muted-foreground">Trade intelligent agents</div>
+                          <div className="text-sm font-semibold text-foreground mb-1">AI Medical Assistants</div>
+                          <div className="text-xs text-muted-foreground">Deployed in Romanian clinics</div>
                         </div>
                       </div>
                     </div>
@@ -416,7 +422,7 @@ const SidebarNFTsiNFTsHub = () => {
                       <Rocket size={20} className="text-muted-foreground flex-shrink-0" />
                       <div>
                         <div className="text-sm font-semibold text-foreground mb-0.5">In Development</div>
-                        <div className="text-xs text-muted-foreground">Join our community for updates on the AIDA release</div>
+                        <div className="text-xs text-muted-foreground">Join our community for updates on the AIDA release and real-world medical AI implementation</div>
                       </div>
                     </div>
                   </div>

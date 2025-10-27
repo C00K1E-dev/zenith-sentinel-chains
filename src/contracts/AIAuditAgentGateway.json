@@ -15,6 +15,11 @@
 				"internalType": "address",
 				"name": "_pouwPool",
 				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_serviceOwner",
+				"type": "address"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -73,17 +78,24 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
+		"inputs": [],
 		"name": "payAndRunAudit",
 		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "payable",
 		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "nativeMode",
+				"type": "bool"
+			}
+		],
+		"name": "PaymentModeChanged",
+		"type": "event"
 	},
 	{
 		"anonymous": false,
@@ -99,6 +111,12 @@
 				"internalType": "uint256",
 				"name": "amount",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "paidInBNB",
+				"type": "bool"
 			}
 		],
 		"name": "PaymentReceived",
@@ -238,6 +256,51 @@
 		"anonymous": false,
 		"inputs": [
 			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "ServiceOwnerUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newBNBPrice",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newSSTLPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "ServicePricesUpdated",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bool",
+				"name": "nativeMode",
+				"type": "bool"
+			}
+		],
+		"name": "setPaymentMode",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
 				"indexed": true,
 				"internalType": "address",
 				"name": "user",
@@ -248,10 +311,51 @@
 				"internalType": "uint256",
 				"name": "amountPaid",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "paidInBNB",
+				"type": "bool"
 			}
 		],
 		"name": "TaskStarted",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "updateServiceOwner",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "newBNBPrice",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "newSSTLPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "updateServicePrices",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
 	},
 	{
 		"inputs": [],
@@ -363,6 +467,32 @@
 	},
 	{
 		"inputs": [],
+		"name": "servicePriceBNB",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "servicePriceSSTL",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "sstlToken",
 		"outputs": [
 			{
@@ -396,6 +526,19 @@
 			}
 		],
 		"name": "supportsInterface",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "useNativePayment",
 		"outputs": [
 			{
 				"internalType": "bool",

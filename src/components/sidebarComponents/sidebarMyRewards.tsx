@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAccount, useReadContract, useWalletClient, usePublicClient } from "wagmi";
 import { formatEther, encodeFunctionData } from "viem";
 import { sendTransaction } from "viem/actions";
-import { Loader, Gift, TrendingUp, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { Loader, Gift, TrendingUp, CheckCircle, AlertCircle, ExternalLink, DollarSign } from "lucide-react";
 
 // Import contract ABIs and addresses
 import { POUW_POOL_ADDRESS, POUW_POOL_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_ABI, GENESIS_CONTRACT_ADDRESS, GENESIS_ABI } from "../../contracts/index";
@@ -25,8 +25,11 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   const [claimSuccess, setClaimSuccess] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
   const [userTotalEarned, setUserTotalEarned] = useState(0);
-  const [userPendingRewards, setUserPendingRewards] = useState(0);
+  // Separate states for the two claimable streams
+  const [userPendingRewards, setUserPendingRewards] = useState(0); // PoUW rewards
+  const [userPendingRevenue, setUserPendingRevenue] = useState(0); // Genesis Revenue
   const [userNFTs, setUserNFTs] = useState<bigint[]>([]);
+  const [userGenesisNFTs, setUserGenesisNFTs] = useState<bigint[]>([]); // Added state to track only Genesis NFTs for revenue claim
   const [internalRefreshTrigger, setInternalRefreshTrigger] = useState<number>(0);
   const [claimTxHash, setClaimTxHash] = useState<string | undefined>();
   const [isCalculatingRewards, setIsCalculatingRewards] = useState(false);
@@ -34,11 +37,12 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
 
-  // Calculate user earnings and pending rewards
+  // Calculate user earnings and pending rewards/revenue
   useEffect(() => {
     if (!address || userNFTs.length === 0 || !publicClient) {
       setUserTotalEarned(0);
       setUserPendingRewards(0);
+      setUserPendingRevenue(0);
       setIsCalculatingRewards(false);
       return;
     }
@@ -46,11 +50,13 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     const calculateUserStats = async () => {
       setIsCalculatingRewards(true);
       let totalEarned = BigInt(0);
-      let totalPending = BigInt(0);
+      let totalPendingRewards = BigInt(0);
+      let totalPendingRevenue = BigInt(0);
 
+      // --- Calculate Rewards and Revenue for ALL held NFTs ---
       for (const tokenId of userNFTs) {
         try {
-          // Get claimed amount
+          // Get claimed amount for PoUW rewards
           const claimed = await publicClient.readContract({
             address: POUW_ADDRESS as `0x${string}`,
             abi: POUW_POOL_ABI,
@@ -59,26 +65,46 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
           } as any) as bigint;
           totalEarned += claimed;
 
-          // Get pending amount
-          const pending = await publicClient.readContract({
+          // Get pending reward amount using contract function
+          const pendingReward = await publicClient.readContract({
             address: POUW_ADDRESS as `0x${string}`,
             abi: POUW_POOL_ABI,
             functionName: 'pendingReward',
             args: [tokenId],
+            account: address as `0x${string}`,
           } as any) as bigint;
-          totalPending += pending;
+          totalPendingRewards += pendingReward;
         } catch (error) {
-          console.error('Error calculating stats for token', tokenId.toString(), error);
+          console.error('Error calculating PoUW stats for token', tokenId.toString(), error);
         }
       }
 
+      // Calculate pending revenue for Genesis NFTs
+      for (const tokenId of userGenesisNFTs) {
+        try {
+          // Get pending revenue using contract function
+          const pendingRev = await publicClient.readContract({
+            address: POUW_ADDRESS as `0x${string}`,
+            abi: POUW_POOL_ABI,
+            functionName: 'pendingRevenue',
+            args: [tokenId],
+            account: address as `0x${string}`,
+          } as any) as bigint;
+          totalPendingRevenue += pendingRev;
+        } catch (error) {
+          console.error('Error calculating revenue for Genesis token', tokenId.toString(), error);
+        }
+      }
+
+      // Update state with formatted numbers
       setUserTotalEarned(Number(formatEther(totalEarned)));
-      setUserPendingRewards(Number(formatEther(totalPending)));
+      setUserPendingRewards(Number(formatEther(totalPendingRewards)));
+      setUserPendingRevenue(Number(formatEther(totalPendingRevenue)));
       setIsCalculatingRewards(false);
     };
 
     calculateUserStats();
-  }, [address, userNFTs, publicClient, refreshTrigger, internalRefreshTrigger]);
+  }, [address, userNFTs.length, userGenesisNFTs.length, publicClient, refreshTrigger, internalRefreshTrigger]);
 
   // Read global stats from PoUW contract with real-time updates
   const { data: totalJobs } = useReadContract({
@@ -87,8 +113,9 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     functionName: 'totalJobs',
     chainId: chain?.id,
     query: {
-      refetchInterval: 5000, // Refetch every 5 seconds
+      refetchInterval: 2000, // Refetch every 2 seconds
       staleTime: 0,
+      gcTime: 0, // Disable garbage collection caching
     },
   });
 
@@ -98,8 +125,9 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     functionName: 'totalMinted',
     chainId: chain?.id,
     query: {
-      refetchInterval: 5000,
+      refetchInterval: 2000,
       staleTime: 0,
+      gcTime: 0,
     },
   });
 
@@ -109,8 +137,21 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     functionName: 'totalNFTRewards',
     chainId: chain?.id,
     query: {
-      refetchInterval: 5000,
+      refetchInterval: 2000,
       staleTime: 0,
+      gcTime: 0,
+    },
+  });
+
+  const { data: totalRevenue } = useReadContract({
+    address: POUW_ADDRESS as `0x${string}`,
+    abi: POUW_POOL_ABI as any,
+    functionName: 'totalRevenue',
+    chainId: chain?.id,
+    query: {
+      refetchInterval: 2000,
+      staleTime: 0,
+      gcTime: 0,
     },
   });
 
@@ -154,17 +195,22 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
     const genesis = Array.isArray(genesisNFTs) ? (genesisNFTs as bigint[]) : [];
     const aiAudit = Array.isArray(aiAuditNFTs) ? (aiAuditNFTs as bigint[]) : [];
+    
+    // Store Genesis NFTs separately for revenue claim logic
+    setUserGenesisNFTs(genesis);
+
+    // Combine all NFTs to check ownership for reward claims
     const allNFTs = [...genesis, ...aiAudit];
     setUserNFTs(allNFTs);
   }, [genesisNFTs, aiAuditNFTs]);
 
-  // Trigger user stats recalculation when global rewards change (new audits)
+  // Trigger user stats recalculation when global rewards or revenue changes
   useEffect(() => {
-    if (totalNFTRewards && address && userNFTs.length > 0) {
-      // Trigger recalculation of user earnings when new rewards are distributed
+    if ((totalNFTRewards || totalRevenue) && address && userNFTs.length > 0) {
+      // Trigger recalculation of user earnings when new rewards/revenue are distributed
       setInternalRefreshTrigger(prev => prev + 1);
     }
-  }, [totalNFTRewards, address, userNFTs.length]);
+  }, [totalNFTRewards, totalRevenue, address, userNFTs.length]);
 
   // Write contract for claiming rewards
   // Removed useWriteContract since using sendTransaction directly
@@ -172,96 +218,89 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   // Handle claim transaction confirmation
   // Removed since handling manually in handleClaimRewards
 
-  // Handle claim rewards
+  // Handle claim rewards (combined logic for both PoUW Rewards and Revenue Share)
   const handleClaimRewards = async () => {
-    if (!address || !isConnected) {
+    if (!address || !isConnected || !walletClient || !publicClient) {
       alert('Please connect your wallet first');
       return;
     }
 
-    if (userPendingRewards <= 0) {
-      alert('No rewards to claim');
+    const totalClaimable = userPendingRewards + userPendingRevenue;
+    if (totalClaimable <= 0) {
+      alert('No rewards or revenue to claim');
       return;
     }
 
     try {
       setIsClaiming(true);
       setClaimError(null);
-      console.log('Starting batch claim process for NFTs:', userNFTs);
+      
+      const txHashes: `0x${string}`[] = [];
+      
+      // --- 1. Batch Claim PoUW Rewards (All NFTs with pending rewards) ---
+      if (userPendingRewards > 0 && userNFTs.length > 0) {
+        console.log('Claiming PoUW rewards for tokens:', userNFTs.map(t => t.toString()));
+        
+        const txData = encodeFunctionData({
+          abi: POUW_POOL_ABI,
+          functionName: 'batchClaimRewards',
+          args: [userNFTs], // Pass all user NFTs at once
+        });
 
-      // Collect all NFTs with pending rewards
-      const claimsToProcess = [];
-      for (const tokenId of userNFTs) {
         try {
-          const pending = await publicClient!.readContract({
-            address: POUW_ADDRESS as `0x${string}`,
-            abi: POUW_POOL_ABI,
-            functionName: 'pendingReward',
-            args: [tokenId],
-          } as any) as bigint;
-
-          console.log(`Token ${tokenId}: pending = ${pending}`);
-
-          if (pending > BigInt(0)) {
-            claimsToProcess.push(tokenId);
-          }
+          const hash = await walletClient.sendTransaction({
+            to: POUW_ADDRESS as `0x${string}`,
+            data: txData,
+            account: address as `0x${string}`,
+            chain: undefined,
+            kzg: undefined,
+          });
+          txHashes.push(hash);
+          console.log('PoUW rewards claim tx:', hash);
         } catch (error) {
-          console.error('Error checking pending for token', tokenId.toString(), error);
+          console.error('Error claiming PoUW rewards:', error);
+          // Continue to try claiming revenue even if rewards fail
         }
       }
 
-      if (claimsToProcess.length === 0) {
-        alert('No rewards to claim');
-        setIsClaiming(false);
-        return;
-      }
-
-      console.log(`Found ${claimsToProcess.length} NFTs with pending rewards`);
-
-      // Send all claim transactions in parallel
-      const claimPromises = claimsToProcess.map(async (tokenId) => {
+      // --- 2. Batch Claim Genesis Revenue (ONLY Genesis NFTs) ---
+      if (userPendingRevenue > 0 && userGenesisNFTs.length > 0) {
+        console.log('Claiming Genesis revenue for tokens:', userGenesisNFTs.map(t => t.toString()));
+        
         const txData = encodeFunctionData({
           abi: POUW_POOL_ABI,
-          functionName: 'claimReward',
-          args: [tokenId],
+          functionName: 'batchClaimRevenue',
+          args: [userGenesisNFTs], // Pass all Genesis NFTs at once
         });
 
-        console.log(`Sending claim tx for token ${tokenId}...`);
-        const hash = await walletClient!.sendTransaction({
-          to: POUW_ADDRESS as `0x${string}`,
-          data: txData,
-          account: address as `0x${string}`,
-          chain: undefined,
-          kzg: undefined,
-        });
-        console.log(`Claim tx sent for token ${tokenId}:`, hash);
-        return hash;
-      });
-
-      const claimResults = await Promise.allSettled(claimPromises);
-      const successfulTxs = claimResults.filter(result => result.status === 'fulfilled').map(result => (result as PromiseFulfilledResult<`0x${string}`>).value);
-      const failedTxs = claimResults.filter(result => result.status === 'rejected').map(result => result.reason);
-
-      console.log(`Claims complete: ${successfulTxs.length} successful, ${failedTxs.length} failed`);
-      if (failedTxs.length > 0) {
-        console.error('Failed claims:', failedTxs);
+        try {
+          const hash = await walletClient.sendTransaction({
+            to: POUW_ADDRESS as `0x${string}`,
+            data: txData,
+            account: address as `0x${string}`,
+            chain: undefined,
+            kzg: undefined,
+          });
+          txHashes.push(hash);
+          console.log('Genesis revenue claim tx:', hash);
+        } catch (error) {
+          console.error('Error claiming Genesis revenue:', error);
+        }
       }
 
-      if (successfulTxs.length === 0) {
-        throw new Error('All claims failed');
+      if (txHashes.length === 0) {
+        throw new Error('No claim transactions were successfully initiated.');
       }
+      
+      // Wait for all successful transactions to confirm
+      console.log('Waiting for confirmations...');
+      await Promise.all(txHashes.map(hash => publicClient.waitForTransactionReceipt({ hash })));
+      console.log('All successful transactions confirmed');
 
-      // Wait for successful transactions to confirm
-      console.log('Waiting for confirmations of successful transactions...');
-      await Promise.all(successfulTxs.map(hash => publicClient.waitForTransactionReceipt({ hash })));
-      console.log('Successful transactions confirmed');
-
-      // Set the first successful hash for UI purposes
-      setClaimTxHash(successfulTxs[0]);
+      // Final State Update
+      setClaimTxHash(txHashes[0]);
       setClaimSuccess(true);
       setIsClaiming(false);
-
-      // Trigger refresh of user stats
       setInternalRefreshTrigger((prev: number) => prev + 1);
 
       // Reset success message after 5 seconds
@@ -269,7 +308,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
     } catch (error: any) {
       console.error('Claim error:', error);
-      setClaimError(error.message || 'Failed to claim rewards');
+      setClaimError(error.message || 'Failed to claim all rewards');
       setIsClaiming(false);
     }
   };
@@ -278,24 +317,35 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   const holdsNFT = userNFTs.length > 0;
   const totalEarned = userTotalEarned;
   const pendingRewards = userPendingRewards;
+  const pendingRevenue = userPendingRevenue;
+  const totalClaimable = userPendingRewards + userPendingRevenue;
 
   // Global PoUW stats from contract
-  const totalAuditsCompleted = totalJobs ? Number(totalJobs) : 0;
+  const totalAuditsCompleted = totalMinted ? Math.floor(Number(formatEther(totalMinted as bigint)) / 67) : 0;
   const totalMintedTokens = totalMinted ? Number(formatEther(totalMinted as bigint)) : 0;
   const totalDistributed = totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0;
+  const totalRevenueCollected = totalRevenue ? Number(formatEther(totalRevenue as bigint)) : 0;
   const totalBurned = totalMintedTokens * 0.1; // 10% burned
 
   const formattedTotalEarned = totalEarned.toFixed(4);
   const formattedPendingRewards = pendingRewards.toFixed(4);
+  const formattedPendingRevenue = pendingRevenue.toFixed(4);
+  const formattedTotalClaimable = totalClaimable.toFixed(4);
 
   console.log('User Earnings:', {
     totalEarned,
     pendingRewards,
+    pendingRevenue,
+    totalClaimable,
     holdsNFT,
     nftCount: userNFTs.length,
+    genesisNFTCount: userGenesisNFTs.length,
     aiAuditTotalSupply: aiAuditTotalSupply ? Number(aiAuditTotalSupply) : 0,
     genesisTotalSupply: genesisTotalSupply ? Number(genesisTotalSupply) : 0,
-    totalNFTRewards: totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0
+    totalNFTRewards: totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0,
+    totalRevenue: totalRevenue ? Number(formatEther(totalRevenue as bigint)) : 0,
+    chainId: chain?.id,
+    totalMinted: totalMinted ? Number(formatEther(totalMinted as bigint)) : 0
   });
 
   // Get explorer URL
@@ -355,18 +405,50 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
                   <span className="stat-subtitle">Your claimed rewards</span>
                 </div>
               </div>
-              {pendingRewards > 0 && (
+              {totalClaimable > 0 && (
                 <div className="reward-stat-card secondary">
                   <div className="stat-icon">
                     <Gift size={24} />
                   </div>
                   <div className="stat-content">
                     <span className="stat-label">
-                      Pending Rewards
-                      <span className="info-tooltip" title="Rewards available to claim from your NFTs">ℹ️</span>
+                      Total Claimable
+                      <span className="info-tooltip" title="Total rewards and revenue available to claim">ℹ️</span>
+                    </span>
+                    <span className="stat-value">{formattedTotalClaimable} SSTL</span>
+                    <span className="stat-subtitle">Available to claim</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Line 506 omitted */}
+              {pendingRewards > 0 && (
+                <div className="reward-stat-card">
+                  <div className="stat-icon">
+                    <TrendingUp size={24} />
+                  </div>
+                  <div className="stat-content">
+                    <span className="stat-label">
+                      PoUW Rewards
+                      <span className="info-tooltip" title="Proof of Useful Work rewards from AI audits">ℹ️</span>
                     </span>
                     <span className="stat-value">{formattedPendingRewards} SSTL</span>
-                    <span className="stat-subtitle">Available to claim</span>
+                    <span className="stat-subtitle">From completed audits</span>
+                  </div>
+                </div>
+              )}
+              {pendingRevenue > 0 && (
+                <div className="reward-stat-card">
+                  <div className="stat-icon">
+                    <DollarSign size={24} />
+                  </div>
+                  <div className="stat-content">
+                    <span className="stat-label">
+                      Genesis Revenue
+                      <span className="info-tooltip" title="Revenue share from Genesis NFT holdings">ℹ️</span>
+                    </span>
+                    <span className="stat-value">{formattedPendingRevenue} SSTL</span>
+                    <span className="stat-subtitle">From Genesis NFTs</span>
                   </div>
                 </div>
               )}
@@ -374,7 +456,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
           )}
 
           {/* Claim Rewards Button */}
-          {pendingRewards > 0 && !isCalculatingRewards && (
+          {totalClaimable > 0 && !isCalculatingRewards && (
             <div className="claim-section">
               <button
                 className="claim-rewards-btn"
@@ -389,7 +471,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
                 ) : (
                   <>
                     <Gift size={16} />
-                    Claim Rewards ({formattedPendingRewards} SSTL)
+                    Claim Rewards ({formattedTotalClaimable} SSTL)
                   </>
                 )}
               </button>
@@ -444,8 +526,8 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
               <span className="global-stat-value">{totalDistributed.toFixed(2)} SSTL</span>
             </div>
             <div className="global-stat-item">
-              <span className="global-stat-label">Total Burned (10%):</span>
-              <span className="global-stat-value">{totalBurned.toFixed(2)} SSTL</span>
+              <span className="global-stat-label">Total Revenue Collected:</span>
+              <span className="global-stat-value">{totalRevenueCollected.toFixed(2)} SSTL</span>
             </div>
           </div>
         </>

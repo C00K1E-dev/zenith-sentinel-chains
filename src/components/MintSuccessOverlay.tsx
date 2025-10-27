@@ -3,6 +3,10 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, X, CheckCircle, Loader } from 'lucide-react';
 
+// Import collection-specific fallback images (SVG)
+import AIAuditNFTImage from '../assets/AIAuditNFT.svg';
+import GenesisNFTImage from '../assets/genesisNFT.svg';
+
 interface MintSuccessOverlayProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,8 +38,28 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
     'https://gateway.pinata.cloud/ipfs/'
   ];
 
+  const getFallbackImage = (collection: string) => {
+    // Use collection-specific PNG images as fallbacks
+    switch (collection.toLowerCase()) {
+      case 'genesis':
+      case 'genesis nft':
+      case 'genesis collection':
+        return GenesisNFTImage;
+      case 'ai audit':
+      case 'ai audit nft':
+      case 'ai audit collection':
+        return AIAuditNFTImage;
+      case 'aida':
+      case 'aida nft':
+      case 'aida collection':
+        return '/placeholder.svg';
+      default:
+        return '/placeholder.svg';
+    }
+  };
+
   const getIPFSUrl = (url: string) => {
-    if (!url) return '/assets/AIAudit.mp4';
+    if (!url) return getFallbackImage(collectionName);
     if (url.startsWith('ipfs://')) {
       const hash = url.replace('ipfs://', '');
       return `${IPFS_GATEWAYS[0]}${hash}`;
@@ -44,17 +68,17 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
   };
 
   useEffect(() => {
-    console.log('MintSuccessOverlay imageUrl effect:', { isOpen, imageUrl });
+    console.log('MintSuccessOverlay imageUrl effect:', { isOpen, imageUrl, collectionName });
     if (isOpen && imageUrl) {
       setMediaUrl(getIPFSUrl(imageUrl));
       setLoading(false);
       setImageError(false); // Reset error state when URL changes
     } else if (isOpen) {
-      setMediaUrl('/assets/AIAudit.mp4');
+      setMediaUrl(getFallbackImage(collectionName));
       setLoading(false);
       setImageError(false);
     }
-  }, [isOpen, imageUrl]);
+  }, [isOpen, imageUrl, collectionName]);
 
   const handleImageError = () => {
     console.log('Image failed to load:', mediaUrl);
@@ -75,7 +99,7 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
     
     // If all gateways failed or not an IPFS URL, fallback to default
     setImageError(true);
-    setMediaUrl('/assets/AIAudit.mp4');
+    setMediaUrl(getFallbackImage(collectionName));
     setLoading(false);
   };
 

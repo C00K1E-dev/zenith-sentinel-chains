@@ -12,45 +12,58 @@ const SidebarGeneralStats = () => {
   const { chain } = useAccount();
 
   // Read global stats from PoUW contract with optimized polling
-  const { data: totalJobs } = useReadContract({
+  const { data: totalJobs, error: totalJobsError } = useReadContract({
     address: POUW_POOL_ADDRESS as `0x${string}`,
     abi: POUW_POOL_ABI as any,
     functionName: 'totalJobs',
     chainId: chain?.id,
     query: {
-      refetchInterval: 30000, // Reduced to 30 seconds
-      staleTime: 10000, // Consider data fresh for 10 seconds
+      refetchInterval: 5000, // Refetch every 5 seconds
+      staleTime: 0,
     },
   });
 
-  const { data: totalMinted } = useReadContract({
+  const { data: totalMinted, error: totalMintedError } = useReadContract({
     address: POUW_POOL_ADDRESS as `0x${string}`,
     abi: POUW_POOL_ABI as any,
     functionName: 'totalMinted',
     chainId: chain?.id,
     query: {
-      refetchInterval: 30000,
-      staleTime: 10000,
+      refetchInterval: 5000,
+      staleTime: 0,
     },
   });
 
-  const { data: totalNFTRewards } = useReadContract({
+  const { data: totalNFTRewards, error: totalNFTRewardsError } = useReadContract({
     address: POUW_POOL_ADDRESS as `0x${string}`,
     abi: POUW_POOL_ABI as any,
     functionName: 'totalNFTRewards',
     chainId: chain?.id,
     query: {
-      refetchInterval: 30000,
-      staleTime: 10000,
+      refetchInterval: 5000,
+      staleTime: 0,
     },
   });
 
   // Calculate stats with memoization
   const stats = useMemo(() => ({
-    totalAuditsCompleted: totalJobs ? Number(totalJobs) : 0,
+    totalAuditsCompleted: totalMinted ? Math.floor(Number(formatEther(totalMinted as bigint)) / 67) : 0,
     totalMintedTokens: totalMinted ? Number(formatEther(totalMinted as bigint)) : 0,
     totalDistributed: totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0,
   }), [totalJobs, totalMinted, totalNFTRewards]);
+
+  console.log('General Stats Debug:', {
+    totalJobs: totalJobs ? Number(totalJobs) : 0,
+    totalMinted: totalMinted ? Number(formatEther(totalMinted as bigint)) : 0,
+    totalNFTRewards: totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0,
+    calculatedAudits: stats.totalAuditsCompleted,
+    errors: {
+      totalJobsError: totalJobsError?.message,
+      totalMintedError: totalMintedError?.message,
+      totalNFTRewardsError: totalNFTRewardsError?.message
+    },
+    chainId: chain?.id
+  });
   const totalBurned = stats.totalMintedTokens * 0.1; // 10% burned
   return (
     <div className="mb-8">

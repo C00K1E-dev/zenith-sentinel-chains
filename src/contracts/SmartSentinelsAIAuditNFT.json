@@ -3,16 +3,21 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "to",
+				"name": "payee",
 				"type": "address"
 			},
 			{
 				"internalType": "uint256",
-				"name": "tokenId",
+				"name": "share",
 				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "active",
+				"type": "bool"
 			}
 		],
-		"name": "approve",
+		"name": "addOrUpdatePayee",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -46,6 +51,11 @@
 				"internalType": "string",
 				"name": "initMediaBaseURI",
 				"type": "string"
+			},
+			{
+				"internalType": "address",
+				"name": "initPaymentToken",
+				"type": "address"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -253,6 +263,24 @@
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [],
 		"name": "BaseURIFrozen",
@@ -283,6 +311,32 @@
 		],
 		"name": "ContractURIUpdated",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "payee",
+				"type": "address"
+			}
+		],
+		"name": "disablePayee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "payee",
+				"type": "address"
+			}
+		],
+		"name": "enablePayee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"inputs": [],
@@ -323,11 +377,17 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "newAmount",
+				"name": "newTokenAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newBNBAmount",
 				"type": "uint256"
 			}
 		],
-		"name": "MintAmountUpdated",
+		"name": "MintPricesUpdated",
 		"type": "event"
 	},
 	{
@@ -350,6 +410,12 @@
 				"internalType": "uint256",
 				"name": "value",
 				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "paidInNative",
+				"type": "bool"
 			}
 		],
 		"name": "Minted",
@@ -375,10 +441,67 @@
 		"type": "event"
 	},
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "payee",
+				"type": "address"
+			}
+		],
+		"name": "PayeeRemoved",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "payee",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "share",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "active",
+				"type": "bool"
+			}
+		],
+		"name": "PayeeUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "newToken",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "useNative",
+				"type": "bool"
+			}
+		],
+		"name": "PaymentTokenUpdated",
+		"type": "event"
+	},
+	{
 		"inputs": [],
 		"name": "publicMint",
 		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
@@ -393,6 +516,19 @@
 		],
 		"name": "PublicMintStatusChanged",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "payee",
+				"type": "address"
+			}
+		],
+		"name": "removePayee",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"inputs": [],
@@ -526,11 +662,34 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "newAmount",
+				"name": "newTokenAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "newBNBAmount",
 				"type": "uint256"
 			}
 		],
-		"name": "setMintAmount",
+		"name": "setMintPrices",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newToken",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "native",
+				"type": "bool"
+			}
+		],
+		"name": "setPaymentToken",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -612,15 +771,19 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
+				"internalType": "address payable",
 				"name": "to",
 				"type": "address"
 			}
 		],
 		"name": "withdraw",
 		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "payable",
 		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
 	},
 	{
 		"inputs": [
@@ -636,19 +799,6 @@
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "baseURI",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -694,6 +844,19 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getPayees",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
 			}
 		],
 		"stateMutability": "view",
@@ -751,7 +914,20 @@
 	},
 	{
 		"inputs": [],
-		"name": "mintAmount",
+		"name": "mintAmountBNB",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "mintAmountToken",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -808,12 +984,42 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "publicMintEnabled",
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "payeeList",
 		"outputs": [
 			{
-				"internalType": "bool",
+				"internalType": "address",
 				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "payees",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "share",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "active",
 				"type": "bool"
 			}
 		],
@@ -822,12 +1028,25 @@
 	},
 	{
 		"inputs": [],
-		"name": "SSTL",
+		"name": "paymentToken",
 		"outputs": [
 			{
 				"internalType": "contract IERC20",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "publicMintEnabled",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -967,12 +1186,38 @@
 	},
 	{
 		"inputs": [],
+		"name": "totalShares",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "totalSupply",
 		"outputs": [
 			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "useNativePayment",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",

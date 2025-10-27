@@ -3,38 +3,13 @@ import { useState, useEffect, useCallback, memo } from "react";
 import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
 import { prepareContractCall, getContract, createThirdwebClient, readContract } from "thirdweb";
 import { bscTestnet } from "thirdweb/chains";
+import { parseEther, formatUnits } from "viem";
 import { AI_AUDIT_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_CHAIN_ID, SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI } from "../contracts/index";
 import MintSuccessOverlay from "./MintSuccessOverlay";
 
 const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
 });
-
-const SSTL_ADDRESS = SSTL_TOKEN_ADDRESS as `0x${string}`; // Use updated address from index
-const MINT_AMOUNT = BigInt(100) * BigInt("1000000000000000000"); // 100 SSTL (matches deployed contract)
-
-const erc20Abi = [
-  {
-    "constant": true,
-    "inputs": [
-      {"name": "_owner", "type": "address"},
-      {"name": "_spender", "type": "address"}
-    ],
-    "name": "allowance",
-    "outputs": [{"name": "", "type": "uint256"}],
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {"name": "_spender", "type": "address"},
-      {"name": "_value", "type": "uint256"}
-    ],
-    "name": "approve",
-    "outputs": [{"name": "", "type": "bool"}],
-    "type": "function"
-  }
-];
 
 const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, txHash?: string, imageUrl?: string }) => void }) => {
    const account = useActiveAccount();
@@ -55,13 +30,6 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
    const address = account?.address;
 
    // Get contracts
-   const sstlContract = getContract({
-     address: SSTL_ADDRESS,
-     abi: SSTL_TOKEN_ABI as any,
-     chain: bscTestnet,
-     client: thirdwebClient,
-   } as any);
-
    const aiAuditContract = getContract({
      address: AI_AUDIT_CONTRACT_ADDRESS,
      abi: AI_AUDIT_ABI as any,
@@ -69,20 +37,11 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
      client: thirdwebClient,
    } as any);
 
-   // Check SSTL allowance
-   const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
-     contract: sstlContract,
-     method: 'allowance',
-     params: address && AI_AUDIT_CONTRACT_ADDRESS ? [address, AI_AUDIT_CONTRACT_ADDRESS] : undefined,
-     abi: SSTL_TOKEN_ABI,
-   } as any);
-
-   // Check SSTL balance
-   const { data: sstlBalanceData, isLoading: balanceLoading, error: balanceError } = useReadContract({
-     contract: sstlContract,
-     method: 'balanceOf',
-     params: address ? [address] : undefined,
-     abi: SSTL_TOKEN_ABI,
+   const sstlTokenContract = getContract({
+     address: SSTL_TOKEN_ADDRESS,
+     abi: SSTL_TOKEN_ABI as any,
+     chain: bscTestnet,
+     client: thirdwebClient,
    } as any);
 
    // Get total supply to determine next token ID
@@ -90,6 +49,34 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
      contract: aiAuditContract,
      method: 'totalSupply',
      abi: AI_AUDIT_ABI,
+   } as any);
+
+   // Get mint price in BNB
+   const { data: mintPriceBNB } = useReadContract({
+     contract: aiAuditContract,
+     method: 'mintAmountBNB',
+     abi: AI_AUDIT_ABI,
+   } as any);
+
+   // Get mint price in SSTL
+   const { data: mintPriceSSTL } = useReadContract({
+     contract: aiAuditContract,
+     method: 'mintAmountToken',
+     abi: AI_AUDIT_ABI,
+   } as any);
+
+   // Get payment mode
+   const { data: useNativePayment } = useReadContract({
+     contract: aiAuditContract,
+     method: 'useNativePayment',
+     abi: AI_AUDIT_ABI,
+   } as any);
+
+   // Check SSTL allowance
+   const { data: allowance, refetch: refetchAllowance } = useReadContract({
+     contract: sstlTokenContract,
+     method: 'allowance',
+     params: address ? [address, AI_AUDIT_CONTRACT_ADDRESS] : undefined,
    } as any);
 
    // Update last known token ID when total supply changes
@@ -115,6 +102,54 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
      abi: AI_AUDIT_ABI,
    } as any);
 
+  const handleApproveSSTL = useCallback(async () => {
+    if (!isConnected || !address || !mintPriceSSTL) {
+      setAuthMessage("Please connect your wallet.");
+      return;
+    }
+
+    try {
+      setApproving(true);
+      setAuthMessage("");
+
+      const approveTx = prepareContractCall({
+        contract: sstlTokenContract,
+        method: 'approve',
+        params: [AI_AUDIT_CONTRACT_ADDRESS, mintPriceSSTL],
+      } as any);
+      const txResult = await sendTransaction(approveTx);
+      const txHash = txResult.transactionHash;
+
+      // Wait for allowance to update
+      await waitForAllowanceUpdate();
+
+      setAuthMessage("SSTL approved successfully!");
+      setTimeout(() => setAuthMessage(""), 3000);
+    } catch (e) {
+      console.error('Approval failed', e);
+      setAuthMessage('Approval failed. Please try again.');
+      setTimeout(() => setAuthMessage(""), 5000);
+    } finally {
+      setApproving(false);
+    }
+  }, [isConnected, address, mintPriceSSTL, sendTransaction]);
+
+  const waitForAllowanceUpdate = useCallback(async () => {
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const newAllowance = await refetchAllowance();
+      const requiredAmount = mintPriceSSTL ? BigInt(mintPriceSSTL.toString()) : BigInt(0);
+      if (newAllowance.data && BigInt(newAllowance.data.toString()) >= requiredAmount) {
+        return;
+      }
+      attempts++;
+    }
+    throw new Error('Allowance update timeout');
+  }, [refetchAllowance, mintPriceSSTL]);
+
   const handleMint = useCallback(async () => {
     if (!isConnected || !address) {
       setAuthMessage("Please connect your wallet to mint.");
@@ -135,42 +170,23 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
       setLastMintedTokenId(null);
       setMetadataImageUrl('');
 
-      // Check current allowance and balance
-      const currentAllowance = allowanceData ? BigInt(allowanceData as any) : BigInt(0);
-      const userBalance = sstlBalanceData ? BigInt(sstlBalanceData as any) : BigInt(0);
+      // Get the mint price based on payment mode
+      const isNativePayment = !useNativePayment || useNativePayment.toString() !== 'false';
+      let mintPrice: bigint;
+      let useSSTL = false;
 
-      // Check if user has enough SSTL to mint
-      const userBalanceFormatted = Number(userBalance) / 1e18;
-      const mintAmountFormatted = Number(MINT_AMOUNT) / 1e18;
-      if (userBalance < MINT_AMOUNT) {
-        setAuthMessage(`Insufficient SSTL balance. You need ${mintAmountFormatted} SSTL but only have ${userBalanceFormatted}.`);
-        // Clear error message after 5 seconds
-        setTimeout(() => setAuthMessage(""), 5000);
-        return;
-      }
-
-      // If allowance is insufficient, approve what they need
-      if (currentAllowance < MINT_AMOUNT) {
-        setApproving(true);
-        setAuthMessage("Approving SSTL for minting...");
-
-        // Approve enough for 10 mints or their full balance, whichever is smaller
-        const approvalAmount = userBalance < MINT_AMOUNT * BigInt(10)
-          ? userBalance
-          : MINT_AMOUNT * BigInt(10);
-
-        const approveTx = prepareContractCall({
-          contract: sstlContract,
-          method: 'approve',
-          params: [AI_AUDIT_CONTRACT_ADDRESS, approvalAmount],
-        } as any);
-        await sendTransaction(approveTx);
-
-        setAuthMessage("Approval complete. Minting NFT...");
-        // Refetch allowance after approval
-        refetchAllowance();
+      if (isNativePayment) {
+        // Use BNB payment
+        mintPrice = mintPriceBNB ? BigInt(mintPriceBNB.toString()) : BigInt("74000000000000000"); // 0.074 BNB fallback
       } else {
-        setAuthMessage("Minting NFT...");
+        // Use SSTL payment - check allowance first
+        useSSTL = true;
+        mintPrice = mintPriceSSTL ? BigInt(mintPriceSSTL.toString()) : BigInt(0);
+        const requiredAmount = mintPrice;
+        if (!allowance || BigInt(allowance.toString()) < requiredAmount) {
+          setAuthMessage("Please approve SSTL spending first.");
+          return;
+        }
       }
 
       // Calculate expected token ID before minting
@@ -182,6 +198,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
       console.log('totalSupplyData type:', typeof totalSupplyData);
       console.log('currentTotalSupply:', currentTotalSupply.toString());
       console.log('expectedTokenId:', expectedTokenId.toString());
+      console.log('mintPrice:', mintPrice.toString());
       console.log('==================');
 
       // If totalSupply is not available or seems wrong, use fallback
@@ -221,16 +238,14 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
       }
 
       // Now mint the NFT
-      console.log('Attempting to mint NFT...');
-      console.log('User balance:', userBalance.toString());
-      console.log('Allowance:', currentAllowance.toString());
-      console.log('Mint amount needed:', MINT_AMOUNT.toString());
+      console.log(`Attempting to mint NFT with ${useSSTL ? 'SSTL' : 'BNB'}...`);
+      console.log('Mint price (wei):', mintPrice.toString());
 
       const mintTx = prepareContractCall({
         contract: aiAuditContract,
         method: 'publicMint',
         params: [],
-        abi: AI_AUDIT_ABI,
+        value: useSSTL ? BigInt(0) : mintPrice,
       } as any);
       console.log('Prepared mint transaction:', mintTx);
       const txResult = await sendTransaction(mintTx);
@@ -291,9 +306,8 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
       setTimeout(() => setAuthMessage(""), 5000);
     } finally {
       setMinting(false);
-      setApproving(false);
     }
-  }, [isConnected, address, sendTransaction, allowanceData, sstlBalanceData, refetchAllowance]);
+  }, [isConnected, address, sendTransaction, mintPriceBNB, mintPriceSSTL, useNativePayment, allowance]);
 
   // The token ID is set immediately in handleMint, no need for additional logic here
 
@@ -375,7 +389,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
         onMinted({
           tokenId: lastMintedTokenId,
           txHash: mintTxHash,
-          imageUrl: metadataImageUrl || '/assets/AIAudit.mp4'
+          imageUrl: metadataImageUrl || '/assets/AIAuditNFT.png'
         });
       }
     }
@@ -386,39 +400,37 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
     console.log('showSuccessOverlay changed to:', showSuccessOverlay);
   }, [showSuccessOverlay]);
 
-  // Format SSTL balance for display
-  const formatSSTLBalance = () => {
-    if (!sstlBalanceData) return '0';
-    const balance = Number(BigInt(sstlBalanceData as any)) / 1e18;
-    return balance.toFixed(2);
-  };
-
   // Debug logging
   useEffect(() => {
-    console.log('SSTL Balance Data:', sstlBalanceData);
-    console.log('Balance Loading:', balanceLoading);
-    console.log('Balance Error:', balanceError);
-    console.log('Allowance Data:', allowanceData);
-    console.log('MINT_AMOUNT:', MINT_AMOUNT.toString());
     console.log('Address:', address);
-    console.log('SSTL_ADDRESS:', SSTL_ADDRESS);
     console.log('AI_AUDIT_CONTRACT_ADDRESS:', AI_AUDIT_CONTRACT_ADDRESS);
-  }, [sstlBalanceData, balanceLoading, balanceError, allowanceData, address]);
+    console.log('Mint Price BNB:', mintPriceBNB?.toString());
+  }, [address, mintPriceBNB]);
 
   return (
     <>
-      <div className="mb-2 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-        <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium">
-          ⚠️ <strong>Testnet Only:</strong> This NFT is currently only available on BSC Testnet
-        </p>
+      <div className="space-y-2">
+        {/* Approval Button for SSTL */}
+        {(!useNativePayment || useNativePayment.toString() === 'false') && allowance && mintPriceSSTL && BigInt(allowance.toString()) < BigInt(mintPriceSSTL.toString()) && (
+          <button
+            className={`nft-mint-btn ${approving ? 'disabled' : ''}`}
+            onClick={handleApproveSSTL}
+            disabled={approving}
+          >
+            {approving ? 'Approving…' : `Approve SSTL (${formatUnits(BigInt(mintPriceSSTL.toString()), 18)} SSTL)`}
+          </button>
+        )}
+
+        {/* Mint Button */}
+        <button
+          className={`nft-mint-btn ${minting ? 'disabled' : ''}`}
+          onClick={handleMint}
+          disabled={minting || ((!useNativePayment || useNativePayment.toString() === 'false') && allowance && mintPriceSSTL && BigInt(allowance.toString()) < BigInt(mintPriceSSTL.toString()))}
+        >
+          {minting ? 'Minting…' : 'Mint AI Audit'}
+        </button>
       </div>
-      <div className="mb-2 p-2 bg-muted/50 rounded-lg">
-        <p className="text-xs text-muted-foreground">Your SSTL Balance: <strong className="text-foreground">{formatSSTLBalance()}</strong></p>
-        <p className="text-xs text-muted-foreground">Cost: <strong className="text-foreground">100 SSTL</strong></p>
-      </div>
-      <button className={`nft-mint-btn ${minting || approving ? 'disabled' : ''}`} onClick={handleMint} disabled={minting || approving}>
-        {approving ? 'Approving SSTL…' : minting ? 'Minting NFT…' : 'Mint AI Audit NFT'}
-      </button>
+
       {authMessage && (
         <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg">
           <p className="text-sm text-destructive">{authMessage}</p>
@@ -433,7 +445,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
         }}
         tokenId={lastMintedTokenId}
         txHash={mintTxHash}
-        imageUrl={metadataImageUrl || '/assets/AIAudit.mp4'}
+        imageUrl={metadataImageUrl || '/assets/AIAuditNFT.png'}
         collectionName="AI Audit NFT"
       />
     </>

@@ -6,7 +6,7 @@ import styles from './sidebarAIAuditSmartContract.module.css';
 import auditReportStyles from './auditReportStyles.css?raw';
 
 // --- IMPORTS FOR WALLET AND TOKEN TRANSFER ---
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract, useSendTransaction } from 'wagmi';
 import { parseUnits, formatUnits, keccak256, toHex, createPublicClient, http } from 'viem';
 import { bscTestnet } from 'viem/chains';
 import { SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI, AUDIT_GATEWAY_ADDRESS, AUDIT_GATEWAY_ABI, POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../../contracts/index";
@@ -519,7 +519,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         address: SSTL_CONTRACT,
         abi: SSTL_TOKEN_ABI as any,
         functionName: 'decimals',
-        chainId: chain?.id,
+        chainId: BSC_TESTNET_CHAIN_ID,
     });
     
     // Get SSTL balance
@@ -528,7 +528,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         abi: SSTL_TOKEN_ABI as any,
         functionName: 'balanceOf',
         args: address ? [address] : undefined,
-        chainId: chain?.id,
+        chainId: BSC_TESTNET_CHAIN_ID,
         query: { enabled: !!address && isConnected, refetchInterval: 3000 }
     });
 
@@ -538,16 +538,44 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         abi: SSTL_TOKEN_ABI as any,
         functionName: 'allowance',
         args: address ? [address, AUDIT_GATEWAY_ADDRESS] : undefined,
-        chainId: chain?.id,
+        chainId: BSC_TESTNET_CHAIN_ID,
         query: { enabled: !!address && isConnected }
+    });
+
+    // Get current service price in BNB
+    const { data: servicePriceBNB } = useReadContract({
+        address: AUDIT_GATEWAY_ADDRESS,
+        abi: AUDIT_GATEWAY_ABI as any,
+        functionName: 'servicePriceBNB',
+        chainId: BSC_TESTNET_CHAIN_ID,
+        query: { enabled: !!isConnected }
+    });
+
+    // Get current service price in SSTL
+    const { data: servicePriceSSTL } = useReadContract({
+        address: AUDIT_GATEWAY_ADDRESS,
+        abi: AUDIT_GATEWAY_ABI as any,
+        functionName: 'servicePriceSSTL',
+        chainId: BSC_TESTNET_CHAIN_ID,
+        query: { enabled: !!isConnected }
+    });
+
+    // Get current payment mode (BNB vs SSTL)
+    const { data: useNativePayment } = useReadContract({
+        address: AUDIT_GATEWAY_ADDRESS,
+        abi: AUDIT_GATEWAY_ABI as any,
+        functionName: 'useNativePayment',
+        chainId: BSC_TESTNET_CHAIN_ID,
+        query: { enabled: !!isConnected }
     });
     
     // Token approval/transfer hooks
     const { writeContract, data: txHash, error: transferError, isPending: isTransferPending, reset: resetTransfer } = useWriteContract();
+    const { sendTransaction, data: sendTxHash, error: sendError, isPending: isSendPending } = useSendTransaction();
     
-    // Wait for transaction confirmation
+    // Wait for transaction confirmation (handles both approval and payment)
     const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-        hash: txHash,
+        hash: txHash || sendTxHash,
     });
 
     // Wait for allowance to update after approval
@@ -587,7 +615,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                     setStatusMessage('Approval confirmed! Verifying allowance on blockchain...');
                     
                     const decimals = Number(tokenDecimals);
-                    const requiredAmount = parseUnits(AUDIT_COST, decimals);
+                    const requiredAmount = (servicePriceSSTL as bigint) || parseUnits('1000', decimals);
                     
                     const allowanceUpdated = await waitForAllowanceUpdate(requiredAmount);
                     
@@ -614,20 +642,21 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                     setIsProcessing(false);
                     setCurrentTransactionType(null);
                 }, 100);
-            } else if (isConfirmed && txHash) {
+            } else if (isConfirmed && (txHash || sendTxHash)) {
                 // Store payment transaction hash and start audit
-                setPaymentTxHash(txHash);
-                setStatusMessage('Payment successful! 67 SSTL tokens will be minted. Starting AI Audit...');
+                const paymentHash = txHash || sendTxHash;
+                setPaymentTxHash(paymentHash);
+                setStatusMessage('BNB Payment successful! 67 SSTL tokens will be minted. Starting AI Audit...');
                 // Start the audit with the payment transaction hash
-                handleSimpleAudit(txHash);
+                handleSimpleAudit(paymentHash);
                 setTimeout(async () => {
                     setApprovalMessage(null);
                     setPaymentMessage('Starting AI audit...');
-                    setPaymentTxHash(txHash);
+                    setPaymentTxHash(paymentHash);
                     setCurrentTransactionType(null);
-                    
+
                     // Start the audit process with the payment hash
-                    handleSimpleAudit(txHash);
+                    handleSimpleAudit(paymentHash);
                 }, 100);
             }
         }
@@ -638,7 +667,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         if (currentTransactionType === 'approve' && !isProcessing) {
             if (allowance !== undefined && allowance !== null && typeof allowance === 'bigint' && tokenDecimals) {
                 const decimals = Number(tokenDecimals);
-                const requiredAmount = parseUnits(AUDIT_COST, decimals);
+                const requiredAmount = (servicePriceSSTL as bigint) || parseUnits('1000', decimals);
                 const hasAllowance = allowance >= requiredAmount;
                 
                 console.log('🔍 Allowance check:', {
@@ -652,7 +681,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 }
             }
         }
-    }, [allowance, tokenDecimals]);
+    }, [allowance, tokenDecimals, servicePriceSSTL]);
 
     const handleApproveSSTL = async () => {
         if (!isConnected || !address) {
@@ -671,7 +700,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             setCurrentTransactionType('approve');
 
             const decimals = Number(tokenDecimals);
-            const approvalAmount = parseUnits(AUDIT_COST, decimals);
+            const approvalAmount = (servicePriceSSTL as bigint) || parseUnits('1000', decimals);
 
             console.log('🚀 Approving SSTL tokens:', {
                 amount: approvalAmount.toString(),
@@ -705,56 +734,66 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             return;
         }
 
+        if (chain?.id !== BSC_TESTNET_CHAIN_ID) {
+            setStatusMessage('Please switch to BSC Testnet to use this service');
+            return;
+        }
+
         if (!code.trim()) {
             setStatusMessage('Please upload a smart contract first');
             return;
-        }
-
-        if (!approvalTxHash) {
-            setStatusMessage('Please approve SSTL tokens first');
-            return;
-        }
-
-        // Check if we have enough allowance
-        if (allowance !== undefined && allowance !== null && typeof allowance === 'bigint' && tokenDecimals) {
-            const decimals = Number(tokenDecimals);
-            const requiredAmount = parseUnits(AUDIT_COST, decimals);
-            
-            console.log('Pre-payment allowance check:', {
-                currentAllowance: allowance.toString(),
-                requiredAmount: requiredAmount.toString(),
-                hasEnoughAllowance: allowance >= requiredAmount
-            });
-
-            if (allowance < requiredAmount) {
-                setStatusMessage('Insufficient allowance. Please approve SSTL tokens first.');
-                return;
-            }
         }
 
         try {
             setStatusMessage('Processing payment for AI Audit...');
             setCurrentTransactionType('payAndRunAudit');
 
-            const decimals = Number(tokenDecimals);
-            // Use BigInt directly to ensure exact value
-            const amount = BigInt('0x3635c9adc5dea00000'); // Exact amount from successful tx
+            if (useNativePayment) {
+                // Pay with BNB
+                const currentPrice = (servicePriceBNB as bigint) || parseUnits('0.1', 18);
+                const priceInBNB = Number(formatUnits(currentPrice, 18));
 
-            console.log('💰 Paying for audit:', {
-                gateway: AUDIT_GATEWAY_ADDRESS,
-                amount: '1000', // Human readable amount
-                amountWei: amount.toString(), // Full amount in wei
-                serviceOwner: '0x46e451d555ebCB4ccE5087555a07F6e69D017b05'
-            });
+                console.log('💰 Paying for audit with BNB:', {
+                    gateway: AUDIT_GATEWAY_ADDRESS,
+                    amount: `${priceInBNB} BNB`,
+                    amountWei: currentPrice.toString()
+                });
 
-            writeContract({
-                address: AUDIT_GATEWAY_ADDRESS,
-                abi: AUDIT_GATEWAY_ABI as any,
-                functionName: 'payAndRunAudit',
-                args: [amount], // Pass the exact BigInt amount
-                chain: chain,
-                account: address
-            });
+                sendTransaction({
+                    to: AUDIT_GATEWAY_ADDRESS,
+                    value: currentPrice,
+                    data: '0x07d29e5d' // payAndRunAudit function selector
+                });
+            } else {
+                // Pay with SSTL tokens - check allowance first
+                const decimals = Number(tokenDecimals);
+                const currentPrice = (servicePriceSSTL as bigint) || parseUnits('1000', decimals);
+                const priceInSSTL = Number(formatUnits(currentPrice, decimals));
+
+                console.log('💰 Paying for audit with SSTL:', {
+                    gateway: AUDIT_GATEWAY_ADDRESS,
+                    amount: `${priceInSSTL} SSTL`,
+                    amountWei: currentPrice.toString()
+                });
+
+                // Check if user has sufficient allowance
+                const currentAllowance = (allowance as bigint) || 0n;
+                if (currentAllowance < currentPrice) {
+                    setStatusMessage('Insufficient SSTL allowance. Please approve tokens first.');
+                    setCurrentTransactionType(null);
+                    return;
+                }
+
+                // Call payAndRunAudit without value (contract handles transferFrom)
+                writeContract({
+                    address: AUDIT_GATEWAY_ADDRESS,
+                    abi: AUDIT_GATEWAY_ABI as any,
+                    functionName: 'payAndRunAudit',
+                    args: [],
+                    chain: chain,
+                    account: address
+                });
+            }
         } catch (error) {
             console.error('❌ Payment error:', error);
             setPaymentMessage('Payment failed: ' + (error as Error).message);
@@ -787,7 +826,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                     setIsProcessing(false);
                     setCurrentTransactionType(null);
                     setRemediation({ title: '', code: '', loading: false });
-                    setStatusMessage('Ready for SSTL approval and payment.');
+                    setStatusMessage('Ready for BNB payment and audit.');
                     // Reset the file input so the same file can be uploaded again
                     event.target.value = '';
                 }
@@ -879,7 +918,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             };
 
             const structuredData = await callGeminiApi(payload);
-            structuredData.transactionHash = txHash; // Use actual transaction hash
+            structuredData.transactionHash = paymentTxHash; // Use actual transaction hash
 
             // Always calculate vulnerability breakdown from vulnerabilities array since AI may not count correctly
             const breakdown = {
@@ -924,7 +963,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             setAuditData(correctedData);
             setIsProcessing(false);
             setStatusMessage("Audit completed successfully! Transaction: ");
-            setAuditCompletedTxHash(txHash);
+            setAuditCompletedTxHash(paymentTxHash);
         } catch (error: any) {
             console.error('❌ Audit failed:', error);
             setStatusMessage('Audit failed: ' + error.message);
@@ -1065,32 +1104,42 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
           </label>
         </div>
         <div className="flex flex-col items-center gap-4">
-          {!approvalTxHash ? (
-            <Button 
-              variant="hero" 
-              className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
-              onClick={handleApproveSSTL} 
-              disabled={isProcessing || !code.trim()}
-            >
-              {isProcessing && currentTransactionType === 'approve' ? 'Approving...' : 'Approve 1000 SSTL'}
-            </Button>
-          ) : !paymentTxHash ? (
-            <Button 
-              variant="hero" 
-              className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
-              onClick={handlePayAndRunAudit} 
-              disabled={isProcessing || !code.trim()}
-            >
-              {isProcessing && currentTransactionType === 'payAndRunAudit' ? 'Processing Payment...' : 'Pay 1000 SSTL & Start Audit'}
-            </Button>
-          ) : null}
+          {/* Show SSTL approval button only when using SSTL payments and allowance is insufficient */}
+          {!useNativePayment && !approvalTxHash && allowance !== undefined && servicePriceSSTL && tokenDecimals ? (() => {
+            const requiredAmount = servicePriceSSTL as bigint;
+            const hasAllowance = (allowance as bigint) >= requiredAmount;
+            return !hasAllowance ? (
+              <Button 
+                variant="hero" 
+                className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
+                onClick={handleApproveSSTL} 
+                disabled={isProcessing || !code.trim()}
+              >
+                {isProcessing && currentTransactionType === 'approve' ? 'Approving...' : `Approve ${Number(formatUnits(servicePriceSSTL as bigint, Number(tokenDecimals))).toFixed(0)} SSTL`}
+              </Button>
+            ) : null;
+          })() : null}
+          
+          <Button 
+            variant="hero" 
+            className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
+            onClick={handlePayAndRunAudit} 
+            disabled={isProcessing || !code.trim() || (!useNativePayment && allowance !== undefined && servicePriceSSTL && tokenDecimals && (allowance as bigint) < (servicePriceSSTL as bigint))}
+          >
+            {isProcessing && currentTransactionType === 'payAndRunAudit' ? 'Processing Payment...' : 
+              useNativePayment ? 
+                `Pay ${servicePriceBNB ? Number(formatUnits(servicePriceBNB as bigint, 18)).toFixed(3) : '0.1'} BNB & Start Audit` :
+                `Pay ${servicePriceSSTL ? Number(formatUnits(servicePriceSSTL as bigint, Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL & Start Audit`
+            }
+          </Button>
+          {/* )} */}
           <p className="text-sm text-gray-400 text-center">
-            Payment of 1000 SSTL is required to run the AI Audit.
+            {useNativePayment ? 
+              `Payment of ${servicePriceBNB ? Number(formatUnits(servicePriceBNB as bigint, 18)).toFixed(3) : '0.1'} BNB is required to run the AI Audit.` :
+              `Payment of ${servicePriceSSTL ? Number(formatUnits(servicePriceSSTL as bigint, Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL tokens is required to run the AI Audit.`
+            }
             <br />
-            67 SSTL will be minted after successful payment.
-            {approvalTxHash && !paymentTxHash && (
-              <><br /><span className="text-green-400">✓ SSTL Approved</span></>
-            )}
+            67 SSTL tokens will be minted to the PoUW pool upon successful payment.
           </p>
         </div>
 

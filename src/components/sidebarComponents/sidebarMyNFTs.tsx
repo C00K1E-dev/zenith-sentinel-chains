@@ -31,14 +31,14 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     getContract({ 
       client: thirdwebClient, 
       address: GENESIS_CONTRACT_ADDRESS, 
-      chain: GENESIS_CHAIN_ID === 56 ? bsc : bscTestnet 
+      chain: bscTestnet 
     }), []);
 
   const aiAuditContract = useMemo(() => 
     getContract({ 
       client: thirdwebClient, 
       address: AI_AUDIT_CONTRACT_ADDRESS, 
-      chain: AI_AUDIT_CHAIN_ID === 97 ? bscTestnet : bsc 
+      chain: bscTestnet 
     }), []);
 
   // States for balances and token IDs
@@ -379,6 +379,17 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: {
     let isMounted = true;
 
     const fetchMetadata = async () => {
+      // Special case for Genesis NFTs - use fixed media
+      if (contractAddress.toLowerCase() === GENESIS_CONTRACT_ADDRESS.toLowerCase()) {
+        if (isMounted) {
+          setTokenName(`Genesis NFT #${tokenId.toString()}`);
+          setImgSrc('https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeifwqxjdalevdko2nu5ifpfmnktwnwda6hhw2ldlicpnhzewfr6vnq/genesisNFT.png');
+          setIsVideo(false);
+          setLoading(false);
+        }
+        return;
+      }
+
       if (!tokenURI) {
         setLoading(false);
         return;

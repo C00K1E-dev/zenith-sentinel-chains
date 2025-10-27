@@ -117,19 +117,19 @@ const Documents = () => {
 			<Navbar />
 
 			<div className="relative z-10 min-h-screen flex flex-col">
-				<div className="flex-1 flex items-center justify-center px-4 py-20">
-					<div className="max-w-4xl mx-auto">
+				<div className="flex-1 flex items-center justify-center px-4 py-16 sm:py-20">
+					<div className="max-w-4xl mx-auto w-full">
 						{/* Header */}
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.6 }}
-							className="text-center mb-16"
+							className="text-center mb-10 sm:mb-12 md:mb-16"
 						>
-							<h1 className="text-4xl md:text-5xl font-orbitron font-bold mb-4 neon-glow">
+							<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4 neon-glow">
 								Project Documents
 							</h1>
-							<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+							<p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
 								Access our comprehensive documentation, whitepapers, and project
 								materials
 							</p>
@@ -140,7 +140,7 @@ const Documents = () => {
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.6, delay: 0.2 }}
-							className="grid grid-cols-1 md:grid-cols-2 gap-6"
+							className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6"
 						>
 							{doc_data.map((doc, index) => (
 								<motion.div
@@ -148,39 +148,39 @@ const Documents = () => {
 									initial={{ opacity: 0, y: 20 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ duration: 0.6, delay: 0.1 * index }}
-									className="glass-card-hover p-6 rounded-2xl border border-white/10 hover:border-primary/30 transition-all duration-300"
+									className="glass-card-hover p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-white/10 hover:border-primary/30 transition-all duration-300"
 								>
-									<div className="flex items-center justify-between">
-										<div className="flex items-center space-x-4">
-											<div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+									<div className="flex items-center justify-between gap-3">
+										<div className="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+											<div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
 												{doc.type === 'html' ? (
-													<FileText size={24} className="text-primary" />
+													<FileText size={20} className="sm:w-6 sm:h-6 text-primary" />
 												) : (
-													<File size={24} className="text-primary" />
+													<File size={20} className="sm:w-6 sm:h-6 text-primary" />
 												)}
 											</div>
-											<div>
-												<h3 className="text-lg font-orbitron font-bold text-foreground mb-1">
+											<div className="min-w-0">
+												<h3 className="text-sm sm:text-base md:text-lg font-orbitron font-bold text-foreground mb-0.5 sm:mb-1 truncate">
 													{doc.name}
 												</h3>
-												<p className="text-sm text-muted-foreground">
+												<p className="text-xs sm:text-sm text-muted-foreground">
 													{doc.type === 'pdf' ? 'PDF Document' : 'Web Page'}
 												</p>
 											</div>
 										</div>
 
-										<div className="flex space-x-2">
+										<div className="flex space-x-1.5 sm:space-x-2 flex-shrink-0">
 											<button
 												onClick={() => window.open(doc.file, '_blank')}
-												className="p-2 rounded-lg glass-card-hover hover:bg-primary/10 transition-all duration-200"
+												className="p-1.5 sm:p-2 rounded-lg glass-card-hover hover:bg-primary/10 transition-all duration-200"
 												title="Open in new tab"
 											>
-												<ExternalLink size={18} className="text-primary" />
+												<ExternalLink size={16} className="sm:w-[18px] sm:h-[18px] text-primary" />
 											</button>
 
 											{doc.type === 'pdf' && (
 												<button
-													className="p-2 rounded-lg glass-card-hover hover:bg-primary/10 transition-all duration-200 disabled:opacity-50"
+													className="p-1.5 sm:p-2 rounded-lg glass-card-hover hover:bg-primary/10 transition-all duration-200 disabled:opacity-50"
 													onClick={() =>
 														handleDownload(doc.name, doc.file, doc.type)
 													}
@@ -192,9 +192,9 @@ const Documents = () => {
 													}
 												>
 													{downloading === doc.name ? (
-														<div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+														<div className="animate-spin w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-primary border-t-transparent rounded-full" />
 													) : (
-														<Download size={18} className="text-primary" />
+														<Download size={16} className="sm:w-[18px] sm:h-[18px] text-primary" />
 													)}
 												</button>
 											)}
@@ -209,13 +209,13 @@ const Documents = () => {
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{ duration: 0.6, delay: 0.8 }}
-							className="text-center mt-16"
+							className="text-center mt-10 sm:mt-12 md:mt-16"
 						>
-							<div className="glass-card-hover p-8 max-w-2xl mx-auto">
-								<h3 className="text-2xl font-orbitron font-bold text-foreground mb-4">
+							<div className="glass-card-hover p-6 sm:p-8 max-w-2xl mx-auto">
+								<h3 className="text-lg sm:text-xl md:text-2xl font-orbitron font-bold text-foreground mb-3 sm:mb-4">
 									Ready to Get Started?
 								</h3>
-								<p className="text-muted-foreground mb-6">
+								<p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
 									Join the SmartSentinels community and be part of the
 									decentralized AI revolution.
 								</p>
@@ -223,10 +223,10 @@ const Documents = () => {
 									href="/hub"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="inline-flex items-center space-x-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
+									className="inline-flex items-center space-x-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200 text-sm sm:text-base"
 								>
 									<span>Access Hub</span>
-									<ExternalLink size={18} />
+									<ExternalLink size={16} className="sm:w-[18px] sm:h-[18px]" />
 								</a>
 							</div>
 						</motion.div>

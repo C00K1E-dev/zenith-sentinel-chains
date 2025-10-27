@@ -15,17 +15,17 @@ const ContentCard = memo(({ title, content, delay = 0, icon }: ContentCardProps)
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.3, delay }}
-      className="glass-card-hover p-8"
+      className="glass-card-hover p-5 sm:p-6 md:p-8"
     >
       {icon && (
-        <div className="mb-4 text-primary">
+        <div className="mb-3 sm:mb-4 text-primary">
           {icon}
         </div>
       )}
-      <h3 className="text-2xl font-orbitron font-bold text-foreground mb-4 neon-glow">
+      <h3 className="text-lg sm:text-xl md:text-2xl font-orbitron font-bold text-foreground mb-3 sm:mb-4 neon-glow">
         {title}
       </h3>
-      <p className="text-muted-foreground leading-relaxed">
+      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
         {content}
       </p>
     </motion.div>

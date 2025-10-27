@@ -28,24 +28,24 @@ const Footer = () => {
 
   return (
     <footer className="glass-card border-t neon-border mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo & Copyright */}
-          <div className="flex flex-col items-center md:items-start">
-            <div className="flex items-center space-x-2 mb-2">
-              <img src={ssIcon} alt="SmartSentinels" className="w-8 h-8" />
-              <span className="font-orbitron font-bold text-foreground">SmartSentinels</span>
+          <div className="flex flex-col items-center md:items-start w-full md:w-auto">
+            <div className="flex items-center space-x-2 mb-3 sm:mb-2">
+              <img src={ssIcon} alt="SmartSentinels" className="w-7 h-7 sm:w-8 sm:h-8" />
+              <span className="font-orbitron font-bold text-foreground text-sm sm:text-base">SmartSentinels</span>
             </div>
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-2 md:space-y-0 md:space-x-6">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col items-center md:items-start space-y-3 md:space-y-2 w-full">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center md:text-left">
                 © SmartSentinels 2025 — All Rights Reserved
               </p>
-              <div className="flex items-center space-x-6">
+              <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 lg:gap-6 flex-wrap justify-center md:justify-start">
                 <a
                   href="/documents/Terms and Conditions.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
                 >
                   Terms and Conditions
                 </a>
@@ -53,7 +53,7 @@ const Footer = () => {
                   href="/documents/Privacy Policy.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
                 >
                   Privacy Policy
                 </a>
@@ -61,7 +61,7 @@ const Footer = () => {
                   href="/documents/Disclaimer.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
                 >
                   Disclaimer
                 </a>
@@ -70,7 +70,7 @@ const Footer = () => {
           </div>
 
           {/* Social Links */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             {socialLinks.map((social) => {
               const Icon = social.icon;
               return (
@@ -80,9 +80,9 @@ const Footer = () => {
                   aria-label={social.label}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="glass-card-hover p-3 rounded-lg"
+                  className="glass-card-hover p-2 sm:p-3 rounded-lg"
                 >
-                  <Icon size={20} className="text-muted-foreground hover:text-primary transition-colors" />
+                  <Icon size={18} className="sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
                 </a>
               );
             })}

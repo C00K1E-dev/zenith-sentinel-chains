@@ -22,7 +22,7 @@ const FAQ = memo(() => {
   ];
 
   return (
-    <section id="faq" className="py-20 px-4">
+    <section id="faq" className="py-12 sm:py-16 md:py-20 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
@@ -30,12 +30,12 @@ const FAQ = memo(() => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-orbitron font-bold mb-4 neon-glow">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4 neon-glow">
             Frequently Asked Questions
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             Everything you need to know about SmartSentinels, SSTL tokens, and Proof of Useful Work
           </p>
         </motion.div>
@@ -46,25 +46,25 @@ const FAQ = memo(() => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-col md:flex-row gap-4 mb-12 max-w-4xl mx-auto"
+          className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-8 sm:mb-10 md:mb-12 max-w-4xl mx-auto"
         >
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 p-6 rounded-2xl transition-all duration-300 ${
+              className={`flex-1 p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl transition-all duration-300 ${
                 activeTab === tab.id
                   ? 'glass-card-hover border-primary/50 bg-primary/5'
                   : 'glass-card hover:bg-white/5'
               }`}
             >
               <div className="text-center">
-                <h3 className={`text-xl font-orbitron font-bold mb-2 ${
+                <h3 className={`text-base sm:text-lg md:text-xl font-orbitron font-bold mb-1 sm:mb-2 ${
                   activeTab === tab.id ? 'text-primary neon-glow' : 'text-foreground'
                 }`}>
                   {tab.label}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {tab.description}
                 </p>
               </div>
@@ -80,26 +80,26 @@ const FAQ = memo(() => {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
             {filteredFaqs.map((faq, index) => (
               <AccordionItem
                 key={faq.id}
                 value={`item-${faq.id}`}
-                className="glass-card-hover border border-white/10 rounded-2xl overflow-hidden"
+                className="glass-card-hover border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden"
               >
-                <AccordionTrigger className="px-6 py-6 text-left hover:no-underline group">
-                  <div className="flex items-start gap-4 w-full">
-                    <HelpCircle size={24} className="text-primary mt-1 flex-shrink-0" />
+                <AccordionTrigger className="px-4 sm:px-5 md:px-6 py-4 sm:py-5 md:py-6 text-left hover:no-underline group">
+                  <div className="flex items-start gap-3 sm:gap-4 w-full">
+                    <HelpCircle size={20} className="sm:w-6 sm:h-6 text-primary mt-0.5 sm:mt-1 flex-shrink-0" />
                     <div className="flex-1">
-                      <h3 className="text-lg md:text-xl font-orbitron font-bold text-foreground group-hover:text-primary transition-colors pr-4">
+                      <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-orbitron font-bold text-foreground group-hover:text-primary transition-colors pr-3 sm:pr-4">
                         {faq.title}
                       </h3>
                     </div>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-6 pb-6">
-                  <div className="ml-10">
-                    <p className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="px-4 sm:px-5 md:px-6 pb-4 sm:pb-5 md:pb-6">
+                  <div className="ml-7 sm:ml-9 md:ml-10">
+                    <p className="text-xs sm:text-sm md:text-base text-muted-foreground leading-relaxed">
                       {faq.desc}
                     </p>
                   </div>
@@ -115,27 +115,27 @@ const FAQ = memo(() => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-16"
+          className="text-center mt-10 sm:mt-12 md:mt-16"
         >
-          <div className="glass-card-hover p-8 max-w-2xl mx-auto">
-            <h3 className="text-2xl font-orbitron font-bold text-foreground mb-4 neon-glow">
+          <div className="glass-card-hover p-6 sm:p-8 max-w-2xl mx-auto">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-orbitron font-bold text-foreground mb-3 sm:mb-4 neon-glow">
               Still Have Questions?
             </h3>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
               Can't find the answer you're looking for? Our community and team are here to help.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
               <a
                 href="https://t.me/SmartSentinelsCommunity"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="glass-card-hover px-6 py-3 rounded-lg bg-primary/20 text-primary font-orbitron font-bold hover:bg-primary/30 transition-all duration-300"
+                className="glass-card-hover px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary/20 text-primary font-orbitron font-bold hover:bg-primary/30 transition-all duration-300 text-sm sm:text-base"
               >
                 Join Telegram
               </a>
               <a
                 href="mailto:support@smartsentinels.ai"
-                className="glass-card-hover px-6 py-3 rounded-lg border border-primary/30 text-primary font-orbitron font-bold hover:bg-primary/10 transition-all duration-300"
+                className="glass-card-hover px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg border border-primary/30 text-primary font-orbitron font-bold hover:bg-primary/10 transition-all duration-300 text-sm sm:text-base"
               >
                 Contact Support
               </a>

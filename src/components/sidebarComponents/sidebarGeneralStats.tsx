@@ -66,11 +66,11 @@ const SidebarGeneralStats = () => {
   });
   const totalBurned = stats.totalMintedTokens * 0.1; // 10% burned
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
+    <div className="mb-6 sm:mb-8">
+      <h2 className="text-xl sm:text-2xl font-orbitron font-bold mb-3 sm:mb-4 text-foreground">
         General Stats
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           title="NFT Collections"
           value="2"
@@ -95,12 +95,12 @@ const SidebarGeneralStats = () => {
       </div>
 
       {/* Global PoUW Statistics */}
-      <div className="mt-8">
-        <h3 className="text-xl font-orbitron font-bold mb-4 text-foreground">
+      <div className="mt-6 sm:mt-8">
+        <h3 className="text-lg sm:text-xl font-orbitron font-bold mb-3 sm:mb-4 text-foreground">
           Global PoUW Statistics
         </h3>
-        <p className="text-sm text-muted-foreground mb-4">These statistics are on Testnet</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">These statistics are on Testnet</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <StatCard
             title="Total Audits Completed"
             value={stats.totalAuditsCompleted.toString()}

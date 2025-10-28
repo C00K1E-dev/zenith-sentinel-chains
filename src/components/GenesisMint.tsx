@@ -163,7 +163,7 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
       const txResult = await sendTransaction(mintTx);
       const txHash = txResult.transactionHash;
       setMintTxHash(txHash);
-      setAuthMessage("Mint successful! NFT is being transferred...");
+      // Removed message - MintSuccessOverlay will handle it
     } catch (e) {
       console.error('Mint failed', e);
       setAuthMessage('Mint failed. Please try again.');
@@ -199,7 +199,7 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
         }
       } catch (error) {
         console.error('Error handling mint success:', error);
-        setAuthMessage('Mint successful but error fetching NFT details.');
+        // Removed authMessage - overlay handles success display
       }
     };
 

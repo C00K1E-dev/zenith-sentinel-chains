@@ -8,17 +8,17 @@
 			},
 			{
 				"internalType": "address",
-				"name": "_nftCollection",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
 				"name": "_genesisCollection",
 				"type": "address"
 			},
 			{
 				"internalType": "address",
 				"name": "_treasuryWallet",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_serviceOwner",
 				"type": "address"
 			},
 			{
@@ -52,30 +52,53 @@
 		"type": "error"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "addRevenue",
+		"inputs": [],
+		"name": "addGenesisRevenue",
 		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "collection",
+				"name": "nftCollection",
 				"type": "address"
+			},
+			{
+				"internalType": "address[]",
+				"name": "holders",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "amounts",
+				"type": "uint256[]"
 			}
 		],
-		"name": "addRewardCollection",
+		"name": "allocateRewards",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "totalAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "AllRewardsClaimed",
+		"type": "event"
 	},
 	{
 		"inputs": [
@@ -85,20 +108,39 @@
 				"type": "uint256[]"
 			}
 		],
-		"name": "batchClaimRevenue",
+		"name": "batchClaimGenesisRevenue",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
+		"anonymous": false,
 		"inputs": [
 			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
 				"internalType": "uint256[]",
 				"name": "tokenIds",
 				"type": "uint256[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "totalAmount",
+				"type": "uint256"
 			}
 		],
-		"name": "batchClaimRewards",
+		"name": "BatchGenesisRevenueClaimed",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "claimAllRewards",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -111,7 +153,7 @@
 				"type": "uint256"
 			}
 		],
-		"name": "claimRevenue",
+		"name": "claimGenesisRevenue",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -119,15 +161,104 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
-				"name": "totalAmount",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "nftCollection",
+				"type": "address"
 			}
 		],
-		"name": "distributeRewards",
+		"name": "claimRewards",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "collection",
+				"type": "address"
+			}
+		],
+		"name": "CollectionRegistered",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "collection",
+				"type": "address"
+			}
+		],
+		"name": "CollectionRemoved",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "oldCollection",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "newCollection",
+				"type": "address"
+			}
+		],
+		"name": "GenesisCollectionUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "totalRevenue",
+				"type": "uint256"
+			}
+		],
+		"name": "GenesisRevenueAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "GenesisRevenueClaimed",
+		"type": "event"
 	},
 	{
 		"inputs": [
@@ -148,8 +279,67 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "manualHalve",
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "jobNumber",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "totalMinted",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "nftShare",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "treasuryShare",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "burnShare",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "serviceOwnerShare",
+				"type": "uint256"
+			}
+		],
+		"name": "JobCompleted",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "treasuryAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "burnAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "serviceOwnerAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "recordJobStats",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -162,7 +352,20 @@
 				"type": "address"
 			}
 		],
-		"name": "removeRewardCollection",
+		"name": "registerCollection",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "collection",
+				"type": "address"
+			}
+		],
+		"name": "removeCollection",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -188,162 +391,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "token",
-				"type": "address"
-			}
-		],
-		"name": "SafeERC20FailedOperation",
-		"type": "error"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256[]",
-				"name": "tokenIds",
-				"type": "uint256[]"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "totalAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "BatchRevenueClaimed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256[]",
-				"name": "tokenIds",
-				"type": "uint256[]"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "totalAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "BatchRewardsClaimed",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "claimReward",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "oldAddress",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "newAddress",
-				"type": "address"
-			}
-		],
-		"name": "GenesisCollectionUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newHalvingCount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"name": "HalvingApplied",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "oldInterval",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "newInterval",
-				"type": "uint256"
-			}
-		],
-		"name": "HalvingIntervalUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "RevenueClaimed",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "bytes32",
 				"name": "role",
 				"type": "bytes32"
@@ -365,54 +412,9 @@
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "RewardClaimed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
 				"name": "collection",
 				"type": "address"
-			}
-		],
-		"name": "RewardCollectionAdded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "collection",
-				"type": "address"
-			}
-		],
-		"name": "RewardCollectionRemoved",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
+			},
 			{
 				"indexed": false,
 				"internalType": "uint256",
@@ -422,35 +424,36 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "nftShareBeforeHalving",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "nftShareAfterHalving",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "treasuryShare",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "burnShare",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "clientShare",
+				"name": "jobNumber",
 				"type": "uint256"
 			}
 		],
-		"name": "RewardsDistributed",
+		"name": "RewardsAllocated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "collection",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "RewardsClaimed",
 		"type": "event"
 	},
 	{
@@ -529,6 +532,25 @@
 		"type": "event"
 	},
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "oldOwner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "ServiceOwnerUpdated",
+		"type": "event"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -544,12 +566,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
-				"name": "newInterval",
-				"type": "uint256"
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
 			}
 		],
-		"name": "setHalvingInterval",
+		"name": "setServiceOwner",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -587,98 +609,12 @@
 		"type": "event"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_nftShare",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_treasuryShare",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_burnShare",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_clientShare",
-				"type": "uint256"
-			}
-		],
-		"name": "updateShares",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"stateMutability": "payable",
 		"type": "receive"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "_applyHalvingToAmount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
-		"name": "_getTotalRewardShareSupply",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "ADMIN_ROLE",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "burnSharePercent",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "burnWallet",
+		"name": "BURN_ADDRESS",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -697,39 +633,7 @@
 				"type": "uint256"
 			}
 		],
-		"name": "claimedPerNFT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "claimedRevenuePerGenesisNFT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "clientSharePercent",
+		"name": "claimedGenesisRevenue",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -755,6 +659,19 @@
 	},
 	{
 		"inputs": [],
+		"name": "GATEWAY_ROLE",
+		"outputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "genesisCollection",
 		"outputs": [
 			{
@@ -767,8 +684,99 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "collection",
+				"type": "address"
+			}
+		],
+		"name": "getCollectionStats",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "totalDist",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "isReg",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenId",
+				"type": "uint256"
+			}
+		],
+		"name": "getPendingGenesisRevenue",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "collection",
+				"type": "address"
+			}
+		],
+		"name": "getPendingRewards",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "getPendingRewardsByCollection",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "collections",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "amounts",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
-		"name": "getRewardCollectionList",
+		"name": "getRegisteredCollections",
 		"outputs": [
 			{
 				"internalType": "address[]",
@@ -800,7 +808,51 @@
 	},
 	{
 		"inputs": [],
-		"name": "halvingCount",
+		"name": "getSystemStats",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "jobs",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "distributed",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "treasury",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "burned",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "serviceOwnerTotal",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "genesisRevenue",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "getTotalPendingGenesisRevenue",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -812,8 +864,14 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "halvingInterval",
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "getTotalPendingRewards",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -856,7 +914,7 @@
 				"type": "address"
 			}
 		],
-		"name": "isRewardCollection",
+		"name": "isRegisteredCollection",
 		"outputs": [
 			{
 				"internalType": "bool",
@@ -868,21 +926,19 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "lastHalvingTime",
-		"outputs": [
+		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "address",
 				"name": "",
-				"type": "uint256"
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
 			}
 		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "nftSharePercent",
+		"name": "pendingRewards",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -897,35 +953,29 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "tokenId",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "pendingRevenue",
+		"name": "registeredCollections",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "address",
 				"name": "",
-				"type": "uint256"
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "pendingReward",
+		"inputs": [],
+		"name": "serviceOwner",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "address",
 				"name": "",
-				"type": "uint256"
+				"type": "address"
 			}
 		],
 		"stateMutability": "view",
@@ -965,6 +1015,64 @@
 	},
 	{
 		"inputs": [],
+		"name": "totalBurned",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalDistributed",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "totalDistributedByCollection",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalGenesisRevenue",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "totalJobs",
 		"outputs": [
 			{
@@ -978,7 +1086,7 @@
 	},
 	{
 		"inputs": [],
-		"name": "totalMinted",
+		"name": "totalServiceOwner",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -991,33 +1099,7 @@
 	},
 	{
 		"inputs": [],
-		"name": "totalNFTRewards",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalRevenue",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "treasurySharePercent",
+		"name": "totalTreasury",
 		"outputs": [
 			{
 				"internalType": "uint256",

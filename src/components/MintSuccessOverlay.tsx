@@ -175,7 +175,7 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
                 ) : isVideo ? (
                   <video
                     src={mediaUrl}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     autoPlay
                     loop
                     muted
@@ -186,7 +186,7 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
                   <img
                     src={mediaUrl}
                     alt={`${collectionName} #${tokenId?.toString()}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     onError={handleImageError}
                   />
                 )}

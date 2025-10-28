@@ -561,13 +561,24 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     });
 
     // Get current payment mode (BNB vs SSTL)
-    const { data: useNativePayment } = useReadContract({
+    const { data: acceptBNB } = useReadContract({
         address: AUDIT_GATEWAY_ADDRESS,
         abi: AUDIT_GATEWAY_ABI as any,
-        functionName: 'useNativePayment',
+        functionName: 'acceptBNB',
         chainId: BSC_TESTNET_CHAIN_ID,
         query: { enabled: !!isConnected }
     });
+
+    const { data: acceptToken } = useReadContract({
+        address: AUDIT_GATEWAY_ADDRESS,
+        abi: AUDIT_GATEWAY_ABI as any,
+        functionName: 'acceptToken',
+        chainId: BSC_TESTNET_CHAIN_ID,
+        query: { enabled: !!isConnected }
+    });
+
+    // Determine which payment method to use (prefer BNB if both enabled)
+    const useNativePayment = acceptBNB && !acceptToken ? true : acceptBNB ? true : false;
     
     // Token approval/transfer hooks
     const { writeContract, data: txHash, error: transferError, isPending: isTransferPending, reset: resetTransfer } = useWriteContract();
@@ -759,10 +770,14 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                     amountWei: currentPrice.toString()
                 });
 
-                sendTransaction({
-                    to: AUDIT_GATEWAY_ADDRESS,
+                writeContract({
+                    address: AUDIT_GATEWAY_ADDRESS,
+                    abi: AUDIT_GATEWAY_ABI as any,
+                    functionName: 'payAndRunAuditBNB',
+                    args: [`audit_${Date.now()}`], // txHash parameter
                     value: currentPrice,
-                    data: '0x07d29e5d' // payAndRunAudit function selector
+                    chain: chain,
+                    account: address
                 });
             } else {
                 // Pay with SSTL tokens - check allowance first
@@ -1103,6 +1118,20 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             Upload .sol File
           </label>
         </div>
+
+        {/* Payment Method Display */}
+        <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+          <p className="text-sm text-gray-300 font-orbitron mb-2">
+            💳 Payment Method: <span className="text-neon font-bold">{useNativePayment ? 'BNB' : 'SSTL Tokens'}</span>
+          </p>
+          <p className="text-xs text-gray-400">
+            {useNativePayment 
+              ? `Pay ${servicePriceBNB ? Number(formatUnits(servicePriceBNB as bigint, 18)).toFixed(3) : '0.1'} BNB to run the audit`
+              : `Pay ${servicePriceSSTL ? Number(formatUnits(servicePriceSSTL as bigint, Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL to run the audit`
+            }
+          </p>
+        </div>
+
         <div className="flex flex-col items-center gap-4">
           {/* Show SSTL approval button only when using SSTL payments and allowance is insufficient */}
           {!useNativePayment && !approvalTxHash && allowance !== undefined && servicePriceSSTL && tokenDecimals ? (() => {

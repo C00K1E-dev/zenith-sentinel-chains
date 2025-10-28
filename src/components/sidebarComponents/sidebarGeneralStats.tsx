@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Image as ImageIcon, Bot, HardDrive, Activity, Coins, Zap, Flame } from 'lucide-react';
+import { Image as ImageIcon, Bot, HardDrive, Activity, Coins, Zap, Flame, Vault, DollarSign } from 'lucide-react';
 import { useReadContract, useAccount } from 'wagmi';
 import { formatEther } from 'viem';
 import { useMemo, memo } from 'react';
@@ -23,10 +23,10 @@ const SidebarGeneralStats = () => {
     },
   });
 
-  const { data: totalMinted, error: totalMintedError } = useReadContract({
+  const { data: totalDistributed, error: totalDistributedError } = useReadContract({
     address: POUW_POOL_ADDRESS as `0x${string}`,
     abi: POUW_POOL_ABI as any,
-    functionName: 'totalMinted',
+    functionName: 'totalDistributed',
     chainId: chain?.id,
     query: {
       refetchInterval: 5000,
@@ -34,10 +34,32 @@ const SidebarGeneralStats = () => {
     },
   });
 
-  const { data: totalNFTRewards, error: totalNFTRewardsError } = useReadContract({
+  const { data: totalTreasury, error: totalTreasuryError } = useReadContract({
     address: POUW_POOL_ADDRESS as `0x${string}`,
     abi: POUW_POOL_ABI as any,
-    functionName: 'totalNFTRewards',
+    functionName: 'totalTreasury',
+    chainId: chain?.id,
+    query: {
+      refetchInterval: 5000,
+      staleTime: 0,
+    },
+  });
+
+  const { data: totalBurnedAmount, error: totalBurnedError } = useReadContract({
+    address: POUW_POOL_ADDRESS as `0x${string}`,
+    abi: POUW_POOL_ABI as any,
+    functionName: 'totalBurned',
+    chainId: chain?.id,
+    query: {
+      refetchInterval: 5000,
+      staleTime: 0,
+    },
+  });
+
+  const { data: totalGenesisRevenue, error: totalGenesisRevenueError } = useReadContract({
+    address: POUW_POOL_ADDRESS as `0x${string}`,
+    abi: POUW_POOL_ABI as any,
+    functionName: 'totalGenesisRevenue',
     chainId: chain?.id,
     query: {
       refetchInterval: 5000,
@@ -47,24 +69,32 @@ const SidebarGeneralStats = () => {
 
   // Calculate stats with memoization
   const stats = useMemo(() => ({
-    totalAuditsCompleted: totalMinted ? Math.floor(Number(formatEther(totalMinted as bigint)) / 67) : 0,
-    totalMintedTokens: totalMinted ? Number(formatEther(totalMinted as bigint)) : 0,
-    totalDistributed: totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0,
-  }), [totalJobs, totalMinted, totalNFTRewards]);
+    totalAuditsCompleted: totalJobs ? Number(totalJobs) : 0,
+    totalMintedTokens: totalJobs ? Number(totalJobs) * 67 : 0, // 67 SSTL per job
+    totalDistributed: totalDistributed ? Number(formatEther(totalDistributed as bigint)) : 0,
+    totalTreasury: totalTreasury ? Number(formatEther(totalTreasury as bigint)) : 0,
+    totalBurned: totalBurnedAmount ? Number(formatEther(totalBurnedAmount as bigint)) : 0,
+    totalGenesisRevenue: totalGenesisRevenue ? Number(formatEther(totalGenesisRevenue as bigint)) : 0,
+  }), [totalJobs, totalDistributed, totalTreasury, totalBurnedAmount, totalGenesisRevenue]);
 
   console.log('General Stats Debug:', {
     totalJobs: totalJobs ? Number(totalJobs) : 0,
-    totalMinted: totalMinted ? Number(formatEther(totalMinted as bigint)) : 0,
-    totalNFTRewards: totalNFTRewards ? Number(formatEther(totalNFTRewards as bigint)) : 0,
+    totalMinted: stats.totalMintedTokens,
+    totalDistributed: stats.totalDistributed,
+    totalTreasury: stats.totalTreasury,
+    totalBurned: stats.totalBurned,
+    totalGenesisRevenue: stats.totalGenesisRevenue,
     calculatedAudits: stats.totalAuditsCompleted,
     errors: {
       totalJobsError: totalJobsError?.message,
-      totalMintedError: totalMintedError?.message,
-      totalNFTRewardsError: totalNFTRewardsError?.message
+      totalDistributedError: totalDistributedError?.message,
+      totalTreasuryError: totalTreasuryError?.message,
+      totalBurnedError: totalBurnedError?.message,
+      totalGenesisRevenueError: totalGenesisRevenueError?.message
     },
     chainId: chain?.id
   });
-  const totalBurned = stats.totalMintedTokens * 0.1; // 10% burned
+
   return (
     <div className="mb-6 sm:mb-8">
       <h2 className="text-xl sm:text-2xl font-orbitron font-bold mb-3 sm:mb-4 text-foreground">
@@ -100,7 +130,7 @@ const SidebarGeneralStats = () => {
           Global PoUW Statistics
         </h3>
         <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">These statistics are on Testnet</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <StatCard
             title="Total Audits Completed"
             value={stats.totalAuditsCompleted.toString()}
@@ -116,17 +146,31 @@ const SidebarGeneralStats = () => {
             delay={0}
           />
           <StatCard
-            title="Total Distributed (90%)"
+            title="Total Distributed (60%)"
             value={`${stats.totalDistributed.toFixed(2)} SSTL`}
             icon={Zap}
             description="Rewards distributed to NFT holders"
             delay={0}
           />
           <StatCard
+            title="Total Treasury (20%)"
+            value={`${stats.totalTreasury.toFixed(2)} SSTL`}
+            icon={Vault}
+            description="Reserved for ecosystem growth"
+            delay={0}
+          />
+          <StatCard
             title="Total Burned (10%)"
-            value={`${totalBurned.toFixed(2)} SSTL`}
+            value={`${stats.totalBurned.toFixed(2)} SSTL`}
             icon={Flame}
             description="Tokens permanently removed"
+            delay={0}
+          />
+          <StatCard
+            title="Total Genesis Revenue"
+            value={`${stats.totalGenesisRevenue.toFixed(4)} BNB`}
+            icon={DollarSign}
+            description="Revenue shared with Genesis holders"
             delay={0}
           />
         </div>

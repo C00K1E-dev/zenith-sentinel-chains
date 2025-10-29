@@ -149,14 +149,15 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         if (isMounted) {
           setGenesisIds(ids);
           setGenesisBalance(BigInt(ids.length));
-          console.log(`✅ Genesis NFTs loaded: ${ids.length} tokens`);
+          console.log(`✅ Genesis NFTs loaded: ${ids.length} tokens`, ids.map(id => id.toString()));
         }
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         console.error('❌ Genesis fetch error:', error);
         if (isMounted) {
           setGenesisIds([]);
           setGenesisBalance(BigInt(0));
-          setErrorMessages(prev => [...prev, `Genesis: ${error instanceof Error ? error.message : 'Unknown error'}`]);
+          setErrorMessages(prev => [...prev, `Genesis: ${errorMsg}`]);
         }
       } finally {
         if (isMounted) {
@@ -195,11 +196,12 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
           console.log(`✅ AI Audit NFTs loaded: ${ids.length} tokens`);
         }
       } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         console.error('❌ AI Audit fetch error:', error);
         if (isMounted) {
           setAiAuditIds([]);
           setAiAuditBalance(BigInt(0));
-          setErrorMessages(prev => [...prev, `AI Audit: ${error instanceof Error ? error.message : 'Unknown error'}`]);
+          setErrorMessages(prev => [...prev, `AI Audit: ${errorMsg}`]);
         }
       } finally {
         if (isMounted) {
@@ -241,8 +243,6 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
         My NFTs {totalNFTs > 0 && `(${totalNFTs})`}
       </h2>
-
-      
       
       <div className="nft-collections-container">
         {!isConnected && (
@@ -379,17 +379,6 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: {
     let isMounted = true;
 
     const fetchMetadata = async () => {
-      // Special case for Genesis NFTs - use fixed media
-      if (contractAddress.toLowerCase() === GENESIS_CONTRACT_ADDRESS.toLowerCase()) {
-        if (isMounted) {
-          setTokenName(`Genesis NFT #${tokenId.toString()}`);
-          setImgSrc('https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeifwqxjdalevdko2nu5ifpfmnktwnwda6hhw2ldlicpnhzewfr6vnq/genesisNFT.png');
-          setIsVideo(false);
-          setLoading(false);
-        }
-        return;
-      }
-
       if (!tokenURI) {
         setLoading(false);
         return;
@@ -425,13 +414,14 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: {
           setIsVideo(isVideoFile);
           console.log(`✅ Media set for token ${tokenId}:`, { mediaUrl, isVideoFile });
         } else {
-          setImgSrc('/assets/img/hub/smartsentinels-hero.png');
+          // Fallback to a generic blockchain/NFT icon (data URI or external)
+          setImgSrc('https://via.placeholder.com/400x400/1a1a1a/ffffff?text=SmartSentinels+NFT');
         }
       } catch (error) {
         console.error(`❌ Metadata fetch failed for token ${tokenId}:`, error);
         if (isMounted) {
           setTokenName(`${collectionName || 'NFT'} #${tokenId.toString()}`);
-          setImgSrc('/assets/img/hub/smartsentinels-hero.png');
+          setImgSrc('https://via.placeholder.com/400x400/1a1a1a/ffffff?text=SmartSentinels+NFT');
         }
       } finally {
         if (isMounted) setLoading(false);
@@ -458,12 +448,12 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: {
         console.log(`🔄 Trying gateway ${newAttempt}:`, newUrl);
         setImgSrc(newUrl);
       } else {
-        setImgSrc('/assets/img/hub/smartsentinels-hero.png');
+        setImgSrc('https://via.placeholder.com/400x400/1a1a1a/ffffff?text=SmartSentinels+NFT');
         setIsVideo(false);
       }
     } else {
       console.log('❌ All gateways exhausted, using fallback');
-      setImgSrc('/assets/img/hub/smartsentinels-hero.png');
+      setImgSrc('https://via.placeholder.com/400x400/1a1a1a/ffffff?text=SmartSentinels+NFT');
       setIsVideo(false);
     }
   };
@@ -492,7 +482,7 @@ const NFTCard = ({ tokenId, contractAddress, abi, chainId, onSendNFT }: {
           />
         ) : (
           <img
-            src={imgSrc || '/assets/img/hub/smartsentinels-hero.png'}
+            src={imgSrc || 'https://via.placeholder.com/400x400/1a1a1a/ffffff?text=SmartSentinels+NFT'}
             className="nft-image"
             alt={name}
             onError={handleMediaError}

@@ -261,11 +261,80 @@ const useAuditPrompt = () => {
             "\n• SWC-102: Outdated Compiler Version - Check for compiler versions older than 0.8.0" +
             "\n• SWC-101: Integer Overflow and Underflow - Check for arithmetic operations without SafeMath (pre-0.8.0)" +
             "\n• SWC-100: Function Default Visibility - Check for functions without explicit visibility modifiers" +
+            "\n\n--- CRITICAL: FALSE POSITIVE PREVENTION & CONTEXT-AWARE SCORING ---" +
+            "\n⚠️ IMPORTANT: Evaluate patterns in context. Consider both security AND usability." +
+            "\n\n1. SWC-104 (Unchecked Call Return Value):" +
+            "\n   ✅ SAFE: (bool success, ) = addr.call{value: x}(\"\"); require(success, \"message\");" +
+            "\n   ⚠️ RISKY: (bool success, ) = addr.call{value: x}(\"\"); if (success) { ... } // Logic continues on failure" +
+            "\n   ❌ CRITICAL: addr.call{value: x}(\"\"); // No validation at all" +
+            "\n   → Flag based on whether failure is properly handled with require/revert" +
+            "\n\n2. SWC-108 (State Variable Default Visibility):" +
+            "\n   ✅ LOW RISK: Public variables for prices, limits, addresses (necessary for DApp integration)" +
+            "\n   ⚠️ MEDIUM: Public variables for user balances, allocations (can reveal business data)" +
+            "\n   ❌ HIGH: Public variables for admin keys, secrets, sensitive internal state" +
+            "\n   → Severity depends on what data is exposed and why" +
+            "\n\n3. SWC-105 (Unprotected Ether Withdrawal):" +
+            "\n   ✅ LOW RISK: withdraw() with onlyOwner + nonReentrant + Ownable2Step" +
+            "\n   ⚠️ MEDIUM: withdraw() with only basic Ownable (1-step ownership transfer risk)" +
+            "\n   ⚠️ MEDIUM: withdraw() to arbitrary address without checks" +
+            "\n   ❌ CRITICAL: withdraw() with NO access control or weak access control" +
+            "\n   → Report but adjust severity: Well-protected = LOW, Unprotected = CRITICAL" +
+            "\n   → Note: Mention centralization risk even if access-controlled (for transparency)" +
+            "\n\n4. SWC-114 (Transaction Order Dependence):" +
+            "\n   ✅ LOW/INFO: Sequential token ID minting in NFT collections (expected behavior)" +
+            "\n   ⚠️ MEDIUM: Price-based logic where order affects fairness (presales, auctions)" +
+            "\n   ❌ HIGH: DEX trading, oracle updates, liquidations (MEV exploitation risk)" +
+            "\n   → Distinguish cosmetic ordering from exploitable MEV opportunities" +
+            "\n\n5. SWC-121 (Missing Protection against Signature Replay):" +
+            "\n   ✅ N/A: Contracts with NO ecrecover/signature verification (skip entirely)" +
+            "\n   ⚠️ MEDIUM: Signature verification without nonces or deadlines" +
+            "\n   ❌ HIGH: Cross-chain signature reuse possible" +
+            "\n   → Only report if signatures are actually used in the contract" +
+            "\n\n6. Defensive Programming vs Gas Waste:" +
+            "\n   ✅ GOOD: Extra checks for critical paths (payment validation, access control)" +
+            "\n   ⚠️ Consider marking as GAS optimization if checks are truly redundant" +
+            "\n   → Balance security and efficiency - explain the tradeoff" +
+            "\n\n7. Gas Optimizations:" +
+            "\n   ✅ Only suggest if pattern is NOT already implemented" +
+            "\n   ✅ Check for: array.length caching, unchecked loops, storage vs memory" +
+            "\n   → Read carefully before suggesting - avoid duplicate recommendations" +
+            "\n\n8. OpenZeppelin & Audited Libraries:" +
+            "\n   ✅ ERC standards, Ownable, ReentrancyGuard = Trusted implementations" +
+            "\n   ⚠️ Still check for MISUSE of these libraries (wrong modifiers, incorrect inheritance)" +
+            "\n   → Trust the library, but verify proper usage" +
+            "\n\n9. Modern Solidity Best Practices (0.8.0+):" +
+            "\n   ✅ Built-in overflow protection (no SafeMath needed for 0.8+)" +
+            "\n   ✅ Ownable2Step > basic Ownable" +
+            "\n   ✅ unchecked { ++i; } safe in loops when overflow impossible" +
+            "\n   → Recognize modern patterns, but ensure they're used correctly" +
+            "\n\n--- SCORING FORMULA ---" +
+            "\n🎯 START AT 100 POINTS. Subtract based on severity and exploitability:" +
+            "\n• Critical (Immediate fund loss, contract takeover): -20 points" +
+            "\n• High (Significant exploitable flaw): -10 points" +
+            "\n• Medium (Issue with workarounds/conditions): -4 points" +
+            "\n• Low (Best practice deviation, minor risk): -2 points" +
+            "\n• Informational (Design notes, suggestions): -0.5 points" +
+            "\n• Gas (Optimization opportunities): -0.2 points" +
+            "\n\n⚖️ CONTEXT-AWARE SEVERITY ADJUSTMENT:" +
+            "\n• SWC-105 with Ownable2Step + nonReentrant = LOW (mention centralization)" +
+            "\n• SWC-105 with no protection = CRITICAL" +
+            "\n• SWC-108 for config data = INFORMATIONAL" +
+            "\n• SWC-108 for sensitive data = MEDIUM/HIGH" +
+            "\n• SWC-114 for NFT minting = LOW/INFO" +
+            "\n• SWC-114 for DeFi = MEDIUM/HIGH" +
+            "\n\n🎯 BALANCED APPROACH:" +
+            "\n• DO flag all potential issues (transparency for users)" +
+            "\n• DO adjust severity based on context (avoid panic)" +
+            "\n• DO explain WHY something is/isn't high risk" +
+            "\n• DON'T give blanket passes to patterns" +
+            "\n• DON'T flag non-existent issues (signature replay without signatures)" +
             "\n\n--- ANALYSIS METHODOLOGY ---" +
-            "\n1. CALCULATE SCORE: Start at 100. Subtract points: Critical=-20, High=-10, Medium=-4, Low=-2, Informational=-0.5, Gas=-0.2. The final score MUST be calculated." +
-            "\n2. VULNERABILITIES: For each finding, provide the SWC ID, title, description, and the line numbers." +
-            "\n3. CROSS-REFERENCE: Compare findings against ETA registry requirements and SWC classifications." +
-            "\n4. COMPREHENSIVE: Check for all SWC vulnerabilities and ETA security level requirements."
+            "\n1. READ the entire contract to understand purpose and architecture" +
+            "\n2. IDENTIFY all SWC patterns present" +
+            "\n3. EVALUATE severity in context (DeFi vs NFT vs DAO vs Token)" +
+            "\n4. CHECK for compensating controls (modifiers, validation, audited libs)" +
+            "\n5. SCORE accurately with context-adjusted severity" +
+            "\n6. EXPLAIN findings clearly with mitigation suggestions"
         );
     }, []);
 };

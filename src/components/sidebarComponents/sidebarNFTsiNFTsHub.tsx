@@ -12,7 +12,7 @@ import aiAuditNFT from '@/assets/AIAuditNFT.svg';
 import aidaNFT from '@/assets/aida.svg';
 
 const SidebarNFTsiNFTsHub = () => {
-  const [mintSuccessData, setMintSuccessData] = useState<{tokenId?: bigint, txHash?: string, imageUrl?: string} | null>(null);
+  const [mintSuccessData, setMintSuccessData] = useState<{tokenId?: bigint, txHash?: string, imageUrl?: string, collectionName?: string} | null>(null);
 
   // Read total supply for Genesis collection
   const { data: genesisTotalSupply } = useReadContract({
@@ -212,7 +212,8 @@ const SidebarNFTsiNFTsHub = () => {
                       setMintSuccessData({
                         tokenId: args.tokenId,
                         txHash: args.txHash,
-                        imageUrl: args.imageUrl || '/placeholder-genesis.png'
+                        imageUrl: args.imageUrl || '/placeholder-genesis.png',
+                        collectionName: 'Genesis NFT'
                       });
                     }} />
                   </div>
@@ -320,7 +321,8 @@ const SidebarNFTsiNFTsHub = () => {
                       setMintSuccessData({
                         tokenId: args.tokenId,
                         txHash: args.txHash,
-                        imageUrl: args.imageUrl || '/placeholder-ai-audit.png'
+                        imageUrl: args.imageUrl || '/placeholder-ai-audit.png',
+                        collectionName: 'AI Audit NFT'
                       });
                     }} />
                   </div>
@@ -440,7 +442,7 @@ const SidebarNFTsiNFTsHub = () => {
         tokenId={mintSuccessData?.tokenId}
         txHash={mintSuccessData?.txHash}
         imageUrl={mintSuccessData?.imageUrl}
-        collectionName="Genesis NFT"
+        collectionName={mintSuccessData?.collectionName || "NFT"}
       />
     </div>
   );

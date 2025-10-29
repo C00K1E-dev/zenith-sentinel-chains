@@ -1,12 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useAccount, useReadContract, useWalletClient, usePublicClient } from "wagmi";
-import { formatEther, encodeFunctionData } from "viem";
-import { sendTransaction } from "viem/actions";
+import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
+import { getContract, prepareContractCall, createThirdwebClient, readContract } from "thirdweb";
+import { bscTestnet } from "thirdweb/chains";
+import { formatEther } from "viem";
 import { Loader, Gift, TrendingUp, CheckCircle, AlertCircle, ExternalLink, DollarSign } from "lucide-react";
 
 // Import contract ABIs and addresses
 import { POUW_POOL_ADDRESS, POUW_POOL_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_ABI, GENESIS_CONTRACT_ADDRESS, GENESIS_ABI } from "../../contracts/index";
+
+const thirdwebClient = createThirdwebClient({
+  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
+});
 
 // Contract addresses
 const POUW_ADDRESS = POUW_POOL_ADDRESS;
@@ -18,7 +23,9 @@ interface RewardsSectionProps {
 }
 
 export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionProps) {
-  const { address, isConnected, chain } = useAccount();
+  const account = useActiveAccount();
+  const address = account?.address;
+  const isConnected = !!account;
   
   // State
   const [isClaiming, setIsClaiming] = useState(false);
@@ -33,12 +40,28 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   const [claimTxHash, setClaimTxHash] = useState<string | undefined>();
   const [isCalculatingRewards, setIsCalculatingRewards] = useState(false);
 
-  const publicClient = usePublicClient();
-  const { data: walletClient } = useWalletClient();
+  // Create contract instances
+  const pouwContract = getContract({
+    client: thirdwebClient,
+    address: POUW_POOL_ADDRESS,
+    chain: bscTestnet,
+  });
+
+  const genesisContract = getContract({
+    client: thirdwebClient,
+    address: GENESIS_CONTRACT_ADDRESS,
+    chain: bscTestnet,
+  });
+
+  const aiAuditContract = getContract({
+    client: thirdwebClient,
+    address: AI_AUDIT_CONTRACT_ADDRESS,
+    chain: bscTestnet,
+  });
 
   // Calculate user earnings and pending rewards/revenue
   useEffect(() => {
-    if (!address || !publicClient) {
+    if (!address) {
       setUserPendingRewards(0);
       setUserPendingRevenue(0);
       setIsCalculatingRewards(false);
@@ -52,12 +75,11 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
       try {
         // Get total pending PoUW rewards across all collections
-        const pendingRewards = await publicClient.readContract({
-          address: POUW_ADDRESS as `0x${string}`,
-          abi: POUW_POOL_ABI,
-          functionName: 'getTotalPendingRewards',
-          args: [address],
-        } as any) as bigint;
+        const pendingRewards = await readContract({
+          contract: pouwContract,
+          method: 'function getTotalPendingRewards(address user) view returns (uint256)',
+          params: [address as `0x${string}`],
+        }) as bigint;
         totalPendingRewards = pendingRewards;
       } catch (error) {
         console.error('Error getting pending PoUW rewards:', error);
@@ -65,12 +87,11 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
       try {
         // Get total pending Genesis revenue
-        const pendingRevenue = await publicClient.readContract({
-          address: POUW_ADDRESS as `0x${string}`,
-          abi: POUW_POOL_ABI,
-          functionName: 'getTotalPendingGenesisRevenue',
-          args: [address],
-        } as any) as bigint;
+        const pendingRevenue = await readContract({
+          contract: pouwContract,
+          method: 'function getTotalPendingGenesisRevenue(address user) view returns (uint256)',
+          params: [address as `0x${string}`],
+        }) as bigint;
         totalPendingRevenue = pendingRevenue;
       } catch (error) {
         console.error('Error getting pending Genesis revenue:', error);
@@ -83,101 +104,73 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     };
 
     calculateUserStats();
-  }, [address, publicClient, internalRefreshTrigger, refreshTrigger]);
+  }, [address, internalRefreshTrigger, refreshTrigger]);
 
   // Read global stats from PoUW contract with real-time updates
   const { data: totalJobs } = useReadContract({
-    address: POUW_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalJobs',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalJobs() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 2000, // Refetch every 2 seconds
-      staleTime: 0,
-      gcTime: 0, // Disable garbage collection caching
     },
   });
 
   const { data: totalDistributed } = useReadContract({
-    address: POUW_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalDistributed',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalDistributed() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 2000,
-      staleTime: 0,
-      gcTime: 0,
     },
   });
 
   const { data: totalTreasury } = useReadContract({
-    address: POUW_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalTreasury',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalTreasury() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 2000,
-      staleTime: 0,
-      gcTime: 0,
     },
   });
 
   const { data: totalGenesisRevenue } = useReadContract({
-    address: POUW_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalGenesisRevenue',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalGenesisRevenue() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 2000,
-      staleTime: 0,
-      gcTime: 0,
     },
   });
 
   const { data: totalBurnedAmount } = useReadContract({
-    address: POUW_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalBurned',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalBurned() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 2000,
-      staleTime: 0,
-      gcTime: 0,
     },
   });
 
   // Read user's NFT holdings
   const { data: genesisNFTs } = useReadContract({
-    address: GENESIS_ADDRESS as `0x${string}`,
-    abi: GENESIS_ABI as any,
-    functionName: 'tokensOfOwner',
-    args: address ? [address] : undefined,
-    chainId: chain?.id,
-    query: { enabled: !!address && isConnected }
+    contract: genesisContract,
+    method: 'function tokensOfOwner(address owner) view returns (uint256[])',
+    params: address ? [address as `0x${string}`] : undefined,
+    queryOptions: { enabled: !!address && isConnected }
   });
 
   const { data: aiAuditNFTs } = useReadContract({
-    address: AI_AUDIT_ADDRESS as `0x${string}`,
-    abi: AI_AUDIT_ABI as any,
-    functionName: 'tokensOfOwner',
-    args: address ? [address] : undefined,
-    chainId: chain?.id,
-    query: { enabled: !!address && isConnected }
+    contract: aiAuditContract,
+    method: 'function tokensOfOwner(address owner) view returns (uint256[])',
+    params: address ? [address as `0x${string}`] : undefined,
+    queryOptions: { enabled: !!address && isConnected }
   });
 
   // Read total supply for debugging
   const { data: aiAuditTotalSupply } = useReadContract({
-    address: AI_AUDIT_ADDRESS as `0x${string}`,
-    abi: AI_AUDIT_ABI as any,
-    functionName: 'totalSupply',
-    chainId: chain?.id,
+    contract: aiAuditContract,
+    method: 'function totalSupply() view returns (uint256)',
   });
 
   const { data: genesisTotalSupply } = useReadContract({
-    address: GENESIS_ADDRESS as `0x${string}`,
-    abi: GENESIS_ABI as any,
-    functionName: 'totalSupply',
-    chainId: chain?.id,
+    contract: genesisContract,
+    method: 'function totalSupply() view returns (uint256)',
   });
 
   // Calculate user's NFT holdings
@@ -203,15 +196,12 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     }
   }, [totalDistributed, totalGenesisRevenue, address]);
 
-  // Write contract for claiming rewards
-  // Removed useWriteContract since using sendTransaction directly
-
-  // Handle claim transaction confirmation
-  // Removed since handling manually in handleClaimRewards
+  // Thirdweb transaction hook
+  const { mutateAsync: sendTx } = useSendTransaction();
 
   // Handle claim PoUW SSTL rewards
   const handleClaimRewards = async () => {
-    if (!address || !isConnected || !walletClient || !publicClient) {
+    if (!address || !isConnected) {
       alert('Please connect your wallet first');
       return;
     }
@@ -227,28 +217,18 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
       
       console.log('Claiming all PoUW rewards');
       
-      const txData = encodeFunctionData({
-        abi: POUW_POOL_ABI,
-        functionName: 'claimAllRewards',
-        args: [],
+      const transaction = prepareContractCall({
+        contract: pouwContract,
+        method: 'function claimAllRewards()',
+        params: [],
       });
 
-      const hash = await walletClient.sendTransaction({
-        to: POUW_ADDRESS as `0x${string}`,
-        data: txData,
-        account: address as `0x${string}`,
-        chain: undefined,
-        kzg: undefined,
-      });
+      const result = await sendTx(transaction);
       
-      console.log('PoUW rewards claim tx:', hash);
+      console.log('PoUW rewards claim tx:', result.transactionHash);
       
-      // Wait for transaction confirmation
-      await publicClient.waitForTransactionReceipt({ hash });
-      console.log('Transaction confirmed');
-
       // Final State Update
-      setClaimTxHash(hash);
+      setClaimTxHash(result.transactionHash);
       setClaimSuccess(true);
       setIsClaiming(false);
       setInternalRefreshTrigger((prev: number) => prev + 1);
@@ -265,7 +245,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
   // Handle claim Genesis BNB revenue
   const handleClaimRevenue = async () => {
-    if (!address || !isConnected || !walletClient || !publicClient) {
+    if (!address || !isConnected) {
       alert('Please connect your wallet first');
       return;
     }
@@ -286,28 +266,18 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
       
       console.log('Claiming Genesis revenue for tokens:', userGenesisNFTs.map(t => t.toString()));
       
-      const txData = encodeFunctionData({
-        abi: POUW_POOL_ABI,
-        functionName: 'batchClaimGenesisRevenue',
-        args: [userGenesisNFTs],
+      const transaction = prepareContractCall({
+        contract: pouwContract,
+        method: 'function batchClaimGenesisRevenue(uint256[] calldata genesisTokenIds)',
+        params: [userGenesisNFTs],
       });
 
-      const hash = await walletClient.sendTransaction({
-        to: POUW_ADDRESS as `0x${string}`,
-        data: txData,
-        account: address as `0x${string}`,
-        chain: undefined,
-        kzg: undefined,
-      });
+      const result = await sendTx(transaction);
       
-      console.log('Genesis revenue claim tx:', hash);
+      console.log('Genesis revenue claim tx:', result.transactionHash);
       
-      // Wait for transaction confirmation
-      await publicClient.waitForTransactionReceipt({ hash });
-      console.log('Transaction confirmed');
-
       // Final State Update
-      setClaimTxHash(hash);
+      setClaimTxHash(result.transactionHash);
       setClaimSuccess(true);
       setIsClaiming(false);
       setInternalRefreshTrigger((prev: number) => prev + 1);
@@ -350,14 +320,12 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     genesisTotalSupply: genesisTotalSupply ? Number(genesisTotalSupply) : 0,
     totalDistributed: totalDistributed ? Number(formatEther(totalDistributed as bigint)) : 0,
     totalGenesisRevenue: totalGenesisRevenue ? Number(formatEther(totalGenesisRevenue as bigint)) : 0,
-    chainId: chain?.id,
     totalJobs: totalJobs ? Number(totalJobs) : 0
   });
 
-  // Get explorer URL
+  // Get explorer URL - BSC Testnet
   const getExplorerUrl = (txHash: string) => {
-    const baseUrl = chain?.id === 56 ? 'https://bscscan.com' : 'https://testnet.bscscan.com';
-    return `${baseUrl}/tx/${txHash}`;
+    return `https://testnet.bscscan.com/tx/${txHash}`;
   };
 
   return (

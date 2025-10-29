@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { Image as ImageIcon, Bot, HardDrive, Activity, Coins, Zap, Flame, Vault, DollarSign } from 'lucide-react';
-import { useReadContract, useAccount } from 'wagmi';
+import { useReadContract } from 'thirdweb/react';
+import { getContract, createThirdwebClient } from 'thirdweb';
+import { bscTestnet } from 'thirdweb/chains';
 import { formatEther } from 'viem';
 import { useMemo, memo } from 'react';
 import StatCard from '@/components/StatCard';
@@ -8,62 +10,56 @@ import StatCard from '@/components/StatCard';
 // Import contract ABIs and addresses
 import { POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../../contracts/index";
 
+const thirdwebClient = createThirdwebClient({
+  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
+});
+
 const SidebarGeneralStats = () => {
-  const { chain } = useAccount();
+  // Create contract instance
+  const pouwContract = getContract({
+    client: thirdwebClient,
+    address: POUW_POOL_ADDRESS,
+    chain: bscTestnet,
+  });
 
   // Read global stats from PoUW contract with optimized polling
   const { data: totalJobs, error: totalJobsError } = useReadContract({
-    address: POUW_POOL_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalJobs',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalJobs() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 5000, // Refetch every 5 seconds
-      staleTime: 0,
     },
   });
 
   const { data: totalDistributed, error: totalDistributedError } = useReadContract({
-    address: POUW_POOL_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalDistributed',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalDistributed() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 5000,
-      staleTime: 0,
     },
   });
 
   const { data: totalTreasury, error: totalTreasuryError } = useReadContract({
-    address: POUW_POOL_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalTreasury',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalTreasury() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 5000,
-      staleTime: 0,
     },
   });
 
   const { data: totalBurnedAmount, error: totalBurnedError } = useReadContract({
-    address: POUW_POOL_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalBurned',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalBurned() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 5000,
-      staleTime: 0,
     },
   });
 
   const { data: totalGenesisRevenue, error: totalGenesisRevenueError } = useReadContract({
-    address: POUW_POOL_ADDRESS as `0x${string}`,
-    abi: POUW_POOL_ABI as any,
-    functionName: 'totalGenesisRevenue',
-    chainId: chain?.id,
-    query: {
+    contract: pouwContract,
+    method: 'function totalGenesisRevenue() view returns (uint256)',
+    queryOptions: {
       refetchInterval: 5000,
-      staleTime: 0,
     },
   });
 
@@ -91,8 +87,7 @@ const SidebarGeneralStats = () => {
       totalTreasuryError: totalTreasuryError?.message,
       totalBurnedError: totalBurnedError?.message,
       totalGenesisRevenueError: totalGenesisRevenueError?.message
-    },
-    chainId: chain?.id
+    }
   });
 
   return (

@@ -209,7 +209,14 @@ const SidebarNFTsiNFTsHub = () => {
                 <div className="flex gap-2 items-center">
                   <div className="flex-1">
                     <GenesisMint onMinted={(args) => {
+                      console.log('Genesis NFT mint callback received:', args);
                       setMintSuccessData({
+                        tokenId: args.tokenId,
+                        txHash: args.txHash,
+                        imageUrl: args.imageUrl || '/placeholder-genesis.png',
+                        collectionName: 'Genesis NFT'
+                      });
+                      console.log('MintSuccessData set:', {
                         tokenId: args.tokenId,
                         txHash: args.txHash,
                         imageUrl: args.imageUrl || '/placeholder-genesis.png',

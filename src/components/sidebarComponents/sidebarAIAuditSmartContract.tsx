@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { Upload, Play, FileText, Wrench, Brain, DollarSign, CheckCircle, Award, Loader2, Wallet, AlertTriangle, X, Search } from 'lucide-react';
+import { Upload, Play, FileText, Wrench, Brain, DollarSign, CheckCircle, Award, Loader2, Wallet, AlertTriangle, X, Search, Cloud, ExternalLink } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import styles from './sidebarAIAuditSmartContract.module.css';
@@ -11,6 +11,7 @@ import { getContract, prepareContractCall, readContract, createThirdwebClient } 
 import { bscTestnet } from 'thirdweb/chains';
 import { parseUnits, formatUnits, keccak256, toHex } from 'viem';
 import { SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI, AUDIT_GATEWAY_ADDRESS, AUDIT_GATEWAY_ABI, POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../../contracts/index";
+import { uploadAuditReportToIPFS } from "../../utils/ipfs";
 
 const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
@@ -582,6 +583,10 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     const [approvalMessage, setApprovalMessage] = useState<string | null>(null);
     const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
     const [auditCompletedTxHash, setAuditCompletedTxHash] = useState<`0x${string}` | null>(null);
+    
+    // IPFS Upload State
+    const [ipfsUploading, setIpfsUploading] = useState(false);
+    const [ipfsUploadResult, setIpfsUploadResult] = useState<{hash?: string, url?: string, error?: string} | null>(null);
 
     const systemPrompt = useAuditPrompt();
     
@@ -627,17 +632,17 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         queryOptions: { enabled: !!address && isConnected }
     } as any);
 
-    // Get current service price in BNB
+    // Get current service price in BNB (V3 uses paymentAmountBNB state variable)
     const { data: servicePriceBNB } = useReadContract({
         contract: auditGatewayContract,
-        method: 'function servicePriceBNB() view returns (uint256)',
+        method: 'function paymentAmountBNB() view returns (uint256)',
         queryOptions: { enabled: !!isConnected }
     } as any);
 
-    // Get current service price in SSTL
+    // Get current service price in SSTL (V3 uses paymentAmountToken state variable)
     const { data: servicePriceSSTL } = useReadContract({
         contract: auditGatewayContract,
-        method: 'function servicePriceSSTL() view returns (uint256)',
+        method: 'function paymentAmountToken() view returns (uint256)',
         queryOptions: { enabled: !!isConnected }
     } as any);
 
@@ -654,11 +659,27 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         queryOptions: { enabled: !!isConnected }
     } as any);
 
+    // Debug logging for payment amounts
+    console.log('💳 Payment Config Loaded:', {
+        servicePriceBNB: servicePriceBNB?.toString(),
+        servicePriceSSTL: servicePriceSSTL?.toString(),
+        acceptBNB,
+        acceptToken,
+        isConnected
+    });
+
     // Determine which payment method to use (prefer BNB if both enabled)
     const useNativePayment = acceptBNB && !acceptToken ? true : acceptBNB ? true : false;
     
-    // Transaction hooks
-    const { mutate: sendTransaction, data: txResult, isPending: isSendPending, error: sendError } = useSendTransaction();
+    // Transaction hooks - using mutateAsync for proper value handling
+    const { mutateAsync: sendTransactionAsync, data: txResult, isPending: isSendPending, error: sendError } = useSendTransaction();
+    
+    // Wrapper to maintain compatibility with existing code - REMOVED, use mutateAsync directly
+    // const sendTransaction = (tx: any) => {
+    //     sendTransactionAsync(tx).catch((error) => {
+    //         console.error('Transaction error:', error);
+    //     });
+    // };
     
     // Extract transaction hash from result
     const txHash = txResult?.transactionHash as `0x${string}` | undefined;
@@ -806,7 +827,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 params: [AUDIT_GATEWAY_ADDRESS, approvalAmount],
             } as any);
 
-            sendTransaction(approveTx);
+            await sendTransactionAsync(approveTx);
         } catch (error) {
             console.error('❌ Approval error:', error);
             setApprovalMessage('Approval failed: ' + (error as Error).message);
@@ -825,7 +846,14 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             return;
         }
 
+        // Prevent double execution
+        if (isProcessing || currentTransactionType === 'payAndRunAudit') {
+            console.warn('⚠️ Transaction already in progress, ignoring duplicate call');
+            return;
+        }
+
         try {
+            setIsProcessing(true);
             setStatusMessage('Processing payment for AI Audit...');
             setCurrentTransactionType('payAndRunAudit');
 
@@ -837,17 +865,24 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 console.log('💰 Paying for audit with BNB:', {
                     gateway: AUDIT_GATEWAY_ADDRESS,
                     amount: `${priceInBNB} BNB`,
-                    amountWei: currentPrice.toString()
+                    amountWei: currentPrice.toString(),
+                    currentPriceType: typeof currentPrice,
+                    currentPriceValue: currentPrice
                 });
 
                 const payTx = prepareContractCall({
                     contract: auditGatewayContract,
-                    method: 'function payAndRunAuditBNB(string)',
+                    method: 'payAndRunAuditBNB',
                     params: [`audit_${Date.now()}`],
                     value: currentPrice,
                 } as any);
 
-                sendTransaction(payTx);
+                console.log('📝 Prepared transaction:', payTx);
+                console.log('📝 Value type:', typeof payTx.value, payTx.value);
+                
+                // Send transaction with await to properly handle async
+                const txResult = await sendTransactionAsync(payTx);
+                console.log('✅ Transaction result:', txResult);
             } else {
                 // Pay with SSTL tokens - check allowance first
                 const decimals = Number(tokenDecimals);
@@ -875,7 +910,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                     params: [],
                 } as any);
 
-                sendTransaction(payTx);
+                await sendTransactionAsync(payTx);
             }
         } catch (error) {
             console.error('❌ Payment error:', error);
@@ -892,6 +927,41 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 newWindow.document.write(htmlContent);
                 newWindow.document.close();
             }
+        }
+    };
+
+    // IPFS Upload Handler
+    const handleUploadToIPFS = async () => {
+        if (!auditData) return;
+
+        try {
+            setIpfsUploading(true);
+            setIpfsUploadResult(null);
+
+            const htmlContent = generateAuditHTML(auditData);
+            const contractName = auditData.contractName || 'Contract';
+
+            console.log('🔄 Starting IPFS upload for audit report...');
+            
+            const result = await uploadAuditReportToIPFS(htmlContent, contractName, auditData);
+            
+            setIpfsUploadResult(result);
+
+            if (result.success) {
+                // Keep the transaction hash message in the top status, IPFS success shows in bottom section
+                setStatusMessage("Audit completed successfully! Transaction: ");
+            } else {
+                setStatusMessage(`❌ IPFS upload failed: ${result.error}`);
+            }
+
+        } catch (error) {
+            console.error('IPFS upload error:', error);
+            setIpfsUploadResult({
+                error: error instanceof Error ? error.message : 'Unknown upload error'
+            });
+            setStatusMessage(`❌ IPFS upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
+            setIpfsUploading(false);
         }
     };
 
@@ -1328,12 +1398,72 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 </div>
               )}
 
-              <div className="flex justify-center mt-4 sm:mt-6">
+              <div className="flex flex-col sm:flex-row justify-center gap-3 mt-4 sm:mt-6">
                 <Button variant="outline" onClick={handleViewReport} className="font-orbitron text-sm sm:text-base">
                   <FileText className="w-4 h-4 mr-2" />
                   View Full Report
                 </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={handleUploadToIPFS} 
+                  disabled={ipfsUploading}
+                  className="font-orbitron text-sm sm:text-base border-blue-500 hover:bg-blue-500/10"
+                >
+                  {ipfsUploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Cloud className="w-4 h-4 mr-2" />
+                      Upload to IPFS
+                    </>
+                  )}
+                </Button>
               </div>
+
+              {/* IPFS Upload Result */}
+              {ipfsUploadResult && (
+                <div className="mt-4 p-4 rounded-lg border">
+                  {ipfsUploadResult.hash ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-green-400">
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Successfully uploaded to IPFS!</span>
+                      </div>
+                      
+                      <div className="text-xs space-y-1 text-gray-300">
+                        <div className="flex items-start gap-2">
+                          <span className="text-gray-400 min-w-[60px]">Hash:</span>
+                          <span className="font-mono break-all">{ipfsUploadResult.hash}</span>
+                        </div>
+                        
+                        {ipfsUploadResult.url && (
+                          <div className="flex items-start gap-2">
+                            <span className="text-gray-400 min-w-[60px]">URL:</span>
+                            <a 
+                              href={ipfsUploadResult.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1 break-all"
+                            >
+                              {ipfsUploadResult.url}
+                              <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : ipfsUploadResult.error ? (
+                    <div className="flex items-center gap-2 text-red-400">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span className="text-sm">Upload failed: {ipfsUploadResult.error}</span>
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.30; // FIXED: Locked pragma (was floating)
+pragma solidity 0.8.30;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -7,24 +7,13 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
- * @title SmartSentinels Proof of Useful Work Distribution Contract V3
+ * @title SmartSentinels Proof of Useful Work Distribution Contract
  * @author Andrei / Gemini / SmartSentinels AI
  * @notice Central hub for PoUW reward tracking, claiming, and Genesis revenue distribution
  * @dev Supports unlimited AI agents, each with their own NFT collection and gateway
  *      Gateway contracts mint tokens and allocate rewards to this contract
  *      Users claim rewards in 1 transaction (PoUW rewards + Genesis revenue)
  *      Halving logic is handled by Gateway contracts
- * 
- * SECURITY IMPROVEMENTS V3 (Score: 90+):
- * - Fixed floating pragma to 0.8.30 (SWC-103)
- * - Added explicit visibility to all state variables (SWC-108)
- * - Added indexed parameters to events for better filtering
- * - Fixed unchecked transfer return values (SWC-104)
- * - Gas optimizations: cached array lengths, optimized loops
- * - Removed hard-coded BURN_ADDRESS, made it immutable and constructor-set
- * - Full ReentrancyGuard on Genesis revenue functions (SWC-107)
- * - Strict Checks-Effects-Interactions pattern
- * - Added dust collection for integer division remainder
  */
 contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
 
@@ -40,47 +29,51 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
     IERC721Enumerable public genesisCollection;
     address public treasuryWallet;
     address public serviceOwner;
-    address public immutable burnAddress; // FIXED: Made immutable instead of hard-coded constant
+    address public immutable burnAddress;
 
     // -----------------------------------------
     // NFT Collection Registry (For PoUW Rewards)
     // -----------------------------------------
-    mapping(address => bool) public isRegisteredCollection; // FIXED: Added explicit visibility
-    address[] public registeredCollections; // FIXED: Added explicit visibility
+    mapping(address => bool) public isRegisteredCollection;
+    address[] public registeredCollections;
 
     // -----------------------------------------
     // User Pending Rewards Tracking (Per User Per Collection)
     // -----------------------------------------
     // user => collection => pending SSTL amount
-    mapping(address => mapping(address => uint256)) public pendingRewards; // FIXED: Added explicit visibility
+    mapping(address => mapping(address => uint256)) public pendingRewards;
 
     // -----------------------------------------
     // Genesis Revenue Tracking (10% from NFT Sales)
     // -----------------------------------------
-    uint256 public totalGenesisRevenue; // FIXED: Added explicit visibility
-    uint256 public totalGenesisRevenueClaimed; // FIXED: Added explicit visibility
-    mapping(uint256 => uint256) public claimedGenesisRevenue; // FIXED: Added explicit visibility
+    uint256 public totalGenesisRevenue;
+    uint256 public totalGenesisRevenueClaimed;
+    mapping(uint256 => uint256) public claimedGenesisRevenue; // DEPRECATED - kept for frontend compatibility
+    
+    // Snapshot-Based Revenue Tracking (Fixes retroactive claim vulnerability)
+    uint256 public revenuePerNFTAccumulator; // Cumulative revenue per NFT over time
+    mapping(uint256 => uint256) public genesisNFTDebt; // Revenue snapshot at mint time (tokenId => accumulated revenue when minted)
 
     // -----------------------------------------
     // Statistics Tracking
     // -----------------------------------------
-    uint256 public totalJobs; // FIXED: Added explicit visibility
-    uint256 public totalDistributed; // FIXED: Added explicit visibility
-    uint256 public totalTreasury; // FIXED: Added explicit visibility
-    uint256 public totalBurned; // FIXED: Added explicit visibility
-    uint256 public totalServiceOwner; // FIXED: Added explicit visibility
+    uint256 public totalJobs;
+    uint256 public totalDistributed;
+    uint256 public totalTreasury;
+    uint256 public totalBurned;
+    uint256 public totalServiceOwner;
     
     // Per-collection statistics
-    mapping(address => uint256) public totalDistributedByCollection; // FIXED: Added explicit visibility
+    mapping(address => uint256) public totalDistributedByCollection;
 
     // -----------------------------------------
-    // Events (With indexed parameters for filtering)
+    // Events
     // -----------------------------------------
     event CollectionRegistered(address indexed collection);
     event CollectionRemoved(address indexed collection);
     event RewardsAllocated(
         address indexed collection,
-        uint256 indexed jobNumber, // FIXED: Added indexed
+        uint256 indexed jobNumber,
         uint256 totalAmount
     );
     event RewardsClaimed(
@@ -98,7 +91,7 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
     );
     event GenesisRevenueClaimed(
         address indexed user,
-        uint256 indexed tokenId, // FIXED: Added indexed
+        uint256 indexed tokenId,
         uint256 amount
     );
     event BatchGenesisRevenueClaimed(
@@ -119,16 +112,16 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         uint256 serviceOwnerShare
     );
     event TreasuryUpdated(
-        address indexed oldWallet, // FIXED: Added indexed
-        address indexed newWallet // FIXED: Added indexed
+        address indexed oldWallet,
+        address indexed newWallet
     );
     event ServiceOwnerUpdated(
-        address indexed oldOwner, // FIXED: Added indexed
-        address indexed newOwner // FIXED: Added indexed
+        address indexed oldOwner,
+        address indexed newOwner
     );
     event GenesisCollectionUpdated(
-        address indexed oldCollection, // FIXED: Added indexed
-        address indexed newCollection // FIXED: Added indexed
+        address indexed oldCollection,
+        address indexed newCollection
     );
 
     // -----------------------------------------
@@ -149,11 +142,11 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         address _genesisCollection,
         address _treasuryWallet,
         address _serviceOwner,
-        address _burnAddress, // FIXED: Now a parameter instead of hard-coded
+        address _burnAddress,
         address admin
     ) {
         require(_sstlToken != address(0), "Invalid token");
-        require(_genesisCollection != address(0), "Invalid Genesis");
+        // Note: _genesisCollection can be address(0) initially, set later via setGenesisCollection
         require(_treasuryWallet != address(0), "Invalid treasury");
         require(_serviceOwner != address(0), "Invalid service owner");
         require(_burnAddress != address(0), "Invalid burn address");
@@ -163,7 +156,7 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         genesisCollection = IERC721Enumerable(_genesisCollection);
         treasuryWallet = _treasuryWallet;
         serviceOwner = _serviceOwner;
-        burnAddress = _burnAddress; // FIXED: Set from constructor parameter
+        burnAddress = _burnAddress;
 
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(GATEWAY_ROLE, admin);
@@ -196,15 +189,15 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         
         isRegisteredCollection[collection] = false;
         
-        // FIXED: Cached array length for gas optimization
+        // Cached array length for gas optimization
         uint256 length = registeredCollections.length;
-        for (uint256 i; i < length; ) { // FIXED: Removed initialization to 0 (default)
+        for (uint256 i; i < length; ) {
             if (registeredCollections[i] == collection) {
                 registeredCollections[i] = registeredCollections[length - 1];
                 registeredCollections.pop();
                 break;
             }
-            unchecked { ++i; } // FIXED: Unchecked increment in loop
+            unchecked { ++i; }
         }
         
         emit CollectionRemoved(collection);
@@ -222,7 +215,7 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
      */
     function setTreasuryWallet(address _newTreasury) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_newTreasury != address(0), "Invalid address");
-        require(_newTreasury != treasuryWallet, "Same address"); // FIXED: Avoid re-storing same value
+        require(_newTreasury != treasuryWallet, "Same address");
         address oldWallet = treasuryWallet;
         treasuryWallet = _newTreasury;
         emit TreasuryUpdated(oldWallet, _newTreasury);
@@ -233,7 +226,7 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
      */
     function setServiceOwner(address _newOwner) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_newOwner != address(0), "Invalid address");
-        require(_newOwner != serviceOwner, "Same address"); // FIXED: Avoid re-storing same value
+        require(_newOwner != serviceOwner, "Same address");
         address oldOwner = serviceOwner;
         serviceOwner = _newOwner;
         emit ServiceOwnerUpdated(oldOwner, _newOwner);
@@ -244,10 +237,24 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
      */
     function setGenesisCollection(address _newGenesis) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_newGenesis != address(0), "Invalid address");
-        require(_newGenesis != address(genesisCollection), "Same address"); // FIXED: Avoid re-storing same value
+        require(_newGenesis != address(genesisCollection), "Same address");
         address oldCollection = address(genesisCollection);
         genesisCollection = IERC721Enumerable(_newGenesis);
         emit GenesisCollectionUpdated(oldCollection, _newGenesis);
+    }
+
+    /**
+     * @notice Register a newly minted Genesis NFT with current revenue snapshot
+     * @param tokenId The Genesis NFT token ID that was just minted
+     * @dev : Called by Genesis NFT contract on mint to set debt snapshot
+     *      This prevents new NFTs from claiming revenue generated before their mint
+     *      Only the Genesis collection contract can call this
+     */
+    function onGenesisNFTMinted(uint256 tokenId) external {
+        require(msg.sender == address(genesisCollection), "Only Genesis contract");
+        
+        // Set debt to current accumulator - this NFT can only claim revenue AFTER this point
+        genesisNFTDebt[tokenId] = revenuePerNFTAccumulator;
     }
 
     // -----------------------------------------
@@ -266,28 +273,28 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         uint256 jobNumber
     ) external onlyRole(GATEWAY_ROLE) {
         require(isRegisteredCollection[collection], "Collection not registered");
-        require(totalReward != 0, "No rewards"); // FIXED: Use != 0 instead of > 0
+        require(totalReward != 0, "No rewards");
         
         IERC721Enumerable nftCollection = IERC721Enumerable(collection);
         uint256 totalNFTs = nftCollection.totalSupply();
-        require(totalNFTs != 0, "No NFTs minted"); // FIXED: Use != 0 instead of > 0
+        require(totalNFTs != 0, "No NFTs minted");
         
         // Calculate per-NFT reward share
         uint256 rewardPerNFT = totalReward / totalNFTs;
-        require(rewardPerNFT != 0, "Reward too small"); // FIXED: Use != 0 instead of > 0
+        require(rewardPerNFT != 0, "Reward too small");
         
-        // FIXED: Cached array length for gas optimization
+        // Cached array length for gas optimization
         // Distribute rewards to all current NFT holders
-        for (uint256 i; i < totalNFTs; ) { // FIXED: Removed initialization to 0
+        for (uint256 i; i < totalNFTs; ) {
             uint256 tokenId = nftCollection.tokenByIndex(i);
             address owner = nftCollection.ownerOf(tokenId);
             pendingRewards[owner][collection] += rewardPerNFT;
-            unchecked { ++i; } // FIXED: Unchecked increment in loop
+            unchecked { ++i; }
         }
         
         // Update statistics
         unchecked {
-            ++totalJobs; // FIXED: Use ++ instead of +=
+            ++totalJobs;
             totalDistributed += totalReward;
             totalDistributedByCollection[collection] += totalReward;
         }
@@ -335,11 +342,11 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         require(isRegisteredCollection[collection], "Invalid collection");
         
         uint256 pending = pendingRewards[msg.sender][collection];
-        require(pending != 0, "No rewards"); // FIXED: Use != 0 instead of > 0
+        require(pending != 0, "No rewards");
         
-        delete pendingRewards[msg.sender][collection]; // FIXED: Use delete instead of = 0
+        delete pendingRewards[msg.sender][collection];
         
-        // FIXED: Check return value of transfer
+        // Check return value of transfer
         bool success = sstlToken.transfer(msg.sender, pending);
         require(success, "Transfer failed");
         
@@ -353,23 +360,23 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
     function claimAllRewards() external nonReentrant {
         uint256 totalClaim;
         
-        // FIXED: Cached array length for gas optimization
+        // Cached array length for gas optimization
         uint256 length = registeredCollections.length;
-        for (uint256 i; i < length; ) { // FIXED: Removed initialization to 0
+        for (uint256 i; i < length; ) {
             address collection = registeredCollections[i];
             uint256 pending = pendingRewards[msg.sender][collection];
             
-            if (pending != 0) { // FIXED: Use != 0 instead of > 0
-                delete pendingRewards[msg.sender][collection]; // FIXED: Use delete instead of = 0
+            if (pending != 0) {
+                delete pendingRewards[msg.sender][collection];
                 totalClaim += pending;
                 emit RewardsClaimed(msg.sender, collection, pending);
             }
-            unchecked { ++i; } // FIXED: Unchecked increment in loop
+            unchecked { ++i; }
         }
         
-        require(totalClaim != 0, "No rewards to claim"); // FIXED: Use != 0 instead of > 0
+        require(totalClaim != 0, "No rewards to claim");
         
-        // FIXED: Check return value of transfer
+        // Check return value of transfer
         bool success = sstlToken.transfer(msg.sender, totalClaim);
         require(success, "Transfer failed");
         
@@ -384,38 +391,35 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
      * @notice Add Genesis revenue from NFT sales (receives BNB from AI Audit NFT as 7th payee)
      * @dev This contract receives BNB when someone mints AI Audit NFT
      *      The 10% share is automatically sent here via the payee system
+     * @dev  UPDATE: Now updates revenuePerNFTAccumulator for snapshot-based distribution
      */
     function addGenesisRevenue() external payable {
-        require(msg.value != 0, "No BNB sent"); // FIXED: Use != 0 instead of > 0
+        require(msg.value != 0, "No BNB sent");
+        
+        uint256 totalGenesis = genesisCollection.totalSupply();
+        
+        //  Update accumulator if Genesis NFTs exist
+        if (totalGenesis > 0) {
+            // Add revenue per existing NFT to accumulator
+            revenuePerNFTAccumulator += msg.value / totalGenesis;
+        }
         
         totalGenesisRevenue += msg.value;
         
         emit GenesisRevenueAdded(msg.value, totalGenesisRevenue);
     }
 
-    /**
-     * @notice Claim Genesis revenue for a specific Genesis NFT
-     * @param tokenId The Genesis NFT token ID
-     * @dev SECURITY FIX V3:
-     *      - Added nonReentrant modifier (fixes SWC-107)
-     *      - Added require() check on .call() return (fixes SWC-104)
-     *      - Follows strict Checks-Effects-Interactions pattern
-     */
+  
     function claimGenesisRevenue(uint256 tokenId) public nonReentrant {
         // CHECKS
         require(genesisCollection.ownerOf(tokenId) == msg.sender, "Not owner");
         
-        uint256 totalGenesis = genesisCollection.totalSupply();
-        require(totalGenesis != 0, "No Genesis NFTs"); // FIXED: Use != 0 instead of > 0
-        
-        uint256 perNFT = totalGenesisRevenue / totalGenesis;
-        uint256 claimed = claimedGenesisRevenue[tokenId];
-        require(perNFT > claimed, "Nothing to claim");
-        
-        uint256 claimable = perNFT - claimed;
+        //  Calculate claimable based on accumulator minus debt
+        uint256 claimable = revenuePerNFTAccumulator - genesisNFTDebt[tokenId];
+        require(claimable > 0, "Nothing to claim");
         
         // EFFECTS (update state BEFORE external call)
-        claimedGenesisRevenue[tokenId] = perNFT;
+        genesisNFTDebt[tokenId] = revenuePerNFTAccumulator; // Update debt to current accumulator
         totalGenesisRevenueClaimed += claimable;
         
         // INTERACTIONS (external call last)
@@ -425,40 +429,27 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         emit GenesisRevenueClaimed(msg.sender, tokenId, claimable);
     }
 
-    /**
-     * @notice Claim Genesis revenue for multiple Genesis NFTs
-     * @param tokenIds Array of Genesis NFT token IDs
-     * @dev SECURITY FIX V3:
-     *      - Already has nonReentrant modifier
-     *      - Added require() check on .call() return (fixes SWC-104)
-     *      - Follows strict Checks-Effects-Interactions pattern
-     *      - Gas optimized with cached array length
-     */
+  
     function batchClaimGenesisRevenue(uint256[] calldata tokenIds) external nonReentrant {
-        // CHECKS
-        uint256 totalGenesis = genesisCollection.totalSupply();
-        require(totalGenesis != 0, "No Genesis NFTs"); // FIXED: Use != 0 instead of > 0
-        
-        uint256 perNFT = totalGenesisRevenue / totalGenesis;
         uint256 totalClaim;
         
         // EFFECTS (update state BEFORE external call)
-        // FIXED: Cached array length for gas optimization
+        // Cached array length for gas optimization
         uint256 length = tokenIds.length;
-        for (uint256 i; i < length; ) { // FIXED: Removed initialization to 0
+        for (uint256 i; i < length; ) {
             uint256 tokenId = tokenIds[i];
             require(genesisCollection.ownerOf(tokenId) == msg.sender, "Not owner");
             
-            uint256 claimed = claimedGenesisRevenue[tokenId];
-            if (perNFT > claimed) {
-                uint256 claimable = perNFT - claimed;
-                claimedGenesisRevenue[tokenId] = perNFT;
+            //  Calculate claimable based on accumulator minus debt
+            uint256 claimable = revenuePerNFTAccumulator - genesisNFTDebt[tokenId];
+            if (claimable > 0) {
+                genesisNFTDebt[tokenId] = revenuePerNFTAccumulator; // Update debt
                 totalClaim += claimable;
             }
-            unchecked { ++i; } // FIXED: Unchecked increment in loop
+            unchecked { ++i; }
         }
         
-        require(totalClaim != 0, "Nothing to claim"); // FIXED: Use != 0 instead of > 0
+        require(totalClaim != 0, "Nothing to claim");
         
         // Update total claimed
         totalGenesisRevenueClaimed += totalClaim;
@@ -477,7 +468,7 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
      */
     function collectGenesisDust() external onlyRole(DEFAULT_ADMIN_ROLE) {
         uint256 totalGenesis = genesisCollection.totalSupply();
-        require(totalGenesis != 0, "No Genesis NFTs"); // FIXED: Use != 0 instead of > 0
+        require(totalGenesis != 0, "No Genesis NFTs");
         
         // Calculate theoretical maximum claimable
         uint256 perNFT = totalGenesisRevenue / totalGenesis;
@@ -486,7 +477,7 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         // Dust = total revenue - max claimable
         uint256 dust = totalGenesisRevenue - maxClaimable;
         
-        require(dust != 0, "No dust to collect"); // FIXED: Use != 0 instead of > 0
+        require(dust != 0, "No dust to collect");
         
         // Send dust to treasury
         (bool sent, ) = treasuryWallet.call{value: dust}("");
@@ -503,11 +494,11 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
      * @notice Get pending rewards for a user across all collections
      */
     function getPendingRewards(address user) external view returns (uint256 total) {
-        // FIXED: Cached array length for gas optimization
+        // Cached array length for gas optimization
         uint256 length = registeredCollections.length;
-        for (uint256 i; i < length; ) { // FIXED: Removed initialization to 0
+        for (uint256 i; i < length; ) {
             total += pendingRewards[user][registeredCollections[i]];
-            unchecked { ++i; } // FIXED: Unchecked increment in loop
+            unchecked { ++i; }
         }
     }
 
@@ -523,8 +514,36 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
 
     /**
      * @notice Calculate claimable Genesis revenue for a token ID
+     * @dev Uses snapshot-based system - NFTs can only claim revenue generated AFTER mint
      */
     function getClaimableGenesisRevenue(uint256 tokenId) external view returns (uint256) {
+        // Use accumulator minus debt (snapshot at mint time)
+        uint256 claimable = revenuePerNFTAccumulator - genesisNFTDebt[tokenId];
+        return claimable;
+    }
+
+    /**
+     * @notice Calculate claimable Genesis revenue for multiple token IDs
+     * @dev Uses snapshot-based system - NFTs can only claim revenue generated AFTER mint
+     */
+    function getBatchClaimableGenesisRevenue(
+        uint256[] calldata tokenIds
+    ) external view returns (uint256 total) {
+        // Cached array length for gas optimization
+        uint256 length = tokenIds.length;
+        for (uint256 i; i < length; ) { // Removed initialization to 0
+            // Use accumulator minus debt for each token
+            uint256 claimable = revenuePerNFTAccumulator - genesisNFTDebt[tokenIds[i]];
+            total += claimable;
+            unchecked { ++i; }
+        }
+    }
+
+    /**
+     * @notice Calculate claimable Genesis revenue using legacy method (DEPRECATED)
+     * @dev This is the old calculation method - kept for backward compatibility only
+     */
+    function getClaimableGenesisRevenueLegacy(uint256 tokenId) external view returns (uint256) {
         uint256 totalGenesis = genesisCollection.totalSupply();
         if (totalGenesis == 0) return 0;
         
@@ -538,9 +557,10 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
     }
 
     /**
-     * @notice Calculate claimable Genesis revenue for multiple token IDs
+     * @notice Calculate claimable Genesis revenue for multiple token IDs using legacy method (DEPRECATED)
+     * @dev This is the old calculation method - kept for backward compatibility only
      */
-    function getBatchClaimableGenesisRevenue(
+    function getBatchClaimableGenesisRevenueLegacy(
         uint256[] calldata tokenIds
     ) external view returns (uint256 total) {
         uint256 totalGenesis = genesisCollection.totalSupply();
@@ -548,14 +568,14 @@ contract SmartSentinelsPoUW is AccessControl, ReentrancyGuard {
         
         uint256 perNFT = totalGenesisRevenue / totalGenesis;
         
-        // FIXED: Cached array length for gas optimization
+        // Cached array length for gas optimization
         uint256 length = tokenIds.length;
-        for (uint256 i; i < length; ) { // FIXED: Removed initialization to 0
+        for (uint256 i; i < length; ) {
             uint256 claimed = claimedGenesisRevenue[tokenIds[i]];
             if (perNFT > claimed) {
                 total += (perNFT - claimed);
             }
-            unchecked { ++i; } // FIXED: Unchecked increment in loop
+            unchecked { ++i; }
         }
     }
 

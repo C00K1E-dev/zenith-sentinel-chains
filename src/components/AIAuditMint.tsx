@@ -5,7 +5,6 @@ import { prepareContractCall, getContract, createThirdwebClient, readContract } 
 import { bscTestnet } from "thirdweb/chains";
 import { parseEther, formatUnits } from "viem";
 import { AI_AUDIT_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_CHAIN_ID, SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI } from "../contracts/index";
-import MintSuccessOverlay from "./MintSuccessOverlay";
 
 const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
@@ -22,9 +21,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
    const [lastKnownTokenId, setLastKnownTokenId] = useState<bigint>(BigInt(20)); // Start from 20 since user mentioned minting 20
    const [lastMintedTokenId, setLastMintedTokenId] = useState<bigint | null>(null);
    const [callbackTriggered, setCallbackTriggered] = useState(false);
-   const [overlayShown, setOverlayShown] = useState(false);
    const [metadataImageUrl, setMetadataImageUrl] = useState<string>('');
-   const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
 
    const isConnected = !!account;
    const address = account?.address;
@@ -166,7 +163,6 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
 
       // Reset flags for new mint
       setCallbackTriggered(false);
-      setOverlayShown(false);
       setLastMintedTokenId(null);
       setMetadataImageUrl('');
 
@@ -376,16 +372,14 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
     fetchMetadata();
   }, [tokenURIData, lastMintedTokenId, metadataImageUrl]);
 
-  // Show success overlay when we have a successful mint (only once)
+  // Trigger onMinted callback when mint is successful (only once)
   useEffect(() => {
-    if (lastMintedTokenId && mintTxHash && !callbackTriggered && !overlayShown) {
-      console.log('Showing success overlay for token:', lastMintedTokenId.toString());
-      setShowSuccessOverlay(true);
-      setOverlayShown(true);
+    if (lastMintedTokenId && mintTxHash && !callbackTriggered) {
+      console.log('Triggering onMinted callback for token:', lastMintedTokenId.toString());
+      setCallbackTriggered(true);
 
-      // Trigger onMinted callback
+      // Trigger onMinted callback for parent component to handle overlay
       if (onMinted) {
-        setCallbackTriggered(true);
         onMinted({
           tokenId: lastMintedTokenId,
           txHash: mintTxHash,
@@ -393,12 +387,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
         });
       }
     }
-  }, [lastMintedTokenId, mintTxHash, onMinted, callbackTriggered, overlayShown, metadataImageUrl]);
-
-  // Debug showSuccessOverlay state changes
-  useEffect(() => {
-    console.log('showSuccessOverlay changed to:', showSuccessOverlay);
-  }, [showSuccessOverlay]);
+  }, [lastMintedTokenId, mintTxHash, onMinted, callbackTriggered, metadataImageUrl]);
 
   // Debug logging
   useEffect(() => {
@@ -437,17 +426,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
         </div>
       )}
 
-      <MintSuccessOverlay
-        isOpen={showSuccessOverlay}
-        onClose={() => {
-          console.log('onClose called, setting showSuccessOverlay to false');
-          setShowSuccessOverlay(false);
-        }}
-        tokenId={lastMintedTokenId}
-        txHash={mintTxHash}
-        imageUrl={metadataImageUrl || '/assets/AIAuditNFT.png'}
-        collectionName="AI Audit NFT"
-      />
+
     </>
   );
 });

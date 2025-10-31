@@ -64,6 +64,13 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
      params: address ? [address, GENESIS_CONTRACT_ADDRESS] : undefined,
    } as any);
 
+   // Read total supply for tracking successful mints
+   const { data: totalSupply, isLoading: isSupplyLoading, refetch: refetchTotalSupply } = useReadContract({
+     contract: genesisContract,
+     method: 'totalSupply',
+     abi: GENESIS_ABI,
+   } as any);
+
   // Wait for allowance to update after approval
   const waitForAllowanceUpdate = useCallback(async () => {
     let attempts = 0;
@@ -163,23 +170,22 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
       const txResult = await sendTransaction(mintTx);
       const txHash = txResult.transactionHash;
       setMintTxHash(txHash);
-      // Removed message - MintSuccessOverlay will handle it
+      console.log('Genesis mint transaction successful:', txHash);
+      
+      // Wait a moment then refetch total supply to get the new token
+      setTimeout(() => {
+        console.log('Refetching total supply after Genesis mint...');
+        refetchTotalSupply();
+      }, 2000);
     } catch (e) {
       console.error('Mint failed', e);
       setAuthMessage('Mint failed. Please try again.');
     } finally {
       setMinting(false);
     }
-  }, [isConnected, address, sendTransaction, mintAmountBNB, mintAmountToken, useNativePayment, allowance, genesisContract]);
+  }, [isConnected, address, sendTransaction, mintAmountBNB, mintAmountToken, useNativePayment, allowance, genesisContract, refetchTotalSupply]);
 
-  // For now, we'll use a simple timeout to simulate waiting for the transaction
-  // In a real implementation, you'd use thirdweb's transaction receipt hooks
 
-  const { data: totalSupply, isLoading: isSupplyLoading } = useReadContract({
-    contract: genesisContract,
-    method: 'totalSupply',
-    abi: GENESIS_ABI,
-  } as any);
 
   // Effect to handle successful mint
   useEffect(() => {
@@ -187,24 +193,25 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
 
     const handleMintSuccess = async () => {
       try {
+        console.log('Genesis mint success detected:', { mintTxHash, totalSupply: String(totalSupply) });
         setLastMintedTokenId(totalSupply);
         
         if (onMinted) {
-          const baseURI = `https://smartsentinels.net/metadata/genesis/`;
+          console.log('Calling onMinted callback for Genesis NFT');
+          const fixedMediaUrl = 'https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiha5tkjbjz5czjtu3nyldovsc6kdlqcf5ebstirvj4mi26wio2lmi/genesisNFT.mp4';
           onMinted({
             tokenId: totalSupply as bigint,
             txHash: mintTxHash,
-            imageUrl: `${baseURI}${(totalSupply as bigint).toString()}`
+            imageUrl: fixedMediaUrl
           });
         }
       } catch (error) {
         console.error('Error handling mint success:', error);
-        // Removed authMessage - overlay handles success display
       }
     };
 
     handleMintSuccess();
-  }, [mintTxHash, address, lastMintedTokenId]);
+  }, [mintTxHash, address, totalSupply, onMinted]);
 
   // Fetch image URL from metadata and trigger onMinted callback
   useEffect(() => {

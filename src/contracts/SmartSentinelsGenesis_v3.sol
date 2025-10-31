@@ -7,6 +7,13 @@ import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
+/**
+ * @dev Interface for PoUW contract to register Genesis NFT mints
+ */
+interface IPoUW {
+    function onGenesisNFTMinted(uint256 tokenId) external;
+}
+
 contract SmartSentinelsGenesis is ERC721Enumerable, Ownable2Step, ReentrancyGuard {
     using Strings for uint256;
 
@@ -17,6 +24,7 @@ contract SmartSentinelsGenesis is ERC721Enumerable, Ownable2Step, ReentrancyGuar
     bool public useNativePayment;
     uint256 public mintAmountToken;
     uint256 public mintAmountBNB;
+    IPoUW public immutable pouwContract; // PoUW contract reference for mint registration
 
     string private _baseTokenURI;
     bool public baseURIFrozen;
@@ -25,7 +33,6 @@ contract SmartSentinelsGenesis is ERC721Enumerable, Ownable2Step, ReentrancyGuar
     string public mediaExtension;
 
     bool public publicMintEnabled;
-    address public immutable pouwContract;
 
     struct PayeeInfo {
         uint256 share;
@@ -54,33 +61,36 @@ contract SmartSentinelsGenesis is ERC721Enumerable, Ownable2Step, ReentrancyGuar
         string memory initContractURI,
         string memory initMediaBaseURI,
         address initPaymentToken,
-        address initPouwContract
+        address _pouwContract // PoUW contract address for Genesis revenue tracking
     ) ERC721("SmartSentinels Genesis", "SSTLGEN") Ownable(msg.sender) {
-        require(bytes(initBaseURI).length != 0, "Empty");
-        require(initPaymentToken != address(0), "Zero");
-        require(initPouwContract != address(0), "Zero");
+        require(bytes(initBaseURI).length != 0, "BaseURI required");
+        require(_pouwContract != address(0), "Invalid PoUW address");
+        require(initPaymentToken != address(0), "Invalid payment token");
         
         _baseTokenURI = initBaseURI;
         _contractURI = initContractURI;
         mediaBaseURI = initMediaBaseURI;
         mediaExtension = ".mp4";
-
-        paymentToken = IERC20(initPaymentToken);
-        useNativePayment = true;
-        pouwContract = initPouwContract;
         
-        mintAmountBNB = 74000000000000000;
-        mintAmountToken = 1000000000000000000000;
+        pouwContract = IPoUW(_pouwContract);
+        paymentToken = IERC20(initPaymentToken);
+
+        // Set payment defaults (will use BNB)
+        useNativePayment = true; // Start with BNB
+        
+        // Set the mint price (0.1 BNB)
+        mintAmountBNB = 100000000000000000;      // 0.1 BNB
+        mintAmountToken = 1000000000000000000000; // 1000 SSTL (if token payment enabled later)
         publicMintEnabled = true;
 
-        totalShares = 0;
-        _addOrUpdatePayee(0xb792F3217bA6C35ED8670d48fc3aFB60Ad7d7356, 1500, true);
-        _addOrUpdatePayee(0x8D17d02c2E75aAB802CB4978bF0ec1251aAD511d, 200, true);
-        _addOrUpdatePayee(0x9b2310b2043FD59bB1070016d1D02C976b46b0E1, 1000, true);
-        _addOrUpdatePayee(0x861e3Aef66B042387F32E7Fe6887f24E3cc0D16b, 200, true);
-        _addOrUpdatePayee(0x72fCEd35A613186Bf50A63c9fc2415b0Af0ACf94, 1000, true);
-        _addOrUpdatePayee(0x4E21F74143660ee576F4D2aC26BD30729a849f55, 5100, true);
-        _addOrUpdatePayee(initPouwContract, 1000, true);
+        // Initialize Payees (Shares add up to 10000 or 100%)
+        totalShares = 0; // Reset totalShares for initial configuration
+        _addOrUpdatePayee(0xb792F3217bA6C35ED8670d48fc3aFB60Ad7d7356, 1500, true); // 15%
+        _addOrUpdatePayee(0x8D17d02c2E75aAB802CB4978bF0ec1251aAD511d, 200, true);  // 2%
+        _addOrUpdatePayee(0x9b2310b2043FD59bB1070016d1D02C976b46b0E1, 1000, true); // 10%
+        _addOrUpdatePayee(0x861e3Aef66B042387F32E7Fe6887f24E3cc0D16b, 200, true);  // 2%
+        _addOrUpdatePayee(0x72fCEd35A613186Bf50A63c9fc2415b0Af0ACf94, 1000, true); // 10%
+        _addOrUpdatePayee(0x4E21F74143660ee576F4D2aC26BD30729a849f55, 6100, true); // 61%
     }
 
     function publicMint() external payable nonReentrant {
@@ -106,6 +116,9 @@ contract SmartSentinelsGenesis is ERC721Enumerable, Ownable2Step, ReentrancyGuar
         uint256 tokenId = _nextTokenId;
         unchecked { ++_nextTokenId; }
         _safeMint(msg.sender, tokenId);
+
+        // Register this NFT mint with PoUW contract for revenue snapshot
+        pouwContract.onGenesisNFTMinted(tokenId);
 
         emit Minted(msg.sender, tokenId, amountReceived, useNativePayment);
     }

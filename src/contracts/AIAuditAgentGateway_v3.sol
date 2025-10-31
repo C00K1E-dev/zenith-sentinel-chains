@@ -11,21 +11,28 @@ interface ISSTLToken {
 }
 
 interface IPoUW {
-    function allocateRewards(address nftCollection, address[] calldata holders, uint256[] calldata amounts) external;
-    function recordJobStats(uint256 treasuryAmount, uint256 burnAmount, uint256 serviceOwnerAmount) external;
+    function allocateRewards(address collection, uint256 totalReward, uint256 jobNumber) external;
+    function recordJobCompletion(
+        uint256 jobNumber,
+        uint256 totalMinted,
+        uint256 nftShare,
+        uint256 treasuryShare,
+        uint256 burnShare,
+        uint256 serviceOwnerShare
+    ) external;
 }
 
 /**
- * @title AIAuditAgentGateway V3 (Security Enhanced)
+ * @title AIAuditAgentGateway (Security Enhanced)
  * @author Andrei / Gemini
- * @notice V3 Improvements:
+ * @notice Improvements:
  *      - Protected receive() function with payment requirements
  *      - NonReentrant modifier on _distributeToNFTHolders
  *      - Zero address check for NFT holders
  *      - Safe halving logic with overflow protection
  *      - Batch processing to prevent DoS in distribution
  */
-contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
+contract AIAuditAgentGateway is AccessControl, ReentrancyGuard {
     bytes32 public constant OPERATOR_ROLE = keccak256("MCP_OPERATOR_ROLE");
     
     ISSTLToken public immutable sstlToken;
@@ -48,13 +55,13 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
     uint256 public constant SERVICE_OWNER_SHARE = 1000;
     uint256 public constant BASIS_POINTS = 10000;
     
-    // V3: Safe halving constants
+    // Safe halving constants
     uint256 public constant MAX_HALVING_COUNT = 64; // 2^64 is safe for uint256
     uint256 public halvingInterval = 365 days;
     uint256 public lastHalvingTime;
     uint256 public halvingCount;
     
-    // V3: Batch processing for NFT distribution
+    // Batch processing for NFT distribution
     uint256 public constant MAX_NFTS_PER_BATCH = 100; // Prevent DoS
     
     uint256 public totalJobsCompleted;
@@ -69,7 +76,7 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
     event PaymentConfigUpdated(uint256 bnbAmount, uint256 tokenAmount, bool acceptBNB, bool acceptToken);
     event BaseRewardUpdated(uint256 oldReward, uint256 newReward);
     event HalvingIntervalUpdated(uint256 oldInterval, uint256 newInterval);
-    event UnexpectedPayment(address indexed sender, uint256 amount); // V3: Track unexpected payments
+    event UnexpectedPayment(address indexed sender, uint256 amount); // Track unexpected payments
     
     constructor(
         address _sstlToken,
@@ -110,7 +117,7 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
         
         uint256 intervals = (block.timestamp - lastHalvingTime) / halvingInterval;
         
-        // V3: Prevent halving count overflow
+        // Prevent halving count overflow
         require(halvingCount + intervals <= MAX_HALVING_COUNT, "Max halving reached");
         
         halvingCount += intervals;
@@ -120,12 +127,12 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
     }
     
     /**
-     * @dev V3: Safe halving with overflow protection
+     * @dev Safe halving with overflow protection
      */
     function applyHalvingToAmount(uint256 amount) public view returns (uint256) {
         if (halvingCount == 0) return amount;
         
-        // V3: Prevent overflow - if halving count too high, return minimum reward
+        // Prevent overflow - if halving count too high, return minimum reward
         if (halvingCount >= MAX_HALVING_COUNT) return 1; // Minimum 1 wei
         
         // Safe exponentiation with overflow check
@@ -134,7 +141,7 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
     }
     
     function manualHalve() external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(halvingCount < MAX_HALVING_COUNT, "Max halving reached"); // V3: Safety check
+        require(halvingCount < MAX_HALVING_COUNT, "Max halving reached"); // Safety check
         halvingCount += 1;
         lastHalvingTime = block.timestamp;
         emit HalvingApplied(halvingCount, block.timestamp);
@@ -187,9 +194,17 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
         
         _distributeToNFTHolders(nftHoldersAmount);
         
-        pouwContract.recordJobStats(treasuryAmount, burnAmount, serviceOwnerAmount);
-        
         totalJobsCompleted += 1;
+        
+        pouwContract.recordJobCompletion(
+            totalJobsCompleted,
+            rewardAfterHalving,
+            nftHoldersAmount,
+            treasuryAmount,
+            burnAmount,
+            serviceOwnerAmount
+        );
+        
         totalSSTLMinted += rewardAfterHalving;
         
         emit JobCompleted(user, totalJobsCompleted, baseRewardPerJob, rewardAfterHalving, txHash);
@@ -197,63 +212,14 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
     }
     
     /**
-     * @dev V3 Enhancements:
-     *      - NonReentrant modifier to prevent reentrancy
-     *      - Zero address check for NFT holders
-     *      - Batch processing limit to prevent DoS
+     * @dev Enhancements:
+     *      - Simplified to match PoUW interface
+     *      - PoUW handles the distribution internally
+     *      - Just pass total amount and let PoUW iterate NFT holders
      */
-    function _distributeToNFTHolders(uint256 totalAmount) internal nonReentrant {
-        uint256 totalSupply = nftCollection.totalSupply();
-        
-        if (totalSupply == 0) {
-            // No NFT holders yet - skip distribution, tokens stay in PoUW contract
-            return;
-        }
-        
-        // V3: Prevent DoS - limit batch size
-        uint256 batchSize = totalSupply > MAX_NFTS_PER_BATCH ? MAX_NFTS_PER_BATCH : totalSupply;
-        
-        address[] memory holders = new address[](batchSize);
-        uint256[] memory amounts = new uint256[](batchSize);
-        uint256 holderCount = 0;
-        uint256 perNFT = totalAmount / totalSupply;
-        
-        for (uint256 i = 0; i < batchSize; ) {
-            uint256 tokenId = nftCollection.tokenByIndex(i);
-            address holder = nftCollection.ownerOf(tokenId);
-            
-            // V3: Check for zero address
-            require(holder != address(0), "Invalid NFT holder");
-            
-            bool found = false;
-            for (uint256 j = 0; j < holderCount; ) {
-                if (holders[j] == holder) {
-                    amounts[j] += perNFT;
-                    found = true;
-                    break;
-                }
-                unchecked { ++j; } // V3: Gas optimization
-            }
-            
-            if (!found) {
-                holders[holderCount] = holder;
-                amounts[holderCount] = perNFT;
-                holderCount++;
-            }
-            
-            unchecked { ++i; } // V3: Gas optimization
-        }
-        
-        address[] memory finalHolders = new address[](holderCount);
-        uint256[] memory finalAmounts = new uint256[](holderCount);
-        
-        for (uint256 i = 0; i < holderCount; ) {
-            finalHolders[i] = holders[i];
-            finalAmounts[i] = amounts[i];
-            unchecked { ++i; } // V3: Gas optimization
-        }
-        
-        pouwContract.allocateRewards(address(nftCollection), finalHolders, finalAmounts);
+    function _distributeToNFTHolders(uint256 totalAmount) internal {
+        // PoUW handles distribution internally - just pass the total amount and job number
+        pouwContract.allocateRewards(address(nftCollection), totalAmount, totalJobsCompleted + 1);
     }
     
     function setPaymentConfig(
@@ -316,7 +282,7 @@ contract AIAuditAgentGatewayV3 is AccessControl, ReentrancyGuard {
     }
     
     /**
-     * @dev V3: Protected receive function with payment validation
+     * @dev Protected receive function with payment validation
      *      Only accepts BNB if payments are enabled and meet minimum amount
      *      Prevents unexpected ether accumulation and potential DoS
      */

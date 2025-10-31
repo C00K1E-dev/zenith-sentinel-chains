@@ -474,6 +474,10 @@
   @apply border-green-500/30 bg-green-500/5;
 }
 
+.reward-stat-card.claimed {
+  @apply border-blue-500/30 bg-blue-500/5;
+}
+
 .stat-icon {
   @apply p-2 rounded-lg;
 }
@@ -484,6 +488,10 @@
 
 .reward-stat-card.secondary .stat-icon {
   @apply bg-green-500/20 text-green-400;
+}
+
+.reward-stat-card.claimed .stat-icon {
+  @apply bg-blue-500/20 text-blue-400;
 }
 
 .stat-content {

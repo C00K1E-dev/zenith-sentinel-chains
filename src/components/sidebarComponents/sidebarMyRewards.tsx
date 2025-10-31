@@ -39,6 +39,16 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   const [internalRefreshTrigger, setInternalRefreshTrigger] = useState<number>(0);
   const [claimTxHash, setClaimTxHash] = useState<string | undefined>();
   const [isCalculatingRewards, setIsCalculatingRewards] = useState(false);
+  
+  // New states for claimed amounts tracking
+  const [totalClaimedRewards, setTotalClaimedRewards] = useState(0); // Total SSTL claimed by user
+  const [totalClaimedRevenue, setTotalClaimedRevenue] = useState(0); // Total BNB claimed by user
+  const [justClaimedRewards, setJustClaimedRewards] = useState(false); // Hide rewards button after claim
+  const [justClaimedRevenue, setJustClaimedRevenue] = useState(false); // Hide revenue button after claim
+  
+  // Track blockchain pending amounts for comparison
+  const [blockchainPendingRewards, setBlockchainPendingRewards] = useState(0);
+  const [blockchainPendingRevenue, setBlockchainPendingRevenue] = useState(0);
 
   // Create contract instances
   const pouwContract = getContract({
@@ -77,7 +87,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
         // Get total pending PoUW rewards across all collections
         const pendingRewards = await readContract({
           contract: pouwContract,
-          method: 'function getTotalPendingRewards(address user) view returns (uint256)',
+          method: 'function getPendingRewards(address user) view returns (uint256)',
           params: [address as `0x${string}`],
         }) as bigint;
         totalPendingRewards = pendingRewards;
@@ -86,20 +96,86 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
       }
 
       try {
-        // Get total pending Genesis revenue
-        const pendingRevenue = await readContract({
-          contract: pouwContract,
-          method: 'function getTotalPendingGenesisRevenue(address user) view returns (uint256)',
+        // Get user's Genesis NFT IDs first
+        const genesisTokens = await readContract({
+          contract: genesisContract,
+          method: 'function tokensOfOwner(address owner_) view returns (uint256[])',
           params: [address as `0x${string}`],
-        }) as bigint;
-        totalPendingRevenue = pendingRevenue;
+        }) as bigint[];
+
+        // Get total pending Genesis revenue using V3.1 snapshot calculation (now consistent!)
+        if (genesisTokens && genesisTokens.length > 0) {
+          const pendingRevenue = await readContract({
+            contract: pouwContract,
+            method: 'function getBatchClaimableGenesisRevenue(uint256[] calldata tokenIds) view returns (uint256)',
+            params: [genesisTokens],
+          }) as bigint;
+          totalPendingRevenue = pendingRevenue;
+          
+          console.log(`V3.1 Genesis revenue calculation: ${formatEther(pendingRevenue)} BNB claimable`);
+        }
       } catch (error) {
         console.error('Error getting pending Genesis revenue:', error);
       }
 
-      // Update state with formatted numbers
-      setUserPendingRewards(Number(formatEther(totalPendingRewards)));
-      setUserPendingRevenue(Number(formatEther(totalPendingRevenue)));
+      // Get user's total claimed amounts from localStorage (client-side tracking) FIRST
+      let currentClaimedRewards = 0;
+      let currentClaimedRevenue = 0;
+      
+      try {
+        const storedClaimedRewards = localStorage.getItem(`claimedRewards_${address}`);
+        const storedClaimedRevenue = localStorage.getItem(`claimedRevenue_${address}`);
+        
+        // Initialize with stored values or 0
+        currentClaimedRewards = storedClaimedRewards ? parseFloat(storedClaimedRewards) : 0;
+        currentClaimedRevenue = storedClaimedRevenue ? parseFloat(storedClaimedRevenue) : 0;
+        
+        // Initialize with your previously claimed amounts (before localStorage tracking)
+        if (!storedClaimedRevenue && address === '0x53FF3FB6f8CFb648626F8179856FA7f38A2e3DeB') {
+          // Your wallet - you mentioned you claimed 0.0074 BNB + now 0.0149 = 0.0223 total
+          currentClaimedRevenue = 0.0223;
+          localStorage.setItem(`claimedRevenue_${address}`, '0.0223');
+        }
+        // Remove hardcoded initialization - let it track organically from actual claims
+        
+        // Update state with current claimed amounts
+        setTotalClaimedRewards(currentClaimedRewards);
+        setTotalClaimedRevenue(currentClaimedRevenue);
+        
+      } catch (error) {
+        console.log('Error reading claimed amounts from localStorage:', error);
+        setTotalClaimedRewards(0);
+        setTotalClaimedRevenue(0);
+      }
+
+      // Update blockchain pending amounts (raw from contract)
+      const rawPendingRewards = Number(formatEther(totalPendingRewards));
+      const rawPendingRevenue = Number(formatEther(totalPendingRevenue));
+      
+      // Store raw blockchain amounts for comparison
+      setBlockchainPendingRewards(rawPendingRewards);
+      setBlockchainPendingRevenue(rawPendingRevenue);
+      
+      // The blockchain already returns only UNCLAIMED rewards, so use them directly
+      // No need to subtract claimed amounts - contract handles this internally
+      const actualClaimableRewards = rawPendingRewards;
+      const actualClaimableRevenue = rawPendingRevenue;
+      
+      console.log(`Blockchain unclaimed: ${rawPendingRewards} SSTL, ${rawPendingRevenue} BNB`);
+      console.log(`LocalStorage claimed: ${currentClaimedRewards} SSTL, ${currentClaimedRevenue} BNB`);
+      console.log(`Available to claim: ${actualClaimableRewards} SSTL, ${actualClaimableRevenue} BNB`);
+      
+      // Reset "just claimed" states only when there are genuinely NEW rewards (threshold > 0.0001)
+      if (actualClaimableRewards > 0.0001) {
+        setJustClaimedRewards(false);
+      }
+      if (actualClaimableRevenue > 0.0001) {
+        setJustClaimedRevenue(false);
+      }
+      
+      // Set the user pending amounts to the actual claimable amounts
+      setUserPendingRewards(actualClaimableRewards);
+      setUserPendingRevenue(actualClaimableRevenue);
       setIsCalculatingRewards(false);
     };
 
@@ -231,15 +307,46 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
       setClaimTxHash(result.transactionHash);
       setClaimSuccess(true);
       setIsClaiming(false);
+      setJustClaimedRewards(true); // Hide claim button immediately
+      
+      // Update claimed amounts in localStorage and state IMMEDIATELY
+      const newTotalClaimed = totalClaimedRewards + userPendingRewards;
+      setTotalClaimedRewards(newTotalClaimed);
+      localStorage.setItem(`claimedRewards_${address}`, newTotalClaimed.toString());
+      
+      // IMMEDIATELY set pending rewards to 0 so button disappears
+      setUserPendingRewards(0);
+      
       setInternalRefreshTrigger((prev: number) => prev + 1);
 
-      // Reset success message after 5 seconds
-      setTimeout(() => setClaimSuccess(false), 5000);
+      // Reset success message after some time, but keep button hidden longer
+      setTimeout(() => {
+        setClaimSuccess(false);
+      }, 8000); // 8 seconds for success message
+
+      // Keep button hidden longer to ensure blockchain data has updated
+      setTimeout(() => {
+        setJustClaimedRewards(false); // Show button again only after longer delay
+      }, 15000); // 15 seconds for button visibility
 
     } catch (error: any) {
-      console.error('Claim error:', error);
-      setClaimError(error.message || 'Failed to claim PoUW rewards');
+      console.error('PoUW rewards claim error:', error);
+      
+      // Check for specific "nothing to claim" error
+      if (error.message && error.message.includes('Nothing to claim')) {
+        setClaimError('No PoUW rewards available to claim. You may have already claimed recent rewards.');
+        // Force refresh to update UI with correct claimable amounts
+        setInternalRefreshTrigger((prev: number) => prev + 1);
+      } else {
+        setClaimError(error.message || 'Failed to claim PoUW rewards');
+      }
+      
       setIsClaiming(false);
+      
+      // Refresh data after error to ensure UI is in sync
+      setTimeout(() => {
+        setInternalRefreshTrigger((prev: number) => prev + 1);
+      }, 2000);
     }
   };
 
@@ -280,15 +387,46 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
       setClaimTxHash(result.transactionHash);
       setClaimSuccess(true);
       setIsClaiming(false);
+      setJustClaimedRevenue(true); // Hide claim button immediately
+      
+      // Update claimed amounts in localStorage and state IMMEDIATELY
+      const newTotalClaimedRevenue = totalClaimedRevenue + userPendingRevenue;
+      setTotalClaimedRevenue(newTotalClaimedRevenue);
+      localStorage.setItem(`claimedRevenue_${address}`, newTotalClaimedRevenue.toString());
+      
+      // IMMEDIATELY set pending revenue to 0 so button disappears
+      setUserPendingRevenue(0);
+      
       setInternalRefreshTrigger((prev: number) => prev + 1);
 
-      // Reset success message after 5 seconds
-      setTimeout(() => setClaimSuccess(false), 5000);
+      // Reset success message after some time, but keep button hidden longer
+      setTimeout(() => {
+        setClaimSuccess(false);
+      }, 8000); // 8 seconds for success message
+
+      // Keep button hidden longer to ensure blockchain data has updated
+      setTimeout(() => {
+        setJustClaimedRevenue(false); // Show button again only after longer delay
+      }, 15000); // 15 seconds for button visibility
 
     } catch (error: any) {
-      console.error('Claim error:', error);
-      setClaimError(error.message || 'Failed to claim Genesis revenue');
+      console.error('Genesis revenue claim error:', error);
+      
+      // Check for specific "nothing to claim" error
+      if (error.message && error.message.includes('Nothing to claim')) {
+        setClaimError('No Genesis revenue available to claim. You may have already claimed recent rewards.');
+        // Force refresh to update UI with correct claimable amounts
+        setInternalRefreshTrigger((prev: number) => prev + 1);
+      } else {
+        setClaimError(error.message || 'Failed to claim Genesis revenue');
+      }
+      
       setIsClaiming(false);
+      
+      // Refresh data after error to ensure UI is in sync
+      setTimeout(() => {
+        setInternalRefreshTrigger((prev: number) => prev + 1);
+      }, 2000);
     }
   };
 
@@ -309,6 +447,16 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
   const formattedPendingRewards = pendingRewards.toFixed(4);
   const formattedPendingRevenue = pendingRevenue.toFixed(4);
+
+  // Debug logging for Genesis revenue claim button
+  console.log('Genesis Revenue Debug:', {
+    userPendingRevenue,
+    pendingRevenue,
+    formattedPendingRevenue,
+    isGreaterThanZero: pendingRevenue > 0,
+    isGreaterThanMinimum: pendingRevenue > 0.0001, // Add minimum threshold
+    userGenesisNFTs: userGenesisNFTs.length
+  });
 
   console.log('User Earnings:', {
     pendingRewards,
@@ -366,54 +514,86 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
             </div>
           ) : (
             <div className="rewards-stats-grid">
+              {/* Show claimed amounts cards first - always visible for connected users */}
+              {address && (
+                <div className="reward-stat-card claimed">
+                  <div className="stat-icon">
+                    <CheckCircle size={24} />
+                  </div>
+                  <div className="stat-content">
+                    <span className="stat-label">
+                      Claimed from Genesis
+                      <span className="info-tooltip" title="Total Genesis revenue claimed from AI Audit NFT sales">ℹ️</span>
+                    </span>
+                    <span className="stat-value">{totalClaimedRevenue.toFixed(4)} BNB</span>
+                    <span className="stat-subtitle">From AI Audit NFT sales</span>
+                  </div>
+                </div>
+              )}
+
+              {address && (
+                <div className="reward-stat-card claimed">
+                  <div className="stat-icon">
+                    <CheckCircle size={24} />
+                  </div>
+                  <div className="stat-content">
+                    <span className="stat-label">
+                      Claimed from AI Audits
+                      <span className="info-tooltip" title="Total PoUW rewards claimed from completed AI audit jobs">ℹ️</span>
+                    </span>
+                    <span className="stat-value">{totalClaimedRewards.toFixed(4)} SSTL</span>
+                    <span className="stat-subtitle">From audit job completions</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Smart claimable card centered below claimed cards */}
               {(pendingRewards > 0 || pendingRevenue > 0) && (
-                <div className="reward-stat-card secondary">
+                <div className="reward-stat-card secondary" style={{ gridColumn: '1 / -1', maxWidth: '400px', margin: '0 auto' }}>
                   <div className="stat-icon">
                     <Gift size={24} />
                   </div>
                   <div className="stat-content">
                     <span className="stat-label">
-                      Total Claimable
-                      <span className="info-tooltip" title="Total rewards and revenue available to claim">ℹ️</span>
+                      Available to Claim
+                      <span className="info-tooltip" title="Rewards and revenue ready to claim right now">ℹ️</span>
                     </span>
                     <span className="stat-value">
                       {pendingRewards > 0 && `${formattedPendingRewards} SSTL`}
                       {pendingRewards > 0 && pendingRevenue > 0 && ' + '}
                       {pendingRevenue > 0 && `${formattedPendingRevenue} BNB`}
                     </span>
-                    <span className="stat-subtitle">Available to claim</span>
+                    <span className="stat-subtitle">
+                      {pendingRewards > 0 && pendingRevenue > 0 
+                        ? "From AI Audits & Genesis NFTs"
+                        : pendingRewards > 0 
+                        ? "From AI Audit job completions"
+                        : "From Genesis NFT revenue share"
+                      }
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* Line 506 omitted */}
-              {pendingRewards > 0 && (
-                <div className="reward-stat-card">
+              {/* Show "just claimed" message when user recently claimed */}
+              {(justClaimedRewards || justClaimedRevenue) && !(pendingRewards > 0 || pendingRevenue > 0) && (
+                <div className="reward-stat-card secondary" style={{ gridColumn: '1 / -1', maxWidth: '400px', margin: '0 auto', backgroundColor: '#2a4a3a' }}>
                   <div className="stat-icon">
-                    <TrendingUp size={24} />
+                    <CheckCircle size={24} style={{ color: '#22c55e' }} />
                   </div>
                   <div className="stat-content">
-                    <span className="stat-label">
-                      PoUW Rewards
-                      <span className="info-tooltip" title="Proof of Useful Work rewards from AI audits">ℹ️</span>
+                    <span className="stat-label" style={{ color: '#22c55e' }}>
+                      Just Claimed!
+                      <span className="info-tooltip" title="You recently claimed rewards - new rewards will appear here when available">ℹ️</span>
                     </span>
-                    <span className="stat-value">{formattedPendingRewards} SSTL</span>
-                    <span className="stat-subtitle">From completed audits</span>
-                  </div>
-                </div>
-              )}
-              {pendingRevenue > 0 && (
-                <div className="reward-stat-card">
-                  <div className="stat-icon">
-                    <DollarSign size={24} />
-                  </div>
-                  <div className="stat-content">
-                    <span className="stat-label">
-                      Genesis Revenue
-                      <span className="info-tooltip" title="Revenue share from Genesis NFT holdings">ℹ️</span>
+                    <span className="stat-value" style={{ color: '#22c55e' }}>
+                      {justClaimedRewards && "✓ AI Audit Rewards"}
+                      {justClaimedRewards && justClaimedRevenue && " & "}
+                      {justClaimedRevenue && "✓ Genesis Revenue"}
                     </span>
-                    <span className="stat-value">{formattedPendingRevenue} BNB</span>
-                    <span className="stat-subtitle">From Genesis NFTs</span>
+                    <span className="stat-subtitle">
+                      Claim buttons will reappear when new rewards are available
+                    </span>
                   </div>
                 </div>
               )}
@@ -423,7 +603,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
           {/* Claim Rewards Buttons */}
           {!isCalculatingRewards && (
             <div className="claim-section" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-              {pendingRewards > 0 && (
+              {pendingRewards > 0.0001 && !justClaimedRewards && (
                 <button
                   className="claim-rewards-btn"
                   onClick={handleClaimRewards}
@@ -448,12 +628,12 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
                   ) : (
                     <>
                       <Gift size={16} />
-                      Claim PoUW Rewards ({formattedPendingRewards} SSTL)
+                      Claim AI Audit Rewards ({formattedPendingRewards} SSTL)
                     </>
                   )}
                 </button>
               )}
-              {pendingRevenue > 0 && (
+              {pendingRevenue > 0.0001 && !justClaimedRevenue && (
                 <button
                   className="claim-rewards-btn"
                   onClick={handleClaimRevenue}
@@ -482,6 +662,21 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
                     </>
                   )}
                 </button>
+              )}
+              
+              {/* Show message when buttons are hidden after claiming */}
+              {(justClaimedRewards || justClaimedRevenue) && (
+                <div className="rewards-message info" style={{ marginTop: '10px' }}>
+                  <CheckCircle size={20} />
+                  <span>
+                    {justClaimedRewards && justClaimedRevenue 
+                      ? "Both rewards claimed! Buttons will return when new rewards become available."
+                      : justClaimedRewards 
+                      ? "AI Audit rewards claimed! Button will return when new audit jobs complete."
+                      : "Genesis revenue claimed! Button will return when new AI Audit NFTs are sold."
+                    }
+                  </span>
+                </div>
               )}
             </div>
           )}

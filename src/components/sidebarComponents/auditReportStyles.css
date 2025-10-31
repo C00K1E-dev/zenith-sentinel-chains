@@ -149,18 +149,19 @@ body {
     height: 1.25rem;
     width: auto;
     object-fit: contain;
+    margin-top: 0.25rem; /* Move logo down to align with title */
 }
 
 @media (min-width: 640px) {
-    .inline-logo { height: 1.5rem; }
+    .inline-logo { height: 1.5rem; margin-top: 0.3rem; }
 }
 
 @media (min-width: 768px) {
-    .inline-logo { height: 2rem; }
+    .inline-logo { height: 2rem; margin-top: 0.35rem; }
 }
 
 @media (min-width: 1024px) {
-    .inline-logo { height: 2.5rem; }
+    .inline-logo { height: 2.5rem; margin-top: 0.4rem; }
 }
 
 /* Responsive Section Headers */
@@ -194,14 +195,15 @@ body {
 /* Responsive Pill Sizing */
 .pill-container {
     padding: 0.5rem;
+    line-height: 1.2; /* Tighter line height to move pill text up */
 }
 
 @media (min-width: 640px) {
-    .pill-container { padding: 0.75rem; }
+    .pill-container { padding: 0.75rem; line-height: 1.1; }
 }
 
 @media (min-width: 768px) {
-    .pill-container { padding: 1rem; }
+    .pill-container { padding: 1rem; line-height: 1.0; }
 }
 
 /* Score status badge responsive */
@@ -211,7 +213,7 @@ body {
     border-radius: 0.5rem;
     background: rgba(255,255,255,0.1);
     display: inline-block;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem; /* Reduced from 0.5rem to move EXCELLENT text up */
 }
 
 @media (min-width: 640px) {

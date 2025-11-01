@@ -1264,7 +1264,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
           </p>
           <p className="text-xs text-gray-400">
             {useNativePayment 
-              ? `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.1'} BNB to run the audit`
+              ? `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.45'} BNB to run the audit`
               : `Pay ${servicePriceSSTL ? Number(formatUnits(BigInt(servicePriceSSTL.toString()), Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL to run the audit`
             }
           </p>
@@ -1299,14 +1299,14 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
           >
             {isProcessing && currentTransactionType === 'payAndRunAudit' ? 'Processing Payment...' : 
               useNativePayment ? 
-                `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.1'} BNB & Start Audit` :
+                `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.45'} BNB & Start Audit` :
                 `Pay ${servicePriceSSTL ? Number(formatUnits(BigInt(servicePriceSSTL.toString()), Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL & Start Audit`
             }
           </Button>
           {/* )} */}
           <p className="text-sm text-gray-400 text-center">
             {useNativePayment ? 
-              `Payment of ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.1'} BNB is required to run the AI Audit.` :
+              `Payment of ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.45'} BNB is required to run the AI Audit.` :
               `Payment of ${servicePriceSSTL ? Number(formatUnits(BigInt(servicePriceSSTL.toString()), Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL tokens is required to run the AI Audit.`
             }
             <br />

@@ -173,7 +173,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
 
       if (isNativePayment) {
         // Use BNB payment
-        mintPrice = mintPriceBNB ? BigInt(mintPriceBNB.toString()) : BigInt("450000000000000000"); // 0.45 BNB fallback
+        mintPrice = mintPriceBNB ? BigInt(mintPriceBNB.toString()) : BigInt("74000000000000000"); // 0.074 BNB fallback
       } else {
         // Use SSTL payment - check allowance first
         useSSTL = true;

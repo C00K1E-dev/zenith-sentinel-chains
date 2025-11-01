@@ -44,7 +44,7 @@ const Hub = () => {
       />
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
       {/* Optimized Background Elements - Further reduced animations */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Static Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
         <div className="absolute inset-0 bg-gradient-to-tl from-accent/5 via-transparent to-primary/5" />
@@ -69,7 +69,7 @@ const Hub = () => {
 
       <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />
 
-      <main className={cn("flex-1 transition-all duration-300", collapsed ? "ml-20" : "ml-20 sm:ml-56 md:ml-64 lg:ml-72")}>
+      <main className={cn("flex-1 relative z-10 transition-all duration-300", collapsed ? "ml-20" : "ml-20 sm:ml-56 md:ml-64 lg:ml-72")}>
         <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
           <Routes>
             <Route index element={<Suspense fallback={<Loading />}><SidebarGeneralStats /></Suspense>} />

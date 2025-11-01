@@ -132,7 +132,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
     <aside
       className={cn(
         'glass-card border-r border-yellow-400/20 transition-all duration-150 h-screen fixed left-0 top-0 flex flex-col overflow-hidden',
-        collapsed ? 'w-20 z-50' : 'w-64 md:w-72 lg:w-80 z-10'
+        collapsed ? 'w-20 z-50' : 'w-64 md:w-72 lg:w-80 z-40'
       )}
     >
       {/* Toggle Button */}
@@ -165,7 +165,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       </div>
 
       {/* Wallet Connection */}
-      <div className="px-4 pt-4 pb-4 absolute top-16 left-0 right-0 z-20">
+      <div className="px-4 pt-4 pb-4 relative z-0">
         {!collapsed && (
           <ConnectButton
             {...connectButtonProps}
@@ -205,7 +205,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
           </div>
         )}
       </div>      {/* My Stats Section */}
-      <div className="px-4 pt-20 pb-2">
+      <div className="px-4 pt-2 pb-2">
         {!collapsed && (
           <h3 className="text-xs font-orbitron font-bold text-primary/70 uppercase tracking-wider mb-2">
             My Stats
@@ -251,7 +251,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       <div className="border-t border-white/10 mx-4 mb-2"></div>
 
       {/* Menu Items */}
-      <nav className="flex-1 px-4 pt-3 pb-4 space-y-2 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 px-4 pt-3 pb-4 space-y-2 overflow-hidden">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);

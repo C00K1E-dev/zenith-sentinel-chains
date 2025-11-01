@@ -1,5 +1,5 @@
 ﻿import { motion } from 'framer-motion';
-import { Image as ImageIcon, Sparkles, Bot, Zap, Crown, DollarSign, Search, Rocket, Target, ChevronRight, ExternalLink, TrendingUp, Award, Shield } from 'lucide-react';
+import { Image as ImageIcon, Sparkles, Bot, Zap, Crown, DollarSign, Rocket, Target, ChevronRight, ExternalLink, TrendingUp, Award, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { useReadContract } from 'wagmi';
 import { GENESIS_CONTRACT_ADDRESS, GENESIS_CHAIN_ID, GENESIS_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_CHAIN_ID, AI_AUDIT_ABI } from '../../contracts/index';
@@ -147,7 +147,7 @@ const SidebarNFTsiNFTsHub = () => {
                     <Crown size={24} className="text-primary" />
                   </h3>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    The foundation of SmartSentinels ecosystem. Limited to 1,000 exclusive members with lifetime rewards and governance rights.
+                    The foundation of SmartSentinels ecosystem. Limited to 1,000 exclusive members with lifetime rewards.
                   </p>
                 </div>
 
@@ -263,7 +263,7 @@ const SidebarNFTsiNFTsHub = () => {
                     <Bot size={24} className="text-accent" />
                   </h3>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    Access AI-powered smart contract audits and earn PoUW rewards. Limited to 1,000 AI Guardians securing the blockchain.
+                    Own an NFT and generate passive income. Share in the revenue generated from AI-powered smart contract audits on the network.
                   </p>
                 </div>
 
@@ -278,28 +278,7 @@ const SidebarNFTsiNFTsHub = () => {
                       <Zap size={16} className="text-accent mt-0.5 flex-shrink-0" />
                       <div className="min-w-0">
                         <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">PoUW Rewards</div>
-                        <div className="text-xs text-muted-foreground leading-tight">Earn 40.2 SSTL per audit</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors">
-                      <Bot size={16} className="text-accent mt-0.5 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">AI Audit Access</div>
-                        <div className="text-xs text-muted-foreground leading-tight">Run unlimited audits</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors">
-                      <Search size={16} className="text-accent mt-0.5 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">Priority Processing</div>
-                        <div className="text-xs text-muted-foreground leading-tight">Fast-track audit queue</div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors">
-                      <Shield size={16} className="text-accent mt-0.5 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">Security Reports</div>
-                        <div className="text-xs text-muted-foreground leading-tight">Detailed audit insights</div>
+                        <div className="text-xs text-muted-foreground leading-tight">Share 40.2 SSTL per audit</div>
                       </div>
                     </div>
                   </div>

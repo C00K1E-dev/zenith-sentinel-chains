@@ -104,7 +104,7 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
   };
 
   const getExplorerUrl = (hash: string) => {
-    return `https://testnet.bscscan.com/tx/${hash}`;
+    return `https://bscscan.com/tx/${hash}`;
   };
 
   const isVideo = mediaUrl?.includes('.mp4') || mediaUrl?.includes('.webm');

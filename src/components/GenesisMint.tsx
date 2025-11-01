@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
 import { prepareContractCall, getContract, createThirdwebClient, readContract } from "thirdweb";
-import { bscTestnet } from "thirdweb/chains";
+import { bsc } from "thirdweb/chains";
 import { parseEther, formatUnits } from "viem";
 import { GENESIS_ABI, GENESIS_CONTRACT_ADDRESS, GENESIS_CHAIN_ID, SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI } from "../contracts/index";
 
@@ -27,7 +27,7 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
     const genesisContract = getContract({
       address: GENESIS_CONTRACT_ADDRESS,
       abi: GENESIS_ABI as any,
-      chain: bscTestnet,
+      chain: bsc,
       client: thirdwebClient,
     } as any);
 
@@ -35,7 +35,7 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
     const sstlTokenContract = getContract({
       address: SSTL_TOKEN_ADDRESS,
       abi: SSTL_TOKEN_ABI as any,
-      chain: bscTestnet,
+      chain: bsc,
       client: thirdwebClient,
     } as any);
 
@@ -142,7 +142,7 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
         valueWei = BigInt(mintAmountBNB);
       } else {
         // Fallback price
-        valueWei = parseEther("0.074");
+        valueWei = parseEther("0.45");
       }
     } else {
       // Using SSTL payment - check allowance first

@@ -31,14 +31,14 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     getContract({ 
       client: thirdwebClient, 
       address: GENESIS_CONTRACT_ADDRESS, 
-      chain: bscTestnet 
+      chain: bsc 
     }), []);
 
   const aiAuditContract = useMemo(() => 
     getContract({ 
       client: thirdwebClient, 
       address: AI_AUDIT_CONTRACT_ADDRESS, 
-      chain: bscTestnet 
+      chain: bsc 
     }), []);
 
   // States for balances and token IDs
@@ -277,12 +277,12 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
                 📋 Genesis on BSC Mainnet
               </a>
               <a 
-                href={`https://testnet.bscscan.com/token/${AI_AUDIT_CONTRACT_ADDRESS}?a=${address}`} 
+                href={`https://bscscan.com/token/${AI_AUDIT_CONTRACT_ADDRESS}?a=${address}`} 
                 target="_blank" 
                 rel="noreferrer" 
                 className="block text-blue-500 hover:text-blue-700 underline text-sm"
               >
-                📋 AI Audit on BSC Testnet
+                📋 AI Audit on BSC Mainnet
               </a>
             </div>
             {errorMessages.length > 0 && (

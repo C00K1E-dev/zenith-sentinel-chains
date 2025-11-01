@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Image as ImageIcon, Bot, HardDrive, Activity, Coins, Zap, Flame, Vault, DollarSign } from 'lucide-react';
 import { useReadContract } from 'thirdweb/react';
 import { getContract, createThirdwebClient } from 'thirdweb';
-import { bscTestnet } from 'thirdweb/chains';
+import { bsc } from 'thirdweb/chains';
 import { formatEther } from 'viem';
 import { useMemo, memo } from 'react';
 import StatCard from '@/components/StatCard';
@@ -19,7 +19,7 @@ const SidebarGeneralStats = () => {
   const pouwContract = getContract({
     client: thirdwebClient,
     address: POUW_POOL_ADDRESS,
-    chain: bscTestnet,
+    chain: bsc,
   });
 
   // Read global stats from PoUW contract with optimized polling
@@ -124,7 +124,7 @@ const SidebarGeneralStats = () => {
         <h3 className="text-lg sm:text-xl font-orbitron font-bold mb-3 sm:mb-4 text-foreground">
           Global PoUW Statistics
         </h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">These statistics are on Testnet</p>
+        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">These statistics are on BSC Mainnet</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <StatCard
             title="Total Audits Completed"

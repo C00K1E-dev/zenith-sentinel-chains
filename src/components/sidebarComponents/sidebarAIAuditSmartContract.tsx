@@ -8,7 +8,7 @@ import auditReportStyles from './auditReportStyles.css?raw';
 // --- IMPORTS FOR WALLET AND TOKEN TRANSFER ---
 import { useActiveAccount, useReadContract, useSendTransaction } from 'thirdweb/react';
 import { getContract, prepareContractCall, readContract, createThirdwebClient } from 'thirdweb';
-import { bscTestnet } from 'thirdweb/chains';
+import { bsc } from 'thirdweb/chains';
 import { parseUnits, formatUnits, keccak256, toHex } from 'viem';
 import { SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI, AUDIT_GATEWAY_ADDRESS, AUDIT_GATEWAY_ABI, POUW_POOL_ADDRESS, POUW_POOL_ABI } from "../../contracts/index";
 import { uploadAuditReportToIPFS } from "../../utils/ipfs";
@@ -124,8 +124,8 @@ const API_URL_TEMPLATE = `https://generativelanguage.googleapis.com/v1beta/model
 // Logo URL - Using SVG for perfect scaling
 const LOGO_URL = "/ss-icon.svg";
 
-// Payment Configuration - BSC TESTNET (DEPLOYED ✅)
-const BSC_TESTNET_CHAIN_ID = 97;
+// Payment Configuration - BSC MAINNET (DEPLOYED ✅)
+const BSC_MAINNET_CHAIN_ID = 56;
 const SSTL_CONTRACT = SSTL_TOKEN_ADDRESS as `0x${string}`;
 const PAYMENT_RECIPIENT = '0x46e451d555ebCB4ccE5087555a07F6e69D017b05' as `0x${string}`; // Your Wallet (AI Agent Creator)
 const AUDIT_COST = '1000'; // 1000 SSTL tokens (matches deployed contract)
@@ -475,7 +475,7 @@ const generateAuditHTML = (auditData: AuditData): string => {
                     <p><strong>Date:</strong> ${new Date().toISOString().split('T')[0]}</p>
                     ${auditData.transactionHash ? `
                     <p class="break-all"><strong>TX Hash:</strong> 
-                        <a href="https://testnet.bscscan.com/tx/${auditData.transactionHash}" 
+                        <a href="https://bscscan.com/tx/${auditData.transactionHash}" 
                            target="_blank" 
                            rel="noopener noreferrer"
                            class="text-neon hover:underline"
@@ -599,14 +599,14 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     const sstlTokenContract = getContract({
         address: SSTL_TOKEN_ADDRESS,
         abi: SSTL_TOKEN_ABI as any,
-        chain: bscTestnet,
+        chain: bsc,
         client: thirdwebClient,
     } as any);
 
     const auditGatewayContract = getContract({
         address: AUDIT_GATEWAY_ADDRESS,
         abi: AUDIT_GATEWAY_ABI as any,
-        chain: bscTestnet,
+        chain: bsc,
         client: thirdwebClient,
     } as any);
     
@@ -1324,7 +1324,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
               )}
               {auditCompletedTxHash && (
                 <a 
-                  href={`https://testnet.bscscan.com/tx/${auditCompletedTxHash}`} 
+                  href={`https://bscscan.com/tx/${auditCompletedTxHash}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-neon hover:underline ml-1"

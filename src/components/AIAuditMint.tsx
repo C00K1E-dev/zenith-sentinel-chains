@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, memo } from "react";
 import { useActiveAccount, useSendTransaction, useReadContract } from "thirdweb/react";
 import { prepareContractCall, getContract, createThirdwebClient, readContract } from "thirdweb";
-import { bscTestnet } from "thirdweb/chains";
+import { bsc } from "thirdweb/chains";
 import { parseEther, formatUnits } from "viem";
 import { AI_AUDIT_ABI, AI_AUDIT_CONTRACT_ADDRESS, AI_AUDIT_CHAIN_ID, SSTL_TOKEN_ADDRESS, SSTL_TOKEN_ABI } from "../contracts/index";
 
@@ -30,14 +30,14 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
    const aiAuditContract = getContract({
      address: AI_AUDIT_CONTRACT_ADDRESS,
      abi: AI_AUDIT_ABI as any,
-     chain: bscTestnet,
+     chain: bsc,
      client: thirdwebClient,
    } as any);
 
    const sstlTokenContract = getContract({
      address: SSTL_TOKEN_ADDRESS,
      abi: SSTL_TOKEN_ABI as any,
-     chain: bscTestnet,
+     chain: bsc,
      client: thirdwebClient,
    } as any);
 
@@ -173,7 +173,7 @@ const AIAuditMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
 
       if (isNativePayment) {
         // Use BNB payment
-        mintPrice = mintPriceBNB ? BigInt(mintPriceBNB.toString()) : BigInt("74000000000000000"); // 0.074 BNB fallback
+        mintPrice = mintPriceBNB ? BigInt(mintPriceBNB.toString()) : BigInt("450000000000000000"); // 0.45 BNB fallback
       } else {
         // Use SSTL payment - check allowance first
         useSSTL = true;

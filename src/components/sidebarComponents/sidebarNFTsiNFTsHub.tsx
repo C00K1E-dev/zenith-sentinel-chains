@@ -200,7 +200,7 @@ const SidebarNFTsiNFTsHub = () => {
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground mb-0.5">Mint Price</div>
-                      <div className="text-base sm:text-lg font-bold text-primary font-orbitron">0.074 BNB</div>
+                      <div className="text-base sm:text-lg font-bold text-primary font-orbitron">0.45 BNB</div>
                     </div>
                   </div>
                 </div>
@@ -225,7 +225,7 @@ const SidebarNFTsiNFTsHub = () => {
                     }} />
                   </div>
                   <a 
-                    href={`https://testnet.bscscan.com/address/${GENESIS_CONTRACT_ADDRESS}`}
+                    href={`https://bscscan.com/address/${GENESIS_CONTRACT_ADDRESS}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="nft-mint-btn"
@@ -316,7 +316,7 @@ const SidebarNFTsiNFTsHub = () => {
                     </div>
                     <div>
                       <div className="text-xs text-muted-foreground mb-0.5">Mint Price</div>
-                      <div className="text-base sm:text-lg font-bold text-accent font-orbitron">0.074 BNB</div>
+                      <div className="text-base sm:text-lg font-bold text-accent font-orbitron">0.45 BNB</div>
                     </div>
                   </div>
                 </div>
@@ -334,7 +334,7 @@ const SidebarNFTsiNFTsHub = () => {
                     }} />
                   </div>
                   <a 
-                    href={`https://testnet.bscscan.com/address/${AI_AUDIT_CONTRACT_ADDRESS}`}
+                    href={`https://bscscan.com/address/${AI_AUDIT_CONTRACT_ADDRESS}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="nft-mint-btn"

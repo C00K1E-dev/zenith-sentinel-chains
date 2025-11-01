@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useActiveAccount, useReadContract, useSendTransaction } from "thirdweb/react";
 import { getContract, prepareContractCall, createThirdwebClient, readContract } from "thirdweb";
-import { bscTestnet } from "thirdweb/chains";
+import { bsc } from "thirdweb/chains";
 import { formatEther } from "viem";
 import { Loader, Gift, TrendingUp, CheckCircle, AlertCircle, ExternalLink, DollarSign } from "lucide-react";
 
@@ -54,19 +54,19 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   const pouwContract = getContract({
     client: thirdwebClient,
     address: POUW_POOL_ADDRESS,
-    chain: bscTestnet,
+    chain: bsc,
   });
 
   const genesisContract = getContract({
     client: thirdwebClient,
     address: GENESIS_CONTRACT_ADDRESS,
-    chain: bscTestnet,
+    chain: bsc,
   });
 
   const aiAuditContract = getContract({
     client: thirdwebClient,
     address: AI_AUDIT_CONTRACT_ADDRESS,
-    chain: bscTestnet,
+    chain: bsc,
   });
 
   // Calculate user earnings and pending rewards/revenue
@@ -471,9 +471,9 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
     totalJobs: totalJobs ? Number(totalJobs) : 0
   });
 
-  // Get explorer URL - BSC Testnet
+  // Get explorer URL - BSC Mainnet
   const getExplorerUrl = (txHash: string) => {
-    return `https://testnet.bscscan.com/tx/${txHash}`;
+    return `https://bscscan.com/tx/${txHash}`;
   };
 
   return (
@@ -715,7 +715,7 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
           {/* Global Stats */}
           <div className="global-stats">
             <h4>Global PoUW Statistics</h4>
-            <p className="text-xs text-muted-foreground mb-2">These statistics are on Testnet</p>
+            <p className="text-xs text-muted-foreground mb-2">These statistics are on BSC Mainnet</p>
             <div className="global-stat-item">
               <span className="global-stat-label">Total Audits Completed:</span>
               <span className="global-stat-value">{totalAuditsCompleted}</span>

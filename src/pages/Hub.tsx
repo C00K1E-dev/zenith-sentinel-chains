@@ -67,10 +67,11 @@ const Hub = () => {
         <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-primary/2 rounded-full blur-2xl" />
       </div>
 
-      <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />
+      <div className="flex w-full h-screen">
+        <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />
 
-      <main className={cn("flex-1 relative z-10 transition-all duration-300", collapsed ? "ml-20" : "ml-0 md:ml-72 lg:ml-80")}>
-        <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+        <main className={cn("flex-1 relative z-10 transition-all duration-300 overflow-auto", collapsed ? "ml-0" : "ml-0 md:ml-0")}>
+          <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
           <Routes>
             <Route index element={<Suspense fallback={<Loading />}><SidebarGeneralStats /></Suspense>} />
             <Route path="my-nfts" element={<Suspense fallback={<Loading />}><SidebarMyNFTs /></Suspense>} />
@@ -86,7 +87,8 @@ const Hub = () => {
             <Route path="staking" element={<Suspense fallback={<Loading />}><SidebarStaking /></Suspense>} />
           </Routes>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
     </>
   );

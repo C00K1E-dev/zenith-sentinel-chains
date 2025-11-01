@@ -132,10 +132,10 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   return (
     <aside
       className={cn(
-        'glass-card border-r border-yellow-400/20 transition-all duration-150 h-screen fixed left-0 top-0 flex flex-col overflow-hidden',
+        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen flex flex-col overflow-hidden flex-shrink-0',
         collapsed 
-          ? 'w-20 z-50' 
-          : 'w-64 md:w-72 lg:w-80 z-40 fixed md:relative md:left-auto md:top-auto'
+          ? 'w-20' 
+          : 'w-64 md:w-72 lg:w-80'
       )}
     >
       {/* Toggle Button */}

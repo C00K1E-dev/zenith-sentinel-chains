@@ -69,7 +69,7 @@ const Hub = () => {
 
       <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />
 
-      <main className={cn("flex-1 relative z-10 transition-all duration-300", collapsed ? "ml-20" : "ml-20 sm:ml-56 md:ml-64 lg:ml-72")}>
+      <main className={cn("flex-1 relative z-10 transition-all duration-300", collapsed ? "ml-20" : "ml-64 md:ml-72 lg:ml-80")}>
         <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
           <Routes>
             <Route index element={<Suspense fallback={<Loading />}><SidebarGeneralStats /></Suspense>} />

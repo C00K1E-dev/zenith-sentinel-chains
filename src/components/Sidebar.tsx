@@ -14,6 +14,7 @@ import {
   Wallet,
   Award,
   HardDrive,
+  Home,
 } from 'lucide-react';
 import { createThirdwebClient } from "thirdweb";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
@@ -295,6 +296,28 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
             </Link>
           );
         })}
+
+        {/* Back to Homepage Button */}
+        <Link
+          to="/"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-orbitron',
+            'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+            collapsed && 'justify-center'
+          )}
+        >
+          <Home size={20} />
+          {!collapsed && (
+            <span className="flex-1 text-sm">Back to Homepage</span>
+          )}
+          
+          {/* Tooltip for collapsed state */}
+          {collapsed && (
+            <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-orbitron">
+              Back to Homepage
+            </div>
+          )}
+        </Link>
       </nav>
     </aside>
   );

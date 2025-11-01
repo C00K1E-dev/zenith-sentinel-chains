@@ -18,13 +18,18 @@ const SidebarMarketplace = lazy(() => import('@/components/sidebarComponents/sid
 const SidebarStaking = lazy(() => import('@/components/sidebarComponents/sidebarStaking'));
 
 const Hub = () => {
-  const [collapsed, setCollapsed] = useState(window.innerWidth < 1024);
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
   const [manualCollapsed, setManualCollapsed] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
       if (!manualCollapsed) {
-        setCollapsed(window.innerWidth < 1024);
+        // Only auto-collapse if user hasn't manually toggled
+        if (window.innerWidth < 768) {
+          setCollapsed(true);
+        } else {
+          setCollapsed(window.innerWidth < 1024);
+        }
       }
     };
 
@@ -68,6 +73,14 @@ const Hub = () => {
       </div>
 
       <div className="flex w-full h-screen">
+        {/* Mobile backdrop overlay */}
+        {!collapsed && (
+          <div 
+            className="fixed inset-0 bg-black/50 md:hidden z-40"
+            onClick={() => handleSetCollapsed(true)}
+          />
+        )}
+        
         <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />
 
         <main className={cn("flex-1 relative z-10 transition-all duration-300 overflow-auto", collapsed ? "ml-0" : "ml-0 md:ml-0")}>

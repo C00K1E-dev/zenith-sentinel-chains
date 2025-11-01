@@ -135,7 +135,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
         'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen flex flex-col overflow-hidden flex-shrink-0',
         collapsed 
           ? 'w-20' 
-          : 'w-64 md:w-72 lg:w-80'
+          : 'w-64 md:w-72 lg:w-80 fixed md:static left-0 top-0 z-50 md:z-auto'
       )}
     >
       {/* Toggle Button */}

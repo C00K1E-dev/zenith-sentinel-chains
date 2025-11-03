@@ -7,6 +7,34 @@
     { "source": "/index", "destination": "/", "permanent": true },
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/whitepaper", "destination": "/documents", "permanent": true },
-    { "source": "/dashboard", "destination": "/hub", "permanent": true }
+    { "source": "/dashboard", "destination": "/hub", "permanent": true },
+    { "source": "/app", "destination": "/hub", "permanent": true },
+    { "source": "/docs", "destination": "/documents", "permanent": true },
+    { "source": "/pitchdeck", "destination": "/documents", "permanent": true },
+    { "source": "/pitch-deck", "destination": "/documents", "permanent": true },
+    { "source": "/mint", "destination": "/", "permanent": true },
+    { "source": "/nft", "destination": "/hub", "permanent": true },
+    { "source": "/nfts", "destination": "/hub", "permanent": true },
+    { "source": "/token", "destination": "/", "permanent": true },
+    { "source": "/about", "destination": "/", "permanent": true }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
   ]
 }

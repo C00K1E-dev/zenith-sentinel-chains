@@ -55,6 +55,7 @@ const Documents = () => {
 	return (
 		<>
 			<MetaTags 
+				title="Documents | SmartSentinels"
 				description="Download official SmartSentinels documents: whitepaper, lightpaper, pitch deck, and legal resources for the decentralized AI platform."
 				path="/documents"
 			/>

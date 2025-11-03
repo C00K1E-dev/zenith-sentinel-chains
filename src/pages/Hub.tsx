@@ -44,6 +44,7 @@ const Hub = () => {
   return (
     <>
       <MetaTags 
+        title="Hub | SmartSentinels"
         description="Access your SmartSentinels dashboard: manage AI agents, monitor devices, view rewards, and participate in the decentralized workforce."
         path="/hub"
       />

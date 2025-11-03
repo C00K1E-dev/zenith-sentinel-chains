@@ -142,7 +142,7 @@ const GenesisMint = memo(({ onMinted }: { onMinted?: (args: { tokenId?: bigint, 
         valueWei = BigInt(mintAmountBNB);
       } else {
         // Fallback price
-        valueWei = parseEther("0.074");
+        valueWei = parseEther("0.1");
       }
     } else {
       // Using SSTL payment - check allowance first

@@ -36,7 +36,6 @@ const App = () => (
       <ThirdwebProvider>
         <TooltipProvider>
           <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <MetaTags />
             <Toaster />
             <Sonner />
             <Routes>

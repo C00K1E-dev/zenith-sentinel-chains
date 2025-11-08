@@ -63,7 +63,7 @@ const SidebarAirdrop = memo(() => {
       id: 'follow-x',
       name: 'Follow on X (Twitter)',
       description: 'Follow @SmartSentinels_ on X',
-      points: 100,
+      points: 10,
       icon: Twitter,
       completed: false,
       type: 'social',
@@ -74,7 +74,7 @@ const SidebarAirdrop = memo(() => {
       id: 'join-telegram',
       name: 'Join Telegram Community',
       description: 'Join our official Telegram group',
-      points: 100,
+      points: 10,
       icon: MessageCircle,
       completed: false,
       type: 'social',
@@ -96,7 +96,7 @@ const SidebarAirdrop = memo(() => {
       id: 'tag-friends',
       name: 'Tag 3 Friends',
       description: 'Tag 3 friends in our latest X post',
-      points: 150,
+      points: 15,
       icon: Users,
       completed: false,
       type: 'engagement',
@@ -107,7 +107,7 @@ const SidebarAirdrop = memo(() => {
       id: 'mint-genesis',
       name: 'Mint Genesis NFT',
       description: 'Mint an NFT from the Genesis Collection',
-      points: 500,
+      points: 50,
       icon: Sparkles,
       completed: false,
       type: 'nft',
@@ -117,7 +117,7 @@ const SidebarAirdrop = memo(() => {
       id: 'mint-audit',
       name: 'Mint AI Audit NFT',
       description: 'Mint an NFT from the AI Audit Collection',
-      points: 300,
+      points: 30,
       icon: Shield,
       completed: false,
       type: 'nft',
@@ -438,11 +438,27 @@ const SidebarAirdrop = memo(() => {
 
   return (
     <div className={styles.container}>
+      {/* Coming Soon Banner */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className={styles.comingSoonBanner}
+      >
+        <div className={styles.comingSoonContent}>
+          <span className={styles.comingSoonBadge}>COMING SOON</span>
+          <h2 className={styles.comingSoonTitle}>🚀 Airdrop Campaign Launching Soon!</h2>
+          <p className={styles.comingSoonText}>
+            Get ready to earn SSTL tokens by completing tasks. Follow our social media channels for launch announcements and exclusive updates.
+          </p>
+        </div>
+      </motion.div>
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className={styles.header}
+        style={{ opacity: 0.5 }}
       >
         <div className={styles.headerContent}>
           <div className={styles.headerIcon}>
@@ -460,6 +476,7 @@ const SidebarAirdrop = memo(() => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
+        style={{ opacity: 0.5, pointerEvents: 'none' }}
       >
         <Card className={styles.infoCard}>
           <CardContent className="pt-6">
@@ -506,6 +523,7 @@ const SidebarAirdrop = memo(() => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
+        style={{ opacity: 0.5, pointerEvents: 'none' }}
       >
         <Card className={styles.statsCard}>
           <CardContent className="pt-6">
@@ -545,25 +563,24 @@ const SidebarAirdrop = memo(() => {
 
             <Button 
               onClick={handleClaimTokens}
-              disabled={isClaiming || userPoints < 100 || !account?.address}
+              disabled={true}
               className={styles.claimButton}
               size="lg"
             >
               <Coins className="mr-2" size={20} />
-              {isClaiming ? 'Processing...' : `Claim SSTL Tokens (${userPoints} pts)`}
+              Claim SSTL Tokens (Coming Soon)
             </Button>
-            {userPoints < 100 && (
-              <p className={styles.claimHint}>Minimum 100 points required to claim</p>
-            )}
+            <p className={styles.claimHint}>🎯 Airdrop campaign launching soon - Stay tuned!</p>
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Tabs */}
-      <div className={styles.tabs}>
+      <div className={styles.tabs} style={{ opacity: 0.5, pointerEvents: 'none' }}>
         <button
           onClick={() => setActiveTab('tasks')}
           className={`${styles.tab} ${activeTab === 'tasks' ? styles.tabActive : ''}`}
+          disabled
         >
           <CheckCircle2 size={18} />
           Tasks
@@ -571,6 +588,7 @@ const SidebarAirdrop = memo(() => {
         <button
           onClick={() => setActiveTab('leaderboard')}
           className={`${styles.tab} ${activeTab === 'leaderboard' ? styles.tabActive : ''}`}
+          disabled
         >
           <Trophy size={18} />
           Leaderboard
@@ -586,6 +604,7 @@ const SidebarAirdrop = memo(() => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             className={styles.content}
+            style={{ opacity: 0.5, pointerEvents: 'none' }}
           >
             <div className={styles.tasksList}>
               {tasks.map((task, index) => (
@@ -656,6 +675,7 @@ const SidebarAirdrop = memo(() => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className={styles.content}
+            style={{ opacity: 0.5, pointerEvents: 'none' }}
           >
             <Card className={styles.leaderboardCard}>
               <CardHeader>

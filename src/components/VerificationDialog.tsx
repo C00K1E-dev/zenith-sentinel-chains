@@ -76,7 +76,7 @@ export function VerificationDialog({
       case 'twitter-tags':
         return 'Your Twitter/X Username';
       case 'telegram':
-        return 'Your Telegram Username';
+        return 'Your Telegram User ID';
       default:
         return 'Username';
     }
@@ -89,7 +89,7 @@ export function VerificationDialog({
       case 'twitter-tags':
         return '@yourusername';
       case 'telegram':
-        return '@yourusername';
+        return '123456789';
       default:
         return 'Enter username';
     }
@@ -104,7 +104,7 @@ export function VerificationDialog({
       case 'twitter-tags':
         return 'Tag 3 friends in our latest X/Twitter post, then provide your username and the tweet URL to verify.';
       case 'telegram':
-        return 'Join our Telegram community, then enter your username to verify membership.';
+        return 'Join our Telegram community, then get your User ID from @SmartSentinels_BOT by sending /start command.';
       default:
         return 'Complete the task and verify with your username.';
     }
@@ -132,7 +132,20 @@ export function VerificationDialog({
               type="button"
             >
               <ExternalLink className="mr-2 h-4 w-4" />
-              {taskType === 'telegram' ? 'Open Telegram' : 'Open X/Twitter'}
+              {taskType === 'telegram' ? 'Join Telegram Group' : 'Open X/Twitter'}
+            </Button>
+          )}
+
+          {/* Telegram bot link */}
+          {taskType === 'telegram' && (
+            <Button
+              onClick={() => window.open('https://t.me/SmartSentinels_BOT', '_blank')}
+              variant="outline"
+              className="w-full"
+              type="button"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Get User ID from Bot
             </Button>
           )}
 
@@ -146,6 +159,11 @@ export function VerificationDialog({
               placeholder={getInputPlaceholder()}
               className="w-full"
             />
+            {taskType === 'telegram' && (
+              <p className="text-xs text-muted-foreground">
+                Send /start to @SmartSentinels_BOT to get your numeric User ID
+              </p>
+            )}
           </div>
 
           {/* Tweet URL for tag verification */}

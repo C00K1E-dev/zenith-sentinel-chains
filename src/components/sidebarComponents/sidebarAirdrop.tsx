@@ -14,7 +14,8 @@ import {
   ExternalLink,
   Award,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  ClipboardList
 } from 'lucide-react';
 import { useActiveAccount } from 'thirdweb/react';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,12 @@ import {
   generateClaimSignature,
   checkClaimStatus,
 } from '@/utils/taskVerification';
+import {
+  getUserProgress,
+  completeTask as completeTaskBackend,
+  checkTelegramAvailability,
+  getLeaderboard as getLeaderboardBackend,
+} from '@/services/airdropApi';
 import styles from './sidebarAirdrop.module.css';
 
 interface Task {
@@ -60,6 +67,17 @@ const SidebarAirdrop = memo(() => {
   const [userPoints, setUserPoints] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([
     {
+      id: 'fill-form',
+      name: 'Fill Registration Form',
+      description: 'Complete the registration form with your wallet address, X handle, and Telegram handle to be eligible for token claim on TGE',
+      points: 10,
+      icon: ClipboardList,
+      completed: false,
+      type: 'social',
+      actionUrl: 'https://forms.gle/your-form-url', // Replace with your actual form URL
+      requiresVerification: false,
+    },
+    {
       id: 'follow-x',
       name: 'Follow on X (Twitter)',
       description: 'Follow @SmartSentinels_ on X',
@@ -78,7 +96,7 @@ const SidebarAirdrop = memo(() => {
       icon: MessageCircle,
       completed: false,
       type: 'social',
-      actionUrl: 'https://t.me/smartsentinels',
+      actionUrl: 'https://t.me/SmartSentinelsCommunity',
       requiresVerification: true,
     },
     {
@@ -153,28 +171,67 @@ const SidebarAirdrop = memo(() => {
     taskType: 'twitter-follow',
   });
 
-  // Load user progress from localStorage
+  // Load user progress from backend and localStorage
   useEffect(() => {
     if (account?.address) {
-      const savedProgress = localStorage.getItem(`airdrop_progress_${account.address}`);
-      if (savedProgress) {
-        const { points, completedTasks } = JSON.parse(savedProgress);
-        setUserPoints(points);
-        setTasks(prevTasks =>
-          prevTasks.map(task =>
-            completedTasks.includes(task.id) ? { ...task, completed: true } : task
-          )
-        );
-      }
+      loadUserProgress();
     }
   }, [account?.address]);
 
-  // Save progress to localStorage
-  const saveProgress = (points: number, completedTaskIds: string[]) => {
+  const loadUserProgress = async () => {
+    if (!account?.address) return;
+
+    try {
+      // Try to load from backend first
+      const backendData = await getUserProgress(account.address);
+      
+      if (backendData && backendData.points > 0) {
+        // Use backend data
+        setUserPoints(backendData.points);
+        setTasks(prevTasks =>
+          prevTasks.map(task =>
+            backendData.completedTasks.includes(task.id) ? { ...task, completed: true } : task
+          )
+        );
+        
+        // Also save to localStorage as backup
+        saveProgressLocal(backendData.points, backendData.completedTasks);
+        console.log('Loaded progress from backend:', backendData);
+      } else {
+        // Fallback to localStorage
+        const savedProgress = localStorage.getItem(`airdrop_progress_${account.address}`);
+        if (savedProgress) {
+          try {
+            const { points, completedTasks } = JSON.parse(savedProgress);
+            setUserPoints(points);
+            setTasks(prevTasks =>
+              prevTasks.map(task =>
+                completedTasks.includes(task.id) ? { ...task, completed: true } : task
+              )
+            );
+            console.log('Loaded progress from localStorage:', { points, completedTasks });
+          } catch (error) {
+            console.error('Error parsing localStorage:', error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  };
+
+  // Save progress to localStorage (backup)
+  const saveProgressLocal = (points: number, completedTaskIds: string[]) => {
     if (account?.address) {
+      const progressData = {
+        points,
+        completedTasks: completedTaskIds,
+        timestamp: Date.now(),
+        lastUpdated: new Date().toISOString()
+      };
       localStorage.setItem(
         `airdrop_progress_${account.address}`,
-        JSON.stringify({ points, completedTasks: completedTaskIds })
+        JSON.stringify(progressData)
       );
     }
   };
@@ -189,6 +246,18 @@ const SidebarAirdrop = memo(() => {
         description: "Please connect your wallet to complete tasks",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Special handling for registration form - just open the URL
+    if (taskId === 'fill-form') {
+      if (task.actionUrl) {
+        window.open(task.actionUrl, '_blank');
+        toast({
+          title: "Opening Registration Form",
+          description: "Please complete the form and return here to mark it as complete",
+        });
+      }
       return;
     }
 
@@ -249,6 +318,16 @@ const SidebarAirdrop = memo(() => {
     const task = tasks.find(t => t.id === taskId);
     if (!task || !account?.address) return false;
 
+    // Check if task is already completed
+    if (task.completed) {
+      toast({
+        title: "Already Completed",
+        description: "You have already completed this task!",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     let result;
 
     try {
@@ -263,7 +342,39 @@ const SidebarAirdrop = memo(() => {
           result = await verifyTwitterTags(account.address, username, additionalData?.tweetUrl);
           break;
         case 'telegram':
+          // Check if this Telegram ID is available
+          const availabilityCheck = await checkTelegramAvailability(username, account.address);
+          
+          if (!availabilityCheck.available) {
+            toast({
+              title: "Already Used",
+              description: "This Telegram account has already been used by another wallet address.",
+              variant: "destructive",
+            });
+            return false;
+          }
+          
+          // Verify with Telegram API
           result = await verifyTelegramJoin(account.address, username);
+          
+          // If verified, complete task on backend
+          if (result.verified) {
+            const backendResult = await completeTaskBackend(
+              account.address,
+              taskId,
+              task.points,
+              username
+            );
+            
+            if (!backendResult.success) {
+              toast({
+                title: "Error",
+                description: backendResult.error || "Failed to save progress",
+                variant: "destructive",
+              });
+              return false;
+            }
+          }
           break;
         default:
           return false;
@@ -294,7 +405,27 @@ const SidebarAirdrop = memo(() => {
     }
   };
 
-  const completeTask = async (taskId: string, points: number) => {
+  const completeTask = async (taskId: string, points: number, telegramUserId?: string) => {
+    if (!account?.address) return;
+
+    // For non-Telegram tasks, save to backend
+    if (taskId !== 'join-telegram') {
+      const backendResult = await completeTaskBackend(
+        account.address,
+        taskId,
+        points
+      );
+
+      if (!backendResult.success) {
+        toast({
+          title: "Error",
+          description: backendResult.error || "Failed to save progress",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     // Mark task as completed locally
     const updatedTasks = tasks.map(t =>
       t.id === taskId ? { ...t, completed: true } : t
@@ -304,12 +435,7 @@ const SidebarAirdrop = memo(() => {
 
     setTasks(updatedTasks);
     setUserPoints(newPoints);
-    saveProgress(newPoints, completedTaskIds);
-
-    // Record on backend
-    if (account?.address) {
-      await recordTaskCompletion(account.address, taskId, points);
-    }
+    saveProgressLocal(newPoints, completedTaskIds);
   };
 
   const handleClaimTokens = async () => {
@@ -384,7 +510,7 @@ const SidebarAirdrop = memo(() => {
 
         // 5. Reset user points after successful claim
         setUserPoints(0);
-        saveProgress(0, tasks.filter(t => t.completed).map(t => t.id));
+        saveProgressLocal(0, tasks.filter(t => t.completed).map(t => t.id));
       }
       
     } catch (error) {
@@ -476,7 +602,6 @@ const SidebarAirdrop = memo(() => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        style={{ opacity: 0.5, pointerEvents: 'none' }}
       >
         <Card className={styles.infoCard}>
           <CardContent className="pt-6">
@@ -491,7 +616,7 @@ const SidebarAirdrop = memo(() => {
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={styles.infoLink}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
               >
                 theMiracle
                 <ExternalLink size={12} />
@@ -503,17 +628,6 @@ const SidebarAirdrop = memo(() => {
               Complete tasks to earn points, then claim your SSTL tokens directly through MetaMask Portfolio. 
               The more points you earn, the more tokens you can claim!
             </p>
-            <div className={styles.infoLinks}>
-              <a 
-                href="https://portfolio.metamask.io" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className={styles.infoLink}
-              >
-                Learn more about MetaMask Campaigns
-                <ExternalLink size={14} />
-              </a>
-            </div>
           </CardContent>
         </Card>
       </motion.div>
@@ -523,7 +637,6 @@ const SidebarAirdrop = memo(() => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        style={{ opacity: 0.5, pointerEvents: 'none' }}
       >
         <Card className={styles.statsCard}>
           <CardContent className="pt-6">
@@ -563,24 +676,27 @@ const SidebarAirdrop = memo(() => {
 
             <Button 
               onClick={handleClaimTokens}
-              disabled={true}
+              disabled={isClaiming || userPoints < 100}
               className={styles.claimButton}
               size="lg"
             >
               <Coins className="mr-2" size={20} />
-              Claim SSTL Tokens (Coming Soon)
+              {isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
             </Button>
-            <p className={styles.claimHint}>🎯 Airdrop campaign launching soon - Stay tuned!</p>
+            <p className={styles.claimHint}>
+              {userPoints < 100 
+                ? '🎯 Complete tasks to earn at least 100 points to claim tokens' 
+                : '✅ You are eligible to claim SSTL tokens!'}
+            </p>
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Tabs */}
-      <div className={styles.tabs} style={{ opacity: 0.5, pointerEvents: 'none' }}>
+      <div className={styles.tabs}>
         <button
           onClick={() => setActiveTab('tasks')}
           className={`${styles.tab} ${activeTab === 'tasks' ? styles.tabActive : ''}`}
-          disabled
         >
           <CheckCircle2 size={18} />
           Tasks
@@ -588,7 +704,6 @@ const SidebarAirdrop = memo(() => {
         <button
           onClick={() => setActiveTab('leaderboard')}
           className={`${styles.tab} ${activeTab === 'leaderboard' ? styles.tabActive : ''}`}
-          disabled
         >
           <Trophy size={18} />
           Leaderboard
@@ -604,7 +719,6 @@ const SidebarAirdrop = memo(() => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             className={styles.content}
-            style={{ opacity: 0.5, pointerEvents: 'none' }}
           >
             <div className={styles.tasksList}>
               {tasks.map((task, index) => (
@@ -650,7 +764,12 @@ const SidebarAirdrop = memo(() => {
                               size="sm"
                               className={styles.taskButton}
                             >
-                              {task.requiresVerification ? (
+                              {task.id === 'fill-form' ? (
+                                <>
+                                  Fill Form
+                                  <ExternalLink size={14} className="ml-1" />
+                                </>
+                              ) : task.requiresVerification ? (
                                 <>
                                   Start
                                   <ExternalLink size={14} className="ml-1" />
@@ -675,7 +794,6 @@ const SidebarAirdrop = memo(() => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             className={styles.content}
-            style={{ opacity: 0.5, pointerEvents: 'none' }}
           >
             <Card className={styles.leaderboardCard}>
               <CardHeader>

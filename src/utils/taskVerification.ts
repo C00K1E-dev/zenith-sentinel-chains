@@ -110,47 +110,83 @@ export async function verifyTwitterFollow(
 /**
  * Verify Telegram Join
  * 
- * Backend should use Telegram Bot API:
- * getChatMember method to check if user is member
+ * Uses Telegram Bot API to check group membership
+ * IMPORTANT: Requires user's numeric Telegram ID, not username!
  * 
- * Requires: Telegram Bot Token (on backend)
+ * Users can get their ID from @userinfobot on Telegram
+ * 
  * @param walletAddress - User's wallet address
- * @param telegramUsername - User's Telegram username
+ * @param telegramUserId - User's numeric Telegram ID
  */
 export async function verifyTelegramJoin(
   walletAddress: string,
-  telegramUsername?: string
+  telegramUserId?: string
 ): Promise<VerificationResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/verify/telegram-join`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        walletAddress,
-        telegramUsername,
-        chatId: '@smartsentinels', // Your Telegram group
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Verification failed');
+    if (!telegramUserId || telegramUserId.trim() === '') {
+      return {
+        verified: false,
+        message: 'Please enter your Telegram User ID.\n\nTo get it:\n1. Send a message to @userinfobot on Telegram\n2. Copy your User ID (numbers only)\n3. Paste it here',
+      };
     }
 
+    // Telegram User ID must be numeric
+    const numericUserId = telegramUserId.trim();
+    if (!/^\d+$/.test(numericUserId)) {
+      return {
+        verified: false,
+        message: 'Invalid User ID. It should be numbers only (e.g., 123456789).\n\nGet your ID from @userinfobot on Telegram',
+      };
+    }
+
+    // Telegram Bot API configuration from environment
+    const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '8562406342:AAE-MxgNZadX1hThRdVHHHiRVvRvtEh3FlQ';
+    const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || '-1002711126186';
+
+    // Call Telegram Bot API using getChatMember with numeric user ID
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`;
+    
+    const response = await fetch(`${url}?chat_id=${TELEGRAM_CHAT_ID}&user_id=${numericUserId}`);
     const data = await response.json();
-    return {
-      verified: data.verified,
-      message: data.verified 
-        ? 'Telegram membership verified!' 
-        : 'Could not verify Telegram membership. Please make sure you have joined the group.',
-      data: data,
-    };
+
+    console.log('Telegram API Response:', data); // Debug log
+
+    if (data.ok && data.result) {
+      // Check membership status
+      // Possible values: creator, administrator, member, restricted, left, kicked
+      const status = data.result.status;
+      const isMember = ['creator', 'administrator', 'member', 'restricted'].includes(status);
+
+      if (isMember) {
+        const username = data.result.user?.username || 'User';
+        return {
+          verified: true,
+          message: `Successfully verified @${username} as a member of SmartSentinels Community!`,
+          data: {
+            userId: numericUserId,
+            username: username,
+            status: status,
+            walletAddress: walletAddress,
+          },
+        };
+      } else {
+        return {
+          verified: false,
+          message: `You are not a member of the group (status: ${status}).\n\nPlease join: https://t.me/SmartSentinelsCommunity`,
+        };
+      }
+    } else {
+      // API returned error
+      return {
+        verified: false,
+        message: `Cannot verify membership.\n\nMake sure:\n1. You joined https://t.me/SmartSentinelsCommunity\n2. Your User ID is correct (get it from @userinfobot)\n\nError: ${data.description || 'Invalid User ID'}`,
+      };
+    }
   } catch (error) {
     console.error('Telegram verification error:', error);
     return {
       verified: false,
-      message: 'Verification temporarily unavailable. Please try again later.',
+      message: 'Verification failed. Please check your User ID and try again.',
     };
   }
 }

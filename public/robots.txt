@@ -1,20 +1,8 @@
 User-agent: Googlebot
 Allow: /
-Disallow: /home
-Disallow: /index
-Disallow: /index.html
-Disallow: /whitepaper
-Disallow: /dashboard
-Disallow: /PitchDeck.html
 
 User-agent: Bingbot
 Allow: /
-Disallow: /home
-Disallow: /index
-Disallow: /index.html
-Disallow: /whitepaper
-Disallow: /dashboard
-Disallow: /PitchDeck.html
 
 User-agent: Twitterbot
 Allow: /
@@ -24,12 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
-Disallow: /home
-Disallow: /index
-Disallow: /index.html
-Disallow: /whitepaper
-Disallow: /dashboard
-Disallow: /PitchDeck.html
 
 # AI Content Signals (experimental, may not be supported by all crawlers)
 # Content-signal: search=yes,ai-train=no

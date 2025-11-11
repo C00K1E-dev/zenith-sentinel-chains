@@ -12,16 +12,16 @@ const PoweredBy = memo(() => {
   ];
 
   const partners = [
+    { name: 'theMiracle', logo: '/assets/miracle.svg', link: 'https://www.themiracle.io/' },
+    { name: 'Studio Blockchain', logo: '/assets/studio.png', link: 'https://studio-blockchain.com/' },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },
-    { name: 'Get featured here', logo: '', isText: true },
-    { name: 'Get featured here', logo: '', isText: true },
-  ] as Array<{ name: string; logo: string; isText?: boolean }>;
+  ] as Array<{ name: string; logo: string; isText?: boolean; link?: string }>;
 
-  const Marquee = ({ items, direction = 'left' }: { items: Array<{ name: string; logo: string; isText?: boolean }>; direction?: 'left' | 'right' }) => {
+  const Marquee = ({ items, direction = 'left', isPartners = false }: { items: Array<{ name: string; logo: string; isText?: boolean; link?: string }>; direction?: 'left' | 'right'; isPartners?: boolean }) => {
     const duplicatedItems = [...items, ...items, ...items]; // Triple for seamless loop
     return (
       <div className="relative overflow-hidden py-4">
@@ -46,11 +46,23 @@ const PoweredBy = memo(() => {
                   <span className="text-sm font-semibold text-primary">{item.name}</span>
                 </div>
               ) : (
-                <img
-                  src={item.logo}
-                  alt={item.name}
-                  className={item.name === 'AMD' ? "h-20 w-20 object-contain -mb-6 -mt-2" : "h-10 w-10 object-contain mb-2"}
-                />
+                <>
+                  {isPartners && item.link ? (
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" className="cursor-pointer hover:opacity-80 transition-opacity">
+                      <img
+                        src={item.logo}
+                        alt={item.name}
+                        className="h-16 w-16 object-contain mb-2"
+                      />
+                    </a>
+                  ) : (
+                    <img
+                      src={item.logo}
+                      alt={item.name}
+                      className="h-16 w-16 object-contain mb-2"
+                    />
+                  )}
+                </>
               )}
               {!item.isText && <span className="text-xs text-muted-foreground font-medium">{item.name}</span>}
             </div>
@@ -65,7 +77,7 @@ const PoweredBy = memo(() => {
       <h2 className="text-center text-3xl md:text-4xl font-orbitron font-bold mb-6 neon-glow">Powered By</h2>
       <Marquee items={technologies} direction="left" />
       <h3 className="text-center text-xl md:text-2xl font-orbitron font-semibold mt-10 mb-4 neon-glow">Partners</h3>
-      <Marquee items={partners} direction="right" />
+      <Marquee items={partners} direction="right" isPartners={true} />
     </section>
   );
 });

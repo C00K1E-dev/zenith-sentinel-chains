@@ -185,6 +185,16 @@ const Index = () => {
                 <div className="text-sm sm:text-base lg:text-lg text-muted-foreground">
                   <span className="font-semibold text-primary">Standard:</span> BEP-20 Token
                 </div>
+                <div className="flex justify-center items-center gap-2">
+                  <Button asChild variant="ghost" size="sm" className="p-2 h-7 w-7 sm:h-8 sm:w-8">
+                    <a href="https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink size={14} className="sm:w-4 sm:h-4" />
+                    </a>
+                  </Button>
+                  <a href="https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum" target="_blank" rel="noopener noreferrer" className="text-sm sm:text-base lg:text-lg font-semibold text-primary hover:text-primary/80 transition-colors">
+                    Audit
+                  </a>
+                </div>
               </div>
             </div>
           </div>

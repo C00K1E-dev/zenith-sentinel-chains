@@ -14,7 +14,7 @@ import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
 import News from "./pages/News";
 import NotFound from "./pages/NotFound";
-import CookiePolicy from './components/CookiePolicy';
+import C15TCookieProvider from './components/CookiePolicy';
 
 const queryClient = new QueryClient();
 
@@ -33,26 +33,27 @@ const config = createConfig({
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
-    <WagmiProvider config={config}>
-      <ThirdwebProvider>
-        <TooltipProvider>
-          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/documents" element={<Documents />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/hub/*" element={<Hub />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </ThirdwebProvider>
-    </WagmiProvider>
-  </QueryClientProvider>
-  <CookiePolicy />
+      <WagmiProvider config={config}>
+        <ThirdwebProvider>
+          <C15TCookieProvider>
+            <TooltipProvider>
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <Toaster />
+                <Sonner />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/documents" element={<Documents />} />
+                  <Route path="/news" element={<News />} />
+                  <Route path="/hub/*" element={<Hub />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </C15TCookieProvider>
+        </ThirdwebProvider>
+      </WagmiProvider>
+    </QueryClientProvider>
   </HelmetProvider>
 );
 

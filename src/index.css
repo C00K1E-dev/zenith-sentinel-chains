@@ -677,3 +677,43 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(248, 244, 66, 0.4);
 }
+
+/* C15T Cookie Banner Button Overrides - Replace Blue with Yellow */
+/* Target all buttons in c15t components */
+[class*="c15t"] button,
+.c15t-root button {
+  color: #f8f442 !important;
+  border-color: #f8f442 !important;
+}
+
+/* Specifically target customize button */
+button[type="button"]:has(+ [class*="c15t"]),
+[class*="c15t"] button[type="button"] {
+  background-color: transparent !important;
+  color: #f8f442 !important;
+  border: 1px solid #f8f442 !important;
+}
+
+[class*="c15t"] button[type="button"]:hover {
+  color: #ffff66 !important;
+  border-color: #ffff66 !important;
+}
+
+/* Override inline styles if present */
+[style*="blue"] {
+  color: #f8f442 !important;
+  border-color: #f8f442 !important;
+}
+
+/* Catch all button text color changes from blue */
+button:not(.excluded-button) {
+  color: #f8f442 !important;
+}
+
+/* Target specific blue color replacements */
+[style*="#3b82f6"],
+[style*="rgb(59, 130, 246)"],
+[style*="hsl(217"] {
+  color: #f8f442 !important;
+  border-color: #f8f442 !important;
+}

@@ -1,0 +1,63 @@
+/* C15T Cookie Banner & Dialog - Yellow Button Overrides */
+
+/* Universal button color change - target all instances */
+button {
+  color: #f8f442 !important;
+  border-color: #f8f442 !important;
+}
+
+button:hover,
+button:focus {
+  color: #ffff66 !important;
+  border-color: #ffff66 !important;
+}
+
+/* C15T specific selectors */
+[data-c15t] button,
+[class*="c15t-"] button {
+  color: #f8f442 !important;
+  border-color: #f8f442 !important;
+}
+
+[data-c15t] button:hover,
+[class*="c15t-"] button:hover {
+  color: #ffff66 !important;
+  border-color: #ffff66 !important;
+}
+
+/* SVG icon colors in buttons */
+button svg,
+button svg path,
+button svg circle,
+button svg rect {
+  stroke: #f8f442 !important;
+  fill: #f8f442 !important;
+  color: #f8f442 !important;
+}
+
+button:hover svg,
+button:hover svg path,
+button:hover svg circle,
+button:hover svg rect {
+  stroke: #ffff66 !important;
+  fill: #ffff66 !important;
+  color: #ffff66 !important;
+}
+
+/* Focus states */
+button:focus-visible {
+  outline-color: #f8f442 !important;
+}
+
+/* Pseudo-element styling */
+button::before,
+button::after {
+  color: #f8f442 !important;
+  border-color: #f8f442 !important;
+}
+
+button:hover::before,
+button:hover::after {
+  color: #ffff66 !important;
+  border-color: #ffff66 !important;
+}

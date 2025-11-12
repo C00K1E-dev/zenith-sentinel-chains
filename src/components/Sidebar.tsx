@@ -45,10 +45,10 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
 
   const menuItems: SidebarItem[] = useMemo(() => [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
-    { name: 'Airdrop', path: '/hub/airdrop', icon: Gift },
+    { name: 'Airdrop', path: '/hub/airdrop', icon: Gift, badge: 'Soon' },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },
-    { name: 'Device Monitoring', path: '/hub/devices', icon: Monitor, badge: 'Soon' },
+    { name: 'Device Monitoring', path: '/hub/devices', icon: Monitor },
     { name: 'Create Agent', path: '/hub/create-agent', icon: Bot, badge: 'Soon' },
     { name: 'Marketplace', path: '/hub/marketplace', icon: Store, badge: 'Soon' },
     { name: 'Staking', path: '/hub/staking', icon: Coins, badge: 'Soon' },

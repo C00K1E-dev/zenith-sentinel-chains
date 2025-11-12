@@ -7,9 +7,10 @@ interface DeviceCardProps {
   type: string;
   status: 'running' | 'idle' | 'stopped';
   icon: React.ComponentType<{ size?: string | number; className?: string }>;
+  info?: string;
 }
 
-const DeviceCard = ({ name, type, status, icon: Icon }: DeviceCardProps) => {
+const DeviceCard = ({ name, type, status, icon: Icon, info }: DeviceCardProps) => {
   const statusConfig = {
     running: { color: 'text-green-400', bgColor: 'bg-green-400/20', icon: Play, label: 'Running' },
     idle: { color: 'text-yellow-400', bgColor: 'bg-yellow-400/20', icon: Pause, label: 'Idle' },
@@ -37,14 +38,11 @@ const DeviceCard = ({ name, type, status, icon: Icon }: DeviceCardProps) => {
           <span className={`text-xs font-medium ${config.color}`}>{config.label}</span>
         </div>
       </div>
-      <div className="text-center">
-        <button
-          disabled
-          className="w-full px-4 py-2 bg-primary/20 text-primary/60 border border-primary/30 rounded-lg font-orbitron text-sm cursor-not-allowed"
-        >
-          Coming Soon
-        </button>
-      </div>
+      {info && (
+        <div className="text-xs text-muted-foreground bg-primary/10 p-2 rounded border border-primary/20">
+          {info}
+        </div>
+      )}
     </motion.div>
   );
 };
@@ -52,40 +50,29 @@ const DeviceCard = ({ name, type, status, icon: Icon }: DeviceCardProps) => {
 const SidebarDeviceMonitoring = () => {
   const devices = [
     {
+      name: 'Google Cloud A100',
+      type: 'Cloud AI Server',
+      status: 'running' as const,
+      icon: Cloud,
+      info: 'SmartSentinels AI is running and deployed on Google Cloud'
+    },
+    {
       name: 'Jetson Orin NX',
-      type: 'NVIDIA Edge AI',
-      status: 'running' as const,
-      icon: Cpu
-    },
-    {
-      name: 'AMD Ryzen 9 7950X',
-      type: 'AMD PC with NPU',
-      status: 'idle' as const,
-      icon: Monitor
-    },
-    {
-      name: 'AWS EC2 P4d',
-      type: 'Cloud GPU Server',
-      status: 'running' as const,
-      icon: Cloud
-    },
-    {
-      name: 'Jetson Orin AGX',
       type: 'NVIDIA Edge AI',
       status: 'stopped' as const,
       icon: Cpu
     },
     {
-      name: 'AMD Ryzen 7 7800X3D',
-      type: 'AMD PC with APU',
-      status: 'idle' as const,
-      icon: Monitor
+      name: 'AWS EC2 P4d',
+      type: 'Cloud GPU Server',
+      status: 'stopped' as const,
+      icon: Cloud
     },
     {
-      name: 'Google Cloud A100',
-      type: 'Cloud AI Server',
-      status: 'running' as const,
-      icon: Cloud
+      name: 'AMD Ryzen 9 7950X',
+      type: 'AMD PC with NPU',
+      status: 'stopped' as const,
+      icon: Monitor
     }
   ];
 
@@ -101,17 +88,17 @@ const SidebarDeviceMonitoring = () => {
           Device Monitoring
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Total Devices"
-              value="6"
+              value="4"
               icon={HardDrive}
             />
           </div>
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Active Devices"
-              value="3"
+              value="1"
               icon={Play}
             />
           </div>

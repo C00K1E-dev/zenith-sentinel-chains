@@ -1,63 +1,149 @@
-/* C15T Cookie Banner & Dialog - Yellow Button Overrides */
+/* C15T Cookie Banner & Dialog - Yellow Accent Override */
 
-/* Universal button color change - target all instances */
-button {
+/* Override C15T root variables globally */
+:root {
+  --switch-background-color-checked: #f8f442 !important;
+  --switch-background-color-checked-dark: #f8f442 !important;
+}
+
+.c15t-dark {
+  --switch-background-color-checked: #f8f442 !important;
+  --switch-background-color-checked-dark: #f8f442 !important;
+}
+
+/* C15T Links - Privacy Policy, Terms, Disclaimer */
+.c15t-link {
+  color: #f8f442 !important;
+  text-decoration: underline !important;
+  cursor: pointer !important;
+  transition: color 0.3s ease !important;
+  border: none !important;
+  outline: none !important;
+  background: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: inherit !important;
+  font-family: inherit !important;
+}
+
+.c15t-link:hover {
+  color: #ffff66 !important;
+  text-shadow: 0 0 8px rgba(248, 244, 66, 0.5) !important;
+}
+
+.c15t-link:visited {
+  color: #f8f442 !important;
+}
+
+.c15t-link:focus {
+  outline: none !important;
+  border: none !important;
+}
+
+.c15t-link:focus-visible {
+  outline: none !important;
+  border: none !important;
+}
+
+/* Replace C15T blue with yellow - all variants */
+.c15t-container {
+  --button-primary: #f8f442 !important;
+  --button-primary-dark: #f8f442 !important;
+  --button-primary-hover: rgba(248, 244, 66, 0.1) !important;
+  --button-primary-hover-dark: rgba(248, 244, 66, 0.1) !important;
+  --button-focus-ring: #f8f442 !important;
+  --button-focus-ring-dark: #f8f442 !important;
+  --dialog-branding-focus-color: #f8f442 !important;
+  --dialog-branding-focus-color-dark: #f8f442 !important;
+}
+
+/* Override button background and text colors */
+.c15t-container button {
+  background-color: var(--button-background-color-dark) !important;
+  color: var(--button-primary-dark) !important;
+}
+
+/* Customize button - stroke style */
+.c15t-container [class*="c15t-button-primary-stroke"] {
+  background-color: transparent !important;
+  border: 1px solid #f8f442 !important;
+  color: #f8f442 !important;
+}
+
+.c15t-container [class*="c15t-button-primary-stroke"]:hover {
+  background-color: rgba(248, 244, 66, 0.05) !important;
+  border-color: #ffff66 !important;
+  color: #ffff66 !important;
+}
+
+/* Direct color replacement */
+.c15t-container svg {
+  color: inherit !important;
+}
+
+/* Change any remaining blue text to yellow */
+.c15t-container {
+  color-scheme: dark;
+}
+
+/* Force specific color on customize button text */
+button[data-testid="cookie-banner-customize-button"] {
   color: #f8f442 !important;
   border-color: #f8f442 !important;
+  border: 1px solid #f8f442 !important;
+  background-color: transparent !important;
+  box-shadow: inset 0 0 0 1px #f8f442 !important;
 }
 
-button:hover,
-button:focus {
+button[data-testid="cookie-banner-customize-button"]:hover {
   color: #ffff66 !important;
   border-color: #ffff66 !important;
+  border: 1px solid #ffff66 !important;
+  box-shadow: inset 0 0 0 1px #ffff66 !important;
 }
 
-/* C15T specific selectors */
-[data-c15t] button,
-[class*="c15t-"] button {
+/* Dialog - Save Settings button (widget footer) */
+button[data-testid="consent-manager-widget-footer-save-button"] {
   color: #f8f442 !important;
   border-color: #f8f442 !important;
+  border: 1px solid #f8f442 !important;
+  background-color: transparent !important;
+  box-shadow: inset 0 0 0 1px #f8f442 !important;
 }
 
-[data-c15t] button:hover,
-[class*="c15t-"] button:hover {
+button[data-testid="consent-manager-widget-footer-save-button"]:hover {
   color: #ffff66 !important;
   border-color: #ffff66 !important;
+  border: 1px solid #ffff66 !important;
+  box-shadow: inset 0 0 0 1px #ffff66 !important;
 }
 
-/* SVG icon colors in buttons */
-button svg,
-button svg path,
-button svg circle,
-button svg rect {
-  stroke: #f8f442 !important;
-  fill: #f8f442 !important;
-  color: #f8f442 !important;
+/* Dialog - Toggle switches (accent color) */
+.c15t-container [class*="c15t-track"],
+.c15t-container [class*="switch"] {
+  --switch-background-color-checked: #f8f442 !important;
+  --switch-background-color-checked-dark: #f8f442 !important;
 }
 
-button:hover svg,
-button:hover svg path,
-button:hover svg circle,
-button:hover svg rect {
-  stroke: #ffff66 !important;
-  fill: #ffff66 !important;
-  color: #ffff66 !important;
+/* Target the exact track element and force yellow background */
+.c15t-container .c15t-track-OlfR7 {
+  background-color: #f8f442 !important;
+  background: #f8f442 !important;
 }
 
-/* Focus states */
-button:focus-visible {
-  outline-color: #f8f442 !important;
+/* All c15t-track elements in container */
+.c15t-container [class^="c15t-track-"] {
+  background-color: #f8f442 !important;
+  background: #f8f442 !important;
 }
 
-/* Pseudo-element styling */
-button::before,
-button::after {
-  color: #f8f442 !important;
-  border-color: #f8f442 !important;
+/* When switch is checked, track should be yellow */
+.c15t-container [role="switch"][aria-checked="true"] > [class^="c15t-track-"] {
+  background-color: #f8f442 !important;
+  background: #f8f442 !important;
 }
 
-button:hover::before,
-button:hover::after {
-  color: #ffff66 !important;
-  border-color: #ffff66 !important;
+/* Thumb inside track - white for contrast */
+.c15t-container [class^="c15t-track-"] > [class^="c15t-thumb-"] {
+  background-color: #ffffff !important;
 }

@@ -7,7 +7,8 @@ const PoweredBy = memo(() => {
     { name: 'NVIDIA', logo: '/assets/nvidia-logo.svg' },
     { name: 'Thirdweb', logo: '/assets/thirdweb-logo.svg' },
     { name: 'Google Cloud', logo: '/assets/google-cloud-logo.svg' },
-    { name: 'AMD', logo: '/assets/amd-logo.svg' },
+    { name: 'AMD', logo: '/assets/amd-seeklogo.png' },
+    { name: 'C15T', logo: '/assets/c15t-logo.png' },
 
   ];
 

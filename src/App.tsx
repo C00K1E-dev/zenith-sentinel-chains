@@ -12,6 +12,7 @@ import { injected, metaMask } from 'wagmi/connectors';
 import Index from "./pages/Index";
 import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
+import News from "./pages/News";
 import NotFound from "./pages/NotFound";
 import CookiePolicy from './components/CookiePolicy';
 
@@ -41,6 +42,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/documents" element={<Documents />} />
+              <Route path="/news" element={<News />} />
               <Route path="/hub/*" element={<Hub />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
 import { VerificationDialog } from '@/components/VerificationDialog';
+import { RegistrationForm } from '@/components/RegistrationForm';
 import {
   verifyTwitterFollow,
   verifyTwitterLikes,
@@ -74,7 +75,6 @@ const SidebarAirdrop = memo(() => {
       icon: ClipboardList,
       completed: false,
       type: 'social',
-      actionUrl: 'https://forms.gle/your-form-url', // Replace with your actual form URL
       requiresVerification: false,
     },
     {
@@ -158,6 +158,7 @@ const SidebarAirdrop = memo(() => {
 
   const [isClaiming, setIsClaiming] = useState(false);
   const [activeTab, setActiveTab] = useState<'tasks' | 'leaderboard'>('tasks');
+  const [registrationFormOpen, setRegistrationFormOpen] = useState(false);
   const [verificationDialog, setVerificationDialog] = useState<{
     open: boolean;
     taskId: string;
@@ -237,7 +238,9 @@ const SidebarAirdrop = memo(() => {
   };
 
   const handleTaskComplete = (taskId: string) => {
+    console.log('handleTaskComplete called with:', taskId);
     const task = tasks.find(t => t.id === taskId);
+    console.log('Task found:', task);
     if (!task || task.completed) return;
 
     if (!account?.address) {
@@ -249,15 +252,10 @@ const SidebarAirdrop = memo(() => {
       return;
     }
 
-    // Special handling for registration form - just open the URL
+    // Special handling for registration form - open modal
     if (taskId === 'fill-form') {
-      if (task.actionUrl) {
-        window.open(task.actionUrl, '_blank');
-        toast({
-          title: "Opening Registration Form",
-          description: "Please complete the form and return here to mark it as complete",
-        });
-      }
+      console.log('Opening registration form modal');
+      setRegistrationFormOpen(true);
       return;
     }
 
@@ -403,6 +401,11 @@ const SidebarAirdrop = memo(() => {
       });
       return false;
     }
+  };
+
+  const handleRegistrationSuccess = async () => {
+    // Mark the registration form task as complete
+    completeTask('fill-form', 10);
   };
 
   const completeTask = async (taskId: string, points: number, telegramUserId?: string) => {
@@ -853,6 +856,16 @@ const SidebarAirdrop = memo(() => {
         actionUrl={verificationDialog.actionUrl}
         onVerify={handleSocialVerification}
       />
+
+      {/* Registration Form Dialog */}
+      {account?.address && (
+        <RegistrationForm
+          open={registrationFormOpen}
+          onOpenChange={setRegistrationFormOpen}
+          walletAddress={account.address}
+          onSuccess={handleRegistrationSuccess}
+        />
+      )}
     </div>
   );
 });

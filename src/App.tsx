@@ -14,6 +14,7 @@ import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
 import News from "./pages/News";
 import NotFound from "./pages/NotFound";
+import AdminDashboard from "./pages/AdminDashboard";
 import C15TCookieProvider from './components/CookiePolicy';
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/documents" element={<Documents />} />
                   <Route path="/news" element={<News />} />
+                  <Route path="/admin-dashboard" element={<AdminDashboard />} />
                   <Route path="/hub/*" element={<Hub />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

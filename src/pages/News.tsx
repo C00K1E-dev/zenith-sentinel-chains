@@ -13,8 +13,61 @@ interface NewsItem {
   emoji?: string;
 }
 
+const renderContentWithLinks = (text: string) => {
+  const parts = [];
+  let lastIndex = 0;
+  
+  // Pattern to match links: [text](url)
+  const linkRegex = /\[([^\]]+)\]\(([^\)]+)\)/g;
+  let match;
+  
+  while ((match = linkRegex.exec(text)) !== null) {
+    // Add text before the link
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    
+    // Add the link
+    parts.push(
+      <a
+        key={`link-${match.index}`}
+        href={match[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary hover:text-primary/80 font-semibold transition-colors underline"
+      >
+        {match[1]}
+      </a>
+    );
+    
+    lastIndex = match.index + match[0].length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  
+  return parts;
+};
+
 const News = () => {
   const newsItems: NewsItem[] = [
+    {
+      id: 2,
+      title: 'SmartSentinels x theMiracle Partnership Announcement',
+      date: 'November 14, 2025',
+      emoji: null,
+      content: `SmartSentinels is excited to announce our partnership with [theMiracle](https://www.themiracle.io/), a pioneer in wallet-native marketing campaigns directly integrated with MetaMask.
+
+Through this collaboration, SmartSentinels' Proof of Useful Work (PoUW) ecosystem — where AI agents perform real-world tasks to generate value — will gain a powerful growth layer that connects directly with users at the wallet level.
+
+theMiracle's unique infrastructure allows brands and blockchain projects to engage users inside their wallets through targeted, data-driven campaigns that respect privacy while maximizing reach and conversion.
+
+Together, we're bridging two powerful forces — AI-driven utility and wallet-native engagement — to accelerate the next wave of adoption for decentralized intelligence.
+
+The future of smart marketing and useful work is here.`
+    },
     {
       id: 1,
       title: 'SmartSentinels x Studio Blockchain Partnership Announcement',
@@ -22,7 +75,7 @@ const News = () => {
       emoji: null,
       content: `SmartSentinels x Studio Blockchain Partnership Announcement
 
-We're proud to announce a strategic partnership between SmartSentinels and Studio Blockchain!
+We're proud to announce a strategic partnership between SmartSentinels and [Studio Blockchain](https://studio-blockchain.com/)!
 
 Both projects share a bold vision — merging AI and Blockchain to create real, measurable utility in the decentralized world.
 
@@ -124,6 +177,29 @@ Together, we're building the future of decentralized AI infrastructure.`
                     </h2>
 
                     {/* Partnership Logos */}
+                    {item.id === 2 && (
+                      <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 py-6 border-b border-primary/20">
+                        <div className="flex flex-col items-center gap-2">
+                          <img 
+                            src="/ss-icon.svg" 
+                            alt="SmartSentinels Logo" 
+                            className="w-12 sm:w-16 h-12 sm:h-16 object-contain"
+                          />
+                          <span className="text-xs sm:text-sm text-muted-foreground font-orbitron">SmartSentinels</span>
+                        </div>
+                        
+                        <div className="text-primary font-bold text-2xl sm:text-3xl">×</div>
+                        
+                        <div className="flex flex-col items-center gap-2">
+                          <img 
+                            src="/assets/miracle.svg" 
+                            alt="theMiracle Logo" 
+                            className="w-12 sm:w-16 h-12 sm:h-16 object-contain"
+                          />
+                          <span className="text-xs sm:text-sm text-muted-foreground font-orbitron">theMiracle</span>
+                        </div>
+                      </div>
+                    )}
                     {item.id === 1 && (
                       <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 py-6 border-b border-primary/20">
                         <div className="flex flex-col items-center gap-2">
@@ -152,8 +228,8 @@ Together, we're building the future of decentralized AI infrastructure.`
                   {/* News Item Content */}
                   <div className="prose prose-invert max-w-none">
                     <div className="text-base sm:text-lg leading-relaxed text-foreground whitespace-pre-wrap font-light">
-                      {item.content}
-                      {item.id === 1 && (
+                      {renderContentWithLinks(item.content)}
+                      {(item.id === 1 || item.id === 2) && (
                         <span className="inline-flex items-center gap-2 ml-2 text-primary">
                           <Globe size={20} />
                           <Zap size={20} />

@@ -1,9 +1,9 @@
 /**
  * Airdrop Backend API Service
- * Communicates with the Vercel-deployed backend
+ * Communicates with the local backend server
  */
 
-const API_BASE_URL = 'https://sstlgbot.vercel.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 export interface AirdropUserData {
   walletAddress: string;
@@ -26,11 +26,18 @@ export interface LeaderboardEntry {
  */
 export async function getUserProgress(walletAddress: string): Promise<AirdropUserData | null> {
   try {
-    const response = await fetch(`${API_BASE_URL}/airdrop?wallet=${walletAddress}`);
+    const response = await fetch(`${API_BASE_URL}/user/${walletAddress}`);
     const data = await response.json();
     
     if (data.success) {
-      return data.data;
+      return {
+        walletAddress: data.data.wallet_address,
+        points: data.data.total_points,
+        completedTasks: data.data.completed_tasks,
+        telegramUserId: data.data.telegram_user_id,
+        createdAt: Date.now(),
+        lastUpdated: Date.now()
+      };
     }
     return null;
   } catch (error) {
@@ -49,7 +56,7 @@ export async function completeTask(
   telegramUserId?: string
 ): Promise<{ success: boolean; data?: AirdropUserData; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/airdrop?action=complete-task`, {
+    const response = await fetch(`${API_BASE_URL}/task/complete`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,12 +65,30 @@ export async function completeTask(
         walletAddress,
         taskId,
         points,
-        telegramUserId,
+        verificationData: telegramUserId ? { telegramUserId } : null
       }),
     });
 
     const data = await response.json();
-    return data;
+    
+    if (data.success) {
+      return {
+        success: true,
+        data: {
+          walletAddress: data.data.wallet_address,
+          points: data.data.total_points,
+          completedTasks: data.data.completed_tasks,
+          telegramUserId: null,
+          createdAt: Date.now(),
+          lastUpdated: Date.now()
+        }
+      };
+    }
+    
+    return {
+      success: false,
+      error: data.error || 'Failed to complete task'
+    };
   } catch (error) {
     console.error('Error completing task:', error);
     return {
@@ -81,7 +106,7 @@ export async function checkTelegramAvailability(
   walletAddress?: string
 ): Promise<{ available: boolean; linkedWallet: string | null }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/airdrop?action=check-telegram`, {
+    const response = await fetch(`${API_BASE_URL}/verify/telegram`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,8 +121,8 @@ export async function checkTelegramAvailability(
     
     if (data.success) {
       return {
-        available: data.available,
-        linkedWallet: data.linkedWallet,
+        available: data.available !== false,
+        linkedWallet: null,
       };
     }
     
@@ -113,17 +138,16 @@ export async function checkTelegramAvailability(
  */
 export async function getLeaderboard(limit: number = 10): Promise<LeaderboardEntry[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/airdrop?action=leaderboard&limit=${limit}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
+    const response = await fetch(`${API_BASE_URL}/leaderboard?limit=${limit}`);
     const data = await response.json();
     
-    if (data.success) {
-      return data.data;
+    if (data.success && data.data) {
+      return data.data.map((entry: any, index: number) => ({
+        rank: index + 1,
+        address: entry.wallet_address,
+        points: entry.total_points || 0,
+        tasksCompleted: entry.tasks_completed || 0
+      }));
     }
     
     return [];

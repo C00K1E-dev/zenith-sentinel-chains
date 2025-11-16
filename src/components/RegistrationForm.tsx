@@ -25,13 +25,11 @@ interface FormData {
   walletAddress: string;
   xHandle: string;
   telegramHandle: string;
-  email: string;
 }
 
 interface ValidationErrors {
   xHandle?: string;
   telegramHandle?: string;
-  email?: string;
 }
 
 export function RegistrationForm({
@@ -44,7 +42,6 @@ export function RegistrationForm({
     walletAddress,
     xHandle: '',
     telegramHandle: '',
-    email: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,18 +58,12 @@ export function RegistrationForm({
       newErrors.xHandle = 'Invalid X handle format';
     }
 
-    // Validate Telegram handle
+    // Validate Telegram handle (allow @ prefix like X handle)
+    const telegramHandle = formData.telegramHandle.replace(/^@/, '');
     if (!formData.telegramHandle.trim()) {
       newErrors.telegramHandle = 'Telegram handle is required';
-    } else if (!formData.telegramHandle.match(/^[A-Za-z0-9_]{5,32}$/) && !formData.telegramHandle.match(/^\d+$/)) {
+    } else if (!telegramHandle.match(/^[A-Za-z0-9_]{5,32}$/) && !telegramHandle.match(/^\d+$/)) {
       newErrors.telegramHandle = 'Invalid Telegram handle or user ID';
-    }
-
-    // Validate email
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
     }
 
     setErrors(newErrors);
@@ -110,7 +101,8 @@ export function RegistrationForm({
 
     try {
       // Submit to backend API
-      const response = await fetch('https://sstlgbot.vercel.app/api/airdrop/register', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+      const response = await fetch(`${API_BASE_URL}/registration`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +113,6 @@ export function RegistrationForm({
             ? formData.xHandle 
             : `@${formData.xHandle}`,
           telegramHandle: formData.telegramHandle,
-          email: formData.email,
           timestamp: Date.now(),
         }),
       });
@@ -160,7 +151,6 @@ export function RegistrationForm({
               walletAddress,
               xHandle: '',
               telegramHandle: '',
-              email: '',
             });
             onOpenChange(false);
           }, 1500);
@@ -255,29 +245,6 @@ export function RegistrationForm({
                 )}
                 <p className="text-xs text-muted-foreground">
                   Your Telegram username or numeric user ID for community participation
-                </p>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  Email Address <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className={errors.email ? 'border-red-500' : ''}
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email}</p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  We'll use this to send you important updates about token launch and claims
                 </p>
               </div>
 

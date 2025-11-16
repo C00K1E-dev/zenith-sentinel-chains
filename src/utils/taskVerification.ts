@@ -2,14 +2,15 @@
  * Task Verification Utilities
  * 
  * This file contains utilities for verifying user completion of social tasks
- * and integrating with theMiracle API for displaying benefits to your token holders.
- * 
- * For custom airdrop campaigns: Use your own backend
- * For theMiracle integration: Display benefits available to your NFT/Token holders
+ * All verification is done through the backend API using free services:
+ * - Twitter: Nitter scraper (no API key needed)
+ * - Telegram: Telegram Bot API (free)
+ * - NFT: On-chain verification via BSC RPC (free)
  */
 
 interface VerificationResponse {
   verified: boolean;
+  pending?: boolean;
   message: string;
   data?: any;
 }
@@ -17,57 +18,16 @@ interface VerificationResponse {
 /**
  * Backend API base URL - Update this with your actual backend URL
  */
-const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000/api';
-
-/**
- * theMiracle API Configuration
- * Get your API key from: https://themiracle.readme.io
- */
-const THEMIRACLE_API_URL = 'https://api.themiracle.io';
-const THEMIRACLE_API_KEY = import.meta.env.VITE_THEMIRACLE_API_KEY || '';
-
-/**
- * Get benefits from theMiracle API for your token/NFT collection
- * This displays available benefits for your holders
- * 
- * @param contractAddress - Your token or NFT contract address
- * @param chain - Chain name (ethereum, polygon, bsc, etc.)
- */
-export async function getTheMiracleBenefits(
-  contractAddress: string,
-  chain: string = 'bsc'
-): Promise<any[]> {
-  try {
-    const response = await fetch(
-      `${THEMIRACLE_API_URL}/v1/benefits?contract=${contractAddress}&chain=${chain}`,
-      {
-        headers: {
-          'x-api-key': THEMIRACLE_API_KEY,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch benefits');
-    }
-
-    const data = await response.json();
-    return data.benefits || [];
-  } catch (error) {
-    console.error('theMiracle API error:', error);
-    return [];
-  }
-}
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 /**
  * Verify Twitter Follow
  * 
- * Backend should use Twitter API v2:
- * GET /2/users/:id/following
+ * Backend uses Nitter scraper (FREE - no API key needed)
+ * Verifies user follows @SmartSentinels_
  * 
- * Requires: Twitter API Bearer Token (on backend)
  * @param walletAddress - User's wallet address
- * @param twitterUsername - Optional: User's Twitter username for verification
+ * @param twitterUsername - User's Twitter username for verification
  */
 export async function verifyTwitterFollow(
   walletAddress: string,
@@ -81,8 +41,7 @@ export async function verifyTwitterFollow(
       },
       body: JSON.stringify({
         walletAddress,
-        twitterUsername,
-        targetAccount: 'SmartSentinels', // Your Twitter handle
+        username: twitterUsername,
       }),
     });
 
@@ -93,9 +52,10 @@ export async function verifyTwitterFollow(
     const data = await response.json();
     return {
       verified: data.verified,
-      message: data.verified 
+      pending: data.pending,
+      message: data.message || (data.verified 
         ? 'Twitter follow verified!' 
-        : 'Could not verify Twitter follow. Please make sure you are following @SmartSentinels',
+        : 'Could not verify Twitter follow. Please make sure you are following @SmartSentinels'),
       data: data,
     };
   } catch (error) {
@@ -120,73 +80,48 @@ export async function verifyTwitterFollow(
  */
 export async function verifyTelegramJoin(
   walletAddress: string,
-  telegramUserId?: string
+  telegramUsername?: string
 ): Promise<VerificationResponse> {
   try {
-    if (!telegramUserId || telegramUserId.trim() === '') {
+    if (!telegramUsername || telegramUsername.trim() === '') {
       return {
         verified: false,
-        message: 'Please enter your Telegram User ID.\n\nTo get it:\n1. Send a message to @userinfobot on Telegram\n2. Copy your User ID (numbers only)\n3. Paste it here',
+        message: 'Please enter your Telegram username',
       };
     }
 
-    // Telegram User ID must be numeric
-    const numericUserId = telegramUserId.trim();
-    if (!/^\d+$/.test(numericUserId)) {
-      return {
-        verified: false,
-        message: 'Invalid User ID. It should be numbers only (e.g., 123456789).\n\nGet your ID from @userinfobot on Telegram',
-      };
-    }
+    // Clean username (remove @ if present)
+    const cleanUsername = telegramUsername.trim().replace(/^@/, '');
 
-    // Telegram Bot API configuration from environment
-    const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '8562406342:AAE-MxgNZadX1hThRdVHHHiRVvRvtEh3FlQ';
-    const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || '-1002711126186';
+    // Submit for manual verification
+    const response = await fetch(`${API_BASE_URL}/telegram/verify-community`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        walletAddress,
+        telegramUsername: cleanUsername
+      })
+    });
 
-    // Call Telegram Bot API using getChatMember with numeric user ID
-    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatMember`;
-    
-    const response = await fetch(`${url}?chat_id=${TELEGRAM_CHAT_ID}&user_id=${numericUserId}`);
     const data = await response.json();
 
-    console.log('Telegram API Response:', data); // Debug log
-
-    if (data.ok && data.result) {
-      // Check membership status
-      // Possible values: creator, administrator, member, restricted, left, kicked
-      const status = data.result.status;
-      const isMember = ['creator', 'administrator', 'member', 'restricted'].includes(status);
-
-      if (isMember) {
-        const username = data.result.user?.username || 'User';
-        return {
-          verified: true,
-          message: `Successfully verified @${username} as a member of SmartSentinels Community!`,
-          data: {
-            userId: numericUserId,
-            username: username,
-            status: status,
-            walletAddress: walletAddress,
-          },
-        };
-      } else {
-        return {
-          verified: false,
-          message: `You are not a member of the group (status: ${status}).\n\nPlease join: https://t.me/SmartSentinelsCommunity`,
-        };
-      }
-    } else {
-      // API returned error
+    if (data.success) {
       return {
         verified: false,
-        message: `Cannot verify membership.\n\nMake sure:\n1. You joined https://t.me/SmartSentinelsCommunity\n2. Your User ID is correct (get it from @userinfobot)\n\nError: ${data.description || 'Invalid User ID'}`,
+        pending: true,
+        message: 'Verification submitted! An admin will review your Telegram membership and approve your points.'
+      };
+    } else {
+      return {
+        verified: false,
+        message: data.error || 'Failed to submit verification'
       };
     }
   } catch (error) {
     console.error('Telegram verification error:', error);
     return {
       verified: false,
-      message: 'Verification failed. Please check your User ID and try again.',
+      message: 'Failed to connect to verification server'
     };
   }
 }
@@ -194,12 +129,12 @@ export async function verifyTelegramJoin(
 /**
  * Verify Twitter Likes
  * 
- * Backend should use Twitter API v2:
- * GET /2/users/:id/liked_tweets
+ * Backend uses Nitter scraper (FREE - no API key needed)
+ * Verifies user liked at least 3 recent posts from @SmartSentinels_
  * 
  * @param walletAddress - User's wallet address
  * @param twitterUsername - User's Twitter username
- * @param requiredLikes - Number of likes required
+ * @param requiredLikes - Number of likes required (default: 3)
  */
 export async function verifyTwitterLikes(
   walletAddress: string,
@@ -214,8 +149,7 @@ export async function verifyTwitterLikes(
       },
       body: JSON.stringify({
         walletAddress,
-        twitterUsername,
-        targetAccount: 'SmartSentinels',
+        username: twitterUsername,
         requiredLikes,
       }),
     });
@@ -227,9 +161,10 @@ export async function verifyTwitterLikes(
     const data = await response.json();
     return {
       verified: data.verified,
-      message: data.verified 
+      pending: data.pending,
+      message: data.message || (data.verified 
         ? `${data.likesCount} likes verified!` 
-        : `Please like at least ${requiredLikes} recent posts from @SmartSentinels`,
+        : `Please like at least ${requiredLikes} recent posts from @SmartSentinels`),
       data: data,
     };
   } catch (error) {
@@ -244,12 +179,12 @@ export async function verifyTwitterLikes(
 /**
  * Verify Twitter Tag Friends
  * 
- * Backend should use Twitter API v2:
- * Search recent tweets mentioning your account
+ * Backend uses Nitter scraper (FREE - no API key needed)
+ * Verifies user tagged at least 3 friends mentioning @SmartSentinels_
  * 
  * @param walletAddress - User's wallet address
  * @param twitterUsername - User's Twitter username
- * @param tweetUrl - URL of the tweet where they tagged friends
+ * @param tweetUrl - Optional: URL of the tweet where they tagged friends
  */
 export async function verifyTwitterTags(
   walletAddress: string,
@@ -264,9 +199,8 @@ export async function verifyTwitterTags(
       },
       body: JSON.stringify({
         walletAddress,
-        twitterUsername,
+        username: twitterUsername,
         tweetUrl,
-        targetAccount: 'SmartSentinels',
         requiredTags: 3,
       }),
     });
@@ -278,9 +212,10 @@ export async function verifyTwitterTags(
     const data = await response.json();
     return {
       verified: data.verified,
-      message: data.verified 
+      pending: data.pending,
+      message: data.message || (data.verified 
         ? 'Friend tags verified!' 
-        : 'Please tag 3 friends in our latest post',
+        : 'Please tag 3 friends in our latest post'),
       data: data,
     };
   } catch (error) {
@@ -312,7 +247,7 @@ export async function verifyNFTMint(
       },
       body: JSON.stringify({
         walletAddress,
-        collectionType,
+        nftType: collectionType,
       }),
     });
 
@@ -323,9 +258,9 @@ export async function verifyNFTMint(
     const data = await response.json();
     return {
       verified: data.verified,
-      message: data.verified 
+      message: data.message || (data.verified 
         ? `${collectionType === 'genesis' ? 'Genesis' : 'AI Audit'} NFT mint verified!` 
-        : `No ${collectionType === 'genesis' ? 'Genesis' : 'AI Audit'} NFT found in your wallet`,
+        : `No ${collectionType === 'genesis' ? 'Genesis' : 'AI Audit'} NFT found in your wallet`),
       data: data,
     };
   } catch (error) {

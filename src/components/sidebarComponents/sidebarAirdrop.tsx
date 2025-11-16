@@ -18,6 +18,9 @@ import {
   ClipboardList
 } from 'lucide-react';
 import { useActiveAccount } from 'thirdweb/react';
+import { getContract, readContract } from 'thirdweb';
+import { createThirdwebClient } from 'thirdweb';
+import { bsc } from 'thirdweb/chains';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +45,19 @@ import {
   checkTelegramAvailability,
   getLeaderboard as getLeaderboardBackend,
 } from '@/services/airdropApi';
+import {
+  GENESIS_CONTRACT_ADDRESS,
+  AI_AUDIT_CONTRACT_ADDRESS,
+  GENESIS_ABI,
+  AI_AUDIT_ABI,
+} from '@/contracts';
 import styles from './sidebarAirdrop.module.css';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+
+const thirdwebClient = createThirdwebClient({
+  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
+});
 
 interface Task {
   id: string;
@@ -89,9 +104,9 @@ const SidebarAirdrop = memo(() => {
       requiresVerification: true,
     },
     {
-      id: 'join-telegram',
+      id: 'telegram-community',
       name: 'Join Telegram Community',
-      description: 'Join our official Telegram group',
+      description: 'Join our official Telegram group and submit for verification',
       points: 10,
       icon: MessageCircle,
       completed: false,
@@ -101,13 +116,13 @@ const SidebarAirdrop = memo(() => {
     },
     {
       id: 'like-post',
-      name: 'Like Posts on X',
-      description: 'Like 3 recent posts on our X profile',
-      points: 50,
+      name: 'Like Post on X',
+      description: 'Like our announcement post on X and submit for verification',
+      points: 5,
       icon: Heart,
       completed: false,
-      type: 'engagement',
-      actionUrl: 'https://twitter.com/SmartSentinels',
+      type: 'social',
+      actionUrl: 'https://x.com/SmartSentinels_/status/1989335438243275029',
       requiresVerification: true,
     },
     {
@@ -118,7 +133,7 @@ const SidebarAirdrop = memo(() => {
       icon: Users,
       completed: false,
       type: 'engagement',
-      actionUrl: 'https://twitter.com/SmartSentinels',
+      actionUrl: 'https://twitter.com/SmartSentinels_',
       requiresVerification: true,
     },
     {
@@ -159,6 +174,13 @@ const SidebarAirdrop = memo(() => {
   const [isClaiming, setIsClaiming] = useState(false);
   const [activeTab, setActiveTab] = useState<'tasks' | 'leaderboard'>('tasks');
   const [registrationFormOpen, setRegistrationFormOpen] = useState(false);
+  const [pendingTasks, setPendingTasks] = useState<string[]>([]); // Track tasks pending manual verification
+  const [rejectedTasks, setRejectedTasks] = useState<string[]>([]); // Track tasks that were rejected
+  const [approvedTasks, setApprovedTasks] = useState<string[]>([]); // Track tasks that were approved (to show approved message once)
+  const [processedApprovals, setProcessedApprovals] = useState<Set<number>>(new Set()); // Track which approval IDs we've already processed
+  const [genesisNFTBalance, setGenesisNFTBalance] = useState<number>(0);
+  const [aiAuditNFTBalance, setAiAuditNFTBalance] = useState<number>(0);
+  const [checkingNFTs, setCheckingNFTs] = useState(false);
   const [verificationDialog, setVerificationDialog] = useState<{
     open: boolean;
     taskId: string;
@@ -172,12 +194,165 @@ const SidebarAirdrop = memo(() => {
     taskType: 'twitter-follow',
   });
 
+  // Memoize NFT contracts
+  const genesisContract = useMemo(() => 
+    getContract({ 
+      client: thirdwebClient, 
+      address: GENESIS_CONTRACT_ADDRESS, 
+      chain: bsc 
+    }), []);
+
+  const aiAuditContract = useMemo(() => 
+    getContract({ 
+      client: thirdwebClient, 
+      address: AI_AUDIT_CONTRACT_ADDRESS, 
+      chain: bsc 
+    }), []);
+
+  // Check NFT balances when wallet connects
+  useEffect(() => {
+    const checkNFTBalances = async () => {
+      if (!account?.address) {
+        setGenesisNFTBalance(0);
+        setAiAuditNFTBalance(0);
+        return;
+      }
+
+      setCheckingNFTs(true);
+      try {
+        // Check Genesis NFT balance
+        try {
+          const genesisBalance = await readContract({
+            contract: genesisContract,
+            method: 'function balanceOf(address owner) view returns (uint256)',
+            params: [account.address],
+          });
+          setGenesisNFTBalance(Number(genesisBalance));
+        } catch (error) {
+          console.error('Error checking Genesis NFT:', error);
+          setGenesisNFTBalance(0);
+        }
+
+        // Check AI Audit NFT balance
+        try {
+          const auditBalance = await readContract({
+            contract: aiAuditContract,
+            method: 'function balanceOf(address owner) view returns (uint256)',
+            params: [account.address],
+          });
+          setAiAuditNFTBalance(Number(auditBalance));
+        } catch (error) {
+          console.error('Error checking AI Audit NFT:', error);
+          setAiAuditNFTBalance(0);
+        }
+      } finally {
+        setCheckingNFTs(false);
+      }
+    };
+
+    checkNFTBalances();
+  }, [account?.address, genesisContract, aiAuditContract]);
+
   // Load user progress from backend and localStorage
   useEffect(() => {
     if (account?.address) {
       loadUserProgress();
+      checkPendingVerifications();
     }
+  }, [account?.address, genesisNFTBalance, aiAuditNFTBalance]);
+
+  // Automatically check for pending/rejected verifications every 5 seconds
+  useEffect(() => {
+    if (!account?.address) return;
+
+    const intervalId = setInterval(() => {
+      checkPendingVerifications();
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, [account?.address]);
+
+  // Check for pending verifications
+  const checkPendingVerifications = async () => {
+    if (!account?.address) return;
+    
+    const adminKey = import.meta.env.VITE_ADMIN_KEY || '006046';
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/pending-verifications?adminKey=${adminKey}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const userVerifications = data.data
+          .filter((v: any) => 
+            v.wallet_address.toLowerCase() === account.address.toLowerCase()
+          );
+        
+        // Check for approved verifications (only process new ones)
+        const approved = userVerifications.filter((v: any) => 
+          v.status === 'approved' && !processedApprovals.has(v.id)
+        );
+        
+        if (approved.length > 0) {
+          // Mark these approvals as processed
+          setProcessedApprovals(prev => {
+            const newSet = new Set(prev);
+            approved.forEach((v: any) => newSet.add(v.id));
+            return newSet;
+          });
+          
+          // Add to approved tasks state (badge stays until page refresh)
+          const approvedTaskIds = approved.map((v: any) => v.task_id);
+          setApprovedTasks(prev => {
+            const newApproved = approvedTaskIds.filter(id => !prev.includes(id));
+            return [...prev, ...newApproved];
+          });
+          
+          // Remove from pending/rejected state immediately
+          setPendingTasks(prev => prev.filter(id => !approvedTaskIds.includes(id)));
+          setRejectedTasks(prev => prev.filter(id => !approvedTaskIds.includes(id)));
+          
+          // Reload progress to update points and mark as completed
+          await loadUserProgress();
+        }
+        
+        // Track rejected verifications (don't show toast, just update state)
+        const rejected = userVerifications.filter((v: any) => v.status === 'rejected');
+        const newRejectedTaskIds = rejected.map((v: any) => v.task_id);
+        
+        // Add to existing rejected tasks (don't replace, just add new ones)
+        if (newRejectedTaskIds.length > 0) {
+          setRejectedTasks(prev => {
+            const combined = [...prev, ...newRejectedTaskIds];
+            return [...new Set(combined)]; // Remove duplicates
+          });
+          
+          // Remove from pending tasks
+          setPendingTasks(prev => prev.filter(id => !newRejectedTaskIds.includes(id)));
+        }
+        
+        // Delete rejected verifications from backend so they don't accumulate
+        if (rejected.length > 0) {
+          rejected.forEach(async (v: any) => {
+            await fetch(`${API_BASE_URL}/admin/reject-verification`, {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ verificationId: v.id })
+            });
+          });
+        }
+        
+        // Set pending tasks (excluding rejected ones)
+        const userPending = userVerifications
+          .filter((v: any) => v.status === 'pending')
+          .map((v: any) => v.task_id);
+        
+        setPendingTasks(userPending);
+      }
+    } catch (error) {
+      console.error('Error checking pending verifications:', error);
+    }
+  };
 
   const loadUserProgress = async () => {
     if (!account?.address) return;
@@ -186,14 +361,32 @@ const SidebarAirdrop = memo(() => {
       // Try to load from backend first
       const backendData = await getUserProgress(account.address);
       
-      if (backendData && backendData.points > 0) {
-        // Use backend data
+      if (backendData) {
+        // Use backend data (even if points = 0, meaning reset happened)
         setUserPoints(backendData.points);
         setTasks(prevTasks =>
           prevTasks.map(task =>
-            backendData.completedTasks.includes(task.id) ? { ...task, completed: true } : task
+            backendData.completedTasks.includes(task.id) ? { ...task, completed: true } : { ...task, completed: false }
           )
         );
+        
+        // Auto-verify NFT tasks if user has NFTs but hasn't completed the tasks yet
+        if (genesisNFTBalance > 0 && !backendData.completedTasks.includes('mint-genesis')) {
+          console.log('Auto-verifying Genesis NFT...');
+          handleNFTVerification('mint-genesis');
+        }
+        if (aiAuditNFTBalance > 0 && !backendData.completedTasks.includes('mint-audit')) {
+          console.log('Auto-verifying AI Audit NFT...');
+          handleNFTVerification('mint-audit');
+        }
+        
+        // Clear approved/rejected/pending states if reset (points = 0 and no tasks)
+        if (backendData.points === 0 && backendData.completedTasks.length === 0) {
+          setApprovedTasks([]);
+          setRejectedTasks([]);
+          setPendingTasks([]);
+          setProcessedApprovals(new Set());
+        }
         
         // Also save to localStorage as backup
         saveProgressLocal(backendData.points, backendData.completedTasks);
@@ -237,6 +430,43 @@ const SidebarAirdrop = memo(() => {
     }
   };
 
+  // Reset progress for testing (DEV MODE ONLY)
+  const handleResetProgress = async () => {
+    if (!account?.address) return;
+    
+    const confirmed = window.confirm('⚠️ DEV MODE: Reset all progress? This will clear all completed tasks and points.');
+    if (!confirmed) return;
+
+    try {
+      // Clear localStorage
+      localStorage.removeItem(`airdrop_progress_${account.address}`);
+      
+      // Reset backend via API
+      const response = await fetch(`${API_BASE_URL}/user/${account.address}`, {
+        method: 'DELETE',
+      });
+      
+      // Reset UI state
+      setUserPoints(0);
+      setTasks(prevTasks => prevTasks.map(task => ({ ...task, completed: false })));
+      
+      toast({
+        title: "Progress Reset",
+        description: "All tasks and points have been reset. Refresh the page.",
+      });
+      
+      // Reload after a moment
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      console.error('Reset error:', error);
+      toast({
+        title: "Reset Failed",
+        description: "Could not reset progress. Try manually clearing localStorage.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleTaskComplete = (taskId: string) => {
     console.log('handleTaskComplete called with:', taskId);
     const task = tasks.find(t => t.id === taskId);
@@ -259,18 +489,41 @@ const SidebarAirdrop = memo(() => {
       return;
     }
 
+    // Special handling for Telegram - open verification dialog
+    if (taskId === 'telegram-community') {
+      setVerificationDialog({
+        open: true,
+        taskId: task.id,
+        taskName: task.name,
+        taskType: 'telegram',
+        actionUrl: task.actionUrl,
+      });
+      return;
+    }
+
+    // Special handling for Like Post - open verification dialog for manual approval
+    if (taskId === 'like-post') {
+      setVerificationDialog({
+        open: true,
+        taskId: task.id,
+        taskName: task.name,
+        taskType: 'twitter-likes',
+        actionUrl: task.actionUrl,
+      });
+      return;
+    }
+
     // For NFT tasks, verify directly on-chain
     if (task.type === 'nft') {
       handleNFTVerification(taskId);
       return;
     }
 
-    // For social tasks, open verification dialog
+    // For social tasks (Twitter only), open verification dialog
     if (task.requiresVerification) {
       let taskType: 'twitter-follow' | 'twitter-likes' | 'twitter-tags' | 'telegram' = 'twitter-follow';
       
       if (taskId === 'follow-x') taskType = 'twitter-follow';
-      else if (taskId === 'join-telegram') taskType = 'telegram';
       else if (taskId === 'like-post') taskType = 'twitter-likes';
       else if (taskId === 'tag-friends') taskType = 'twitter-tags';
 
@@ -340,39 +593,8 @@ const SidebarAirdrop = memo(() => {
           result = await verifyTwitterTags(account.address, username, additionalData?.tweetUrl);
           break;
         case 'telegram':
-          // Check if this Telegram ID is available
-          const availabilityCheck = await checkTelegramAvailability(username, account.address);
-          
-          if (!availabilityCheck.available) {
-            toast({
-              title: "Already Used",
-              description: "This Telegram account has already been used by another wallet address.",
-              variant: "destructive",
-            });
-            return false;
-          }
-          
-          // Verify with Telegram API
+          // Submit for manual verification
           result = await verifyTelegramJoin(account.address, username);
-          
-          // If verified, complete task on backend
-          if (result.verified) {
-            const backendResult = await completeTaskBackend(
-              account.address,
-              taskId,
-              task.points,
-              username
-            );
-            
-            if (!backendResult.success) {
-              toast({
-                title: "Error",
-                description: backendResult.error || "Failed to save progress",
-                variant: "destructive",
-              });
-              return false;
-            }
-          }
           break;
         default:
           return false;
@@ -385,6 +607,17 @@ const SidebarAirdrop = memo(() => {
           description: `You earned ${task.points} points!`,
         });
         return true;
+      } else if (result.pending) {
+        // Add to pending tasks
+        setPendingTasks(prev => [...prev, taskId]);
+        
+        // Pending manual verification
+        toast({
+          title: "Verification Pending ⏳",
+          description: result.message || "Your verification request is pending admin review. You'll receive points once approved!",
+          duration: 6000,
+        });
+        return true; // Close dialog
       } else {
         toast({
           title: "Verification Failed",
@@ -751,15 +984,113 @@ const SidebarAirdrop = memo(() => {
                           </div>
                         </div>
                         <div className={styles.taskAction}>
-                          <Badge 
-                            variant={task.completed ? "default" : "secondary"}
-                            className={styles.taskBadge}
-                          >
-                            +{task.points} pts
-                          </Badge>
-                          {task.completed ? (
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant={task.completed ? "default" : "secondary"}
+                              className={styles.taskBadge}
+                            >
+                              +{task.points} pts
+                            </Badge>
+                            {approvedTasks.includes(task.id) && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300 animate-pulse">
+                                ✅ Approved!
+                              </Badge>
+                            )}
+                            {pendingTasks.includes(task.id) && !task.completed && !approvedTasks.includes(task.id) && (
+                              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                                ⏳ Pending Review
+                              </Badge>
+                            )}
+                            {rejectedTasks.includes(task.id) && !task.completed && (
+                              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
+                                ❌ Rejected
+                              </Badge>
+                            )}
+                          </div>
+                          {approvedTasks.includes(task.id) ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className={styles.completedIcon}>
+                                <CheckCircle2 size={28} className="text-green-500" />
+                              </div>
+                              <span className="text-xs text-green-600 font-semibold animate-pulse">Points awarded! 🎉</span>
+                            </div>
+                          ) : task.completed ? (
                             <div className={styles.completedIcon}>
                               <CheckCircle2 size={28} />
+                            </div>
+                          ) : pendingTasks.includes(task.id) ? (
+                            <span className="text-xs text-gray-500 mt-1">Admin verification needed</span>
+                          ) : rejectedTasks.includes(task.id) ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <Button
+                                onClick={() => {
+                                  setRejectedTasks(prev => prev.filter(id => id !== task.id));
+                                  handleTaskComplete(task.id);
+                                }}
+                                size="sm"
+                                className={styles.taskButton}
+                              >
+                                Start
+                                <ExternalLink size={14} className="ml-1" />
+                              </Button>
+                              <span className="text-xs text-red-600">Complete task and retry</span>
+                            </div>
+                          ) : task.type === 'nft' ? (
+                            // NFT Tasks: Show Mint button if no NFT, otherwise Claim Points button
+                            <div className="flex flex-col items-center gap-2">
+                              {task.id === 'mint-genesis' ? (
+                                genesisNFTBalance > 0 ? (
+                                  <>
+                                    <Button
+                                      onClick={() => handleNFTVerification(task.id)}
+                                      disabled={checkingNFTs}
+                                      size="sm"
+                                      className={styles.taskButton}
+                                    >
+                                      {checkingNFTs ? 'Checking...' : 'Claim Points'}
+                                    </Button>
+                                    <span className="text-xs text-green-500">✓ {genesisNFTBalance} NFT{genesisNFTBalance !== 1 ? 's' : ''} owned</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button
+                                      onClick={() => window.location.href = '/hub?tab=nfts'}
+                                      size="sm"
+                                      className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
+                                    >
+                                      <Sparkles size={14} className="mr-1" />
+                                      Mint NFT
+                                    </Button>
+                                    <span className="text-xs text-gray-500">Points awarded automatically when minted</span>
+                                  </>
+                                )
+                              ) : task.id === 'mint-audit' ? (
+                                aiAuditNFTBalance > 0 ? (
+                                  <>
+                                    <Button
+                                      onClick={() => handleNFTVerification(task.id)}
+                                      disabled={checkingNFTs}
+                                      size="sm"
+                                      className={styles.taskButton}
+                                    >
+                                      {checkingNFTs ? 'Checking...' : 'Claim Points'}
+                                    </Button>
+                                    <span className="text-xs text-green-500">✓ {aiAuditNFTBalance} NFT{aiAuditNFTBalance !== 1 ? 's' : ''} owned</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button
+                                      onClick={() => window.location.href = '/hub?tab=nfts'}
+                                      size="sm"
+                                      className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
+                                    >
+                                      <Shield size={14} className="mr-1" />
+                                      Mint NFT
+                                    </Button>
+                                    <span className="text-xs text-gray-500">Points awarded automatically when minted</span>
+                                  </>
+                                )
+                              ) : null}
                             </div>
                           ) : (
                             <Button

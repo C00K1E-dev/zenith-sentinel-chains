@@ -33,8 +33,12 @@ export function VerificationDialog({
 }: VerificationDialogProps) {
   const [username, setUsername] = useState('');
   const [tweetUrl, setTweetUrl] = useState('');
+  const [taggedFriends, setTaggedFriends] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
+
+  // Hardcoded campaign tweet URL for like-post and twitter-tags
+  const CAMPAIGN_TWEET_URL = 'https://x.com/SmartSentinels_/status/1989335438243275029';
 
   const handleOpenAction = () => {
     if (actionUrl) {
@@ -48,17 +52,22 @@ export function VerificationDialog({
       return;
     }
 
-    setIsVerifying(true);
+      if (taskType === 'twitter-tags') {
+        if (!taggedFriends.trim()) {
+          setError('Please enter the tagged friends usernames');
+          return;
+        }
+      }    setIsVerifying(true);
     setError('');
 
     try {
-      const additionalData = taskType === 'twitter-tags' ? { tweetUrl } : undefined;
+      const additionalData = taskType === 'twitter-tags' ? { tweetUrl: CAMPAIGN_TWEET_URL, taggedFriends } : undefined;
       const success = await onVerify(username, additionalData);
       
       if (success) {
         onOpenChange(false);
         setUsername('');
-        setTweetUrl('');
+        setTaggedFriends('');
       } else {
         setError('Verification failed. Please make sure you completed the task.');
       }
@@ -76,7 +85,7 @@ export function VerificationDialog({
       case 'twitter-tags':
         return 'Your Twitter/X Username';
       case 'telegram':
-        return 'Your Telegram User ID';
+        return 'Your Telegram Username';
       default:
         return 'Username';
     }
@@ -89,7 +98,7 @@ export function VerificationDialog({
       case 'twitter-tags':
         return '@yourusername';
       case 'telegram':
-        return '123456789';
+        return '@yourusername';
       default:
         return 'Enter username';
     }
@@ -100,13 +109,13 @@ export function VerificationDialog({
       case 'twitter-follow':
         return 'Follow our account on X/Twitter, then enter your username below to verify.';
       case 'twitter-likes':
-        return 'Like 3 recent posts on our X/Twitter profile, then verify with your username.';
+        return 'Like the announcement post on X/Twitter, then enter your username below for admin verification.';
       case 'twitter-tags':
-        return 'Tag 3 friends in our latest X/Twitter post, then provide your username and the tweet URL to verify.';
+        return 'Tag 3 friends in our campaign post on X/Twitter, then provide your username and the tagged usernames for admin verification.';
       case 'telegram':
-        return 'Join our Telegram community, then get your User ID from @SmartSentinels_BOT by sending /start command.';
+        return 'Join our Telegram community, then enter your Telegram username below for admin verification.';
       default:
-        return 'Complete the task and verify with your username.';
+        return 'Complete the task and verify with your username';
     }
   };
 
@@ -136,19 +145,6 @@ export function VerificationDialog({
             </Button>
           )}
 
-          {/* Telegram bot link */}
-          {taskType === 'telegram' && (
-            <Button
-              onClick={() => window.open('https://t.me/SmartSentinels_BOT', '_blank')}
-              variant="outline"
-              className="w-full"
-              type="button"
-            >
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Get User ID from Bot
-            </Button>
-          )}
-
           {/* Username input */}
           <div className="space-y-2">
             <Label htmlFor="username">{getInputLabel()}</Label>
@@ -159,26 +155,23 @@ export function VerificationDialog({
               placeholder={getInputPlaceholder()}
               className="w-full"
             />
-            {taskType === 'telegram' && (
-              <p className="text-xs text-muted-foreground">
-                Send /start to @SmartSentinels_BOT to get your numeric User ID
-              </p>
-            )}
           </div>
 
-          {/* Tweet URL for tag verification */}
+          {/* Tagged Friends Input - only for twitter-tags */}
           {taskType === 'twitter-tags' && (
             <div className="space-y-2">
-              <Label htmlFor="tweetUrl">Tweet URL (optional)</Label>
+              <label htmlFor="tagged-friends" className="text-sm font-medium">
+                Tagged Friends Usernames
+              </label>
               <Input
-                id="tweetUrl"
-                value={tweetUrl}
-                onChange={(e) => setTweetUrl(e.target.value)}
-                placeholder="https://twitter.com/..."
+                id="tagged-friends"
+                value={taggedFriends}
+                onChange={(e) => setTaggedFriends(e.target.value)}
+                placeholder="@friend1, @friend2, @friend3"
                 className="w-full"
               />
               <p className="text-xs text-muted-foreground">
-                Paste the URL of the tweet where you tagged friends
+                Enter the 3 usernames you tagged (comma separated)
               </p>
             </div>
           )}

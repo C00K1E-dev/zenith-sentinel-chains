@@ -105,7 +105,7 @@ export default function AdminDashboard() {
 
   const fetchPendingVerifications = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/pending-verifications?adminKey=${adminKey}`);
+      const response = await fetch(`${API_BASE_URL}/admin/pending-verifications?adminKey=${adminKey}`);
       const data = await response.json();
 
       if (data.success) {
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
 
   const fetchTelegramVerifications = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/pending-verifications?adminKey=${adminKey}`);
+      const response = await fetch(`${API_BASE_URL}/admin/pending-verifications?adminKey=${adminKey}`);
       const data = await response.json();
 
       if (data.success) {
@@ -139,7 +139,7 @@ export default function AdminDashboard() {
 
   const fetchLikeVerifications = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/pending-verifications?adminKey=${adminKey}`);
+      const response = await fetch(`${API_BASE_URL}/admin/pending-verifications?adminKey=${adminKey}`);
       const data = await response.json();
 
       if (data.success) {
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
 
   const fetchTagVerifications = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/admin/pending-verifications?adminKey=${adminKey}`);
+      const response = await fetch(`${API_BASE_URL}/admin/pending-verifications?adminKey=${adminKey}`);
       const data = await response.json();
 
       if (data.success) {

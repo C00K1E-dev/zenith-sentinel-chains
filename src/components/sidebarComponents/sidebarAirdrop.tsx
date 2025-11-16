@@ -158,18 +158,8 @@ const SidebarAirdrop = memo(() => {
     },
   ]);
 
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([
-    { rank: 1, address: '0x742d...5d21', points: 2500, tasksCompleted: 6 },
-    { rank: 2, address: '0x8f3a...9b4c', points: 2100, tasksCompleted: 6 },
-    { rank: 3, address: '0x1c5e...7a8d', points: 1850, tasksCompleted: 5 },
-    { rank: 4, address: '0x9d2f...3e6b', points: 1600, tasksCompleted: 5 },
-    { rank: 5, address: '0x4a7b...2c9f', points: 1400, tasksCompleted: 4 },
-    { rank: 6, address: '0x6e1d...8f5a', points: 1200, tasksCompleted: 4 },
-    { rank: 7, address: '0x2b9c...4d7e', points: 1050, tasksCompleted: 3 },
-    { rank: 8, address: '0x5f8a...1b3c', points: 900, tasksCompleted: 3 },
-    { rank: 9, address: '0x3d4e...6a2f', points: 750, tasksCompleted: 2 },
-    { rank: 10, address: '0x7c2b...9e4d', points: 600, tasksCompleted: 2 },
-  ]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   const [isClaiming, setIsClaiming] = useState(false);
   const [activeTab, setActiveTab] = useState<'tasks' | 'leaderboard'>('tasks');
@@ -271,6 +261,29 @@ const SidebarAirdrop = memo(() => {
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [account?.address]);
+
+  // Load leaderboard data from backend
+  useEffect(() => {
+    const loadLeaderboard = async () => {
+      setLeaderboardLoading(true);
+      try {
+        const data = await getLeaderboardBackend(10);
+        setLeaderboard(data);
+      } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        setLeaderboard([]);
+      } finally {
+        setLeaderboardLoading(false);
+      }
+    };
+
+    loadLeaderboard();
+    
+    // Refresh leaderboard every 30 seconds
+    const intervalId = setInterval(loadLeaderboard, 30000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Check for pending verifications
   const checkPendingVerifications = async () => {
@@ -1140,35 +1153,57 @@ const SidebarAirdrop = memo(() => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className={styles.leaderboardList}>
-                  {leaderboard.map((entry, index) => (
-                    <motion.div
-                      key={entry.address}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={styles.leaderboardEntry}
-                    >
-                      <div className={styles.leaderboardRank}>
-                        <span className={styles.rankBadge}>
-                          {getRankIcon(entry.rank)}
-                        </span>
-                      </div>
-                      <div className={styles.leaderboardInfo}>
-                        <p className={styles.leaderboardAddress}>{entry.address}</p>
-                        <p className={styles.leaderboardTasks}>
-                          {entry.tasksCompleted} tasks completed
-                        </p>
-                      </div>
-                      <div className={styles.leaderboardPoints}>
-                        <Award className={styles.leaderboardIcon} size={18} />
-                        <span className={styles.leaderboardPointsValue}>
-                          {entry.points.toLocaleString()}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                {leaderboardLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center text-gray-500">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                        className="inline-block mb-2"
+                      >
+                        <Trophy size={24} className="text-gray-400" />
+                      </motion.div>
+                      <p>Loading leaderboard...</p>
+                    </div>
+                  </div>
+                ) : leaderboard.length === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center text-gray-500">
+                      <Trophy size={24} className="text-gray-400 mx-auto mb-2" />
+                      <p>No participants yet. Be the first to complete tasks!</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.leaderboardList}>
+                    {leaderboard.map((entry, index) => (
+                      <motion.div
+                        key={entry.address}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className={styles.leaderboardEntry}
+                      >
+                        <div className={styles.leaderboardRank}>
+                          <span className={styles.rankBadge}>
+                            {getRankIcon(entry.rank)}
+                          </span>
+                        </div>
+                        <div className={styles.leaderboardInfo}>
+                          <p className={styles.leaderboardAddress}>{entry.address}</p>
+                          <p className={styles.leaderboardTasks}>
+                            {entry.tasksCompleted} tasks completed
+                          </p>
+                        </div>
+                        <div className={styles.leaderboardPoints}>
+                          <Award className={styles.leaderboardIcon} size={18} />
+                          <span className={styles.leaderboardPointsValue}>
+                            {entry.points.toLocaleString()}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

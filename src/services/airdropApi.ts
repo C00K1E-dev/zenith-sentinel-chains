@@ -146,7 +146,9 @@ export async function getLeaderboard(limit: number = 10): Promise<LeaderboardEnt
         rank: index + 1,
         address: entry.wallet_address,
         points: entry.total_points || 0,
-        tasksCompleted: entry.tasks_completed || 0
+        tasksCompleted: (entry.completed_tasks && Array.isArray(entry.completed_tasks)) 
+          ? entry.completed_tasks.length 
+          : (entry.tasks_completed || 0)
       }));
     }
     

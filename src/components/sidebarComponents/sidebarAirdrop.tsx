@@ -859,7 +859,7 @@ const SidebarAirdrop = memo(() => {
               About This Campaign
             </h3>
             <p className={styles.infoText}>
-              <strong>⚠️ MetaMask Wallet Required:</strong> This airdrop campaign is powered by MetaMask Portfolio in partnership with{' '}
+              <strong>🎉 Activation Campaign:</strong> This activation campaign is brought to you by the{' '}
               <a 
                 href="https://www.themiracle.io/" 
                 target="_blank" 
@@ -867,14 +867,14 @@ const SidebarAirdrop = memo(() => {
                 className={styles.infoLink}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
               >
-                theMiracle
+                Miracle
                 <ExternalLink size={12} />
               </a>
-              {' '}project. 
-              You must use MetaMask wallet to participate and claim SSTL tokens. Other wallets are not supported for token claims.
+              {' '}.
+              Connect your wallet to participate and claim SSTL tokens.
             </p>
             <p className={styles.infoText}>
-              Complete tasks to earn points, then claim your SSTL tokens directly through MetaMask Portfolio. 
+              Complete tasks to earn points, then claim your SSTL tokens. 
               The more points you earn, the more tokens you can claim!
             </p>
           </CardContent>
@@ -932,11 +932,6 @@ const SidebarAirdrop = memo(() => {
               <Coins className="mr-2" size={20} />
               {isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
             </Button>
-            <p className={styles.claimHint}>
-              {userPoints < 100 
-                ? '🎯 Complete tasks to earn at least 100 points to claim tokens' 
-                : '✅ You are eligible to claim SSTL tokens!'}
-            </p>
           </CardContent>
         </Card>
       </motion.div>

@@ -603,7 +603,7 @@ const SidebarAirdrop = memo(() => {
           result = await verifyTwitterLikes(account.address, username);
           break;
         case 'twitter-tags':
-          result = await verifyTwitterTags(account.address, username, additionalData?.tweetUrl);
+          result = await verifyTwitterTags(account.address, username, additionalData?.tweetUrl, additionalData?.taggedFriends);
           break;
         case 'telegram':
           // Submit for manual verification

@@ -189,9 +189,17 @@ export async function verifyTwitterLikes(
 export async function verifyTwitterTags(
   walletAddress: string,
   twitterUsername?: string,
-  tweetUrl?: string
+  tweetUrl?: string,
+  taggedFriends?: string
 ): Promise<VerificationResponse> {
   try {
+    if (!taggedFriends || taggedFriends.trim() === '') {
+      return {
+        verified: false,
+        message: 'Please provide the usernames of the 3 friends you tagged (comma separated)',
+      };
+    }
+
     const response = await fetch(`${API_BASE_URL}/verify/twitter-tags`, {
       method: 'POST',
       headers: {
@@ -201,12 +209,13 @@ export async function verifyTwitterTags(
         walletAddress,
         username: twitterUsername,
         tweetUrl,
-        requiredTags: 3,
+        taggedFriends: taggedFriends.trim(),
       }),
     });
 
     if (!response.ok) {
-      throw new Error('Verification failed');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Verification failed');
     }
 
     const data = await response.json();
@@ -215,14 +224,14 @@ export async function verifyTwitterTags(
       pending: data.pending,
       message: data.message || (data.verified 
         ? 'Friend tags verified!' 
-        : 'Please tag 3 friends in our latest post'),
+        : 'Your verification is pending admin review'),
       data: data,
     };
   } catch (error) {
     console.error('Twitter tags verification error:', error);
     return {
       verified: false,
-      message: 'Verification temporarily unavailable. Please try again later.',
+      message: error instanceof Error ? error.message : 'Verification temporarily unavailable. Please try again later.',
     };
   }
 }

@@ -439,7 +439,7 @@ export default function AdminDashboard() {
       if (data.success && data.data) {
         const headers = [
           'Wallet Address', 
-          'Total Points (Database)', 
+          'Total Points', 
           'Fill Form (10pts)', 
           'Follow X (10pts)', 
           'Telegram (10pts)', 
@@ -447,8 +447,6 @@ export default function AdminDashboard() {
           'Tag Friends (15pts)', 
           'Genesis NFT (50pts)', 
           'AI Audit NFT (30pts)', 
-          'Calculated Total', 
-          'Match Status', 
           'Twitter Handle', 
           'Telegram Handle'
         ];
@@ -456,43 +454,16 @@ export default function AdminDashboard() {
         const rows = data.data.map((user: any) => {
           const tasks = user.completed_tasks || [];
           
-          // Calculate points from completed tasks
-          const pointMap: Record<string, number> = {
-            'fill-form': 10,
-            'follow-x': 10,
-            'telegram-community': 10,
-            'like-post': 5,
-            'tag-friends': 15,
-            'mint-genesis': 50,
-            'mint-audit': 30
-          };
-          
-          let calculatedTotal = 0;
-          const taskPoints: Record<string, string> = {};
-          
-          for (const [taskId, points] of Object.entries(pointMap)) {
-            if (tasks.includes(taskId)) {
-              taskPoints[taskId] = points.toString();
-              calculatedTotal += points;
-            } else {
-              taskPoints[taskId] = '0';
-            }
-          }
-          
-          const matchStatus = calculatedTotal === user.total_points ? '✓ Match' : '⚠ Mismatch';
-          
           return [
             user.wallet_address,
             user.total_points,
-            taskPoints['fill-form'],
-            taskPoints['follow-x'],
-            taskPoints['telegram-community'],
-            taskPoints['like-post'],
-            taskPoints['tag-friends'],
-            taskPoints['mint-genesis'],
-            taskPoints['mint-audit'],
-            calculatedTotal,
-            matchStatus,
+            tasks.includes('fill-form') ? '10' : '0',
+            tasks.includes('follow-x') ? '10' : '0',
+            tasks.includes('telegram-community') ? '10' : '0',
+            tasks.includes('like-post') ? '5' : '0',
+            tasks.includes('tag-friends') ? '15' : '0',
+            tasks.includes('mint-genesis') ? '50' : '0',
+            tasks.includes('mint-audit') ? '30' : '0',
             user.twitter_username || user.x_handle || '',
             user.telegram_handle || ''
           ];
@@ -506,12 +477,9 @@ export default function AdminDashboard() {
         a.download = `airdrop-points-distribution-${Date.now()}.csv`;
         a.click();
 
-        // Count any mismatches for reporting
-        const mismatches = rows.filter((row: any[]) => row[10] !== '✓ Match').length;
-
         toast({
           title: "Export Successful",
-          description: `Exported ${data.data.length} users. ${mismatches > 0 ? `⚠ ${mismatches} points mismatch(es) detected!` : '✓ All points verified!'}`,
+          description: `Exported ${data.data.length} users with their points. NFT holders included!`,
         });
       } else {
         throw new Error('Failed to fetch user data');

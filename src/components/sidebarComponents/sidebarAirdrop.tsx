@@ -15,7 +15,9 @@ import {
   Award,
   TrendingUp,
   Sparkles,
-  ClipboardList
+  ClipboardList,
+  Wallet,
+  Medal
 } from 'lucide-react';
 import { useActiveAccount } from 'thirdweb/react';
 import { getContract, readContract } from 'thirdweb';
@@ -866,35 +868,16 @@ const SidebarAirdrop = memo(() => {
   }, [account?.address, userPoints, completedTasksCount, leaderboard]);
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
     return `#${rank}`;
   };
 
   return (
     <div className={styles.container}>
-      {/* Coming Soon Banner */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className={styles.comingSoonBanner}
-      >
-        <div className={styles.comingSoonContent}>
-          <span className={styles.comingSoonBadge}>COMING SOON</span>
-          <h2 className={styles.comingSoonTitle}>🚀 Airdrop Campaign Launching Soon!</h2>
-          <p className={styles.comingSoonText}>
-            Get ready to earn SSTL tokens by completing tasks. Follow our social media channels for launch announcements and exclusive updates.
-          </p>
-        </div>
-      </motion.div>
-
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className={styles.header}
-        style={{ opacity: 0.5 }}
       >
         <div className={styles.headerContent}>
           <div className={styles.headerIcon}>
@@ -919,25 +902,44 @@ const SidebarAirdrop = memo(() => {
               <Sparkles size={20} />
               About This Campaign
             </h3>
-            <p className={styles.infoText}>
-              <strong>🎉 Activation Campaign:</strong> This activation campaign is brought to you by the{' '}
-              <a 
-                href="https://www.themiracle.io/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className={styles.infoLink}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
-              >
-                Miracle
-                <ExternalLink size={12} />
-              </a>
-              {' '}.
-              Connect your wallet to participate and claim SSTL tokens.
-            </p>
-            <p className={styles.infoText}>
-              Complete tasks to earn points, then claim your SSTL tokens. 
-              The more points you earn, the more tokens you can claim!
-            </p>
+            <div className={styles.metamaskInfo} style={{ padding: '1rem', backgroundColor: 'rgba(255, 127, 80, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 127, 80, 0.3)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <img 
+                src="/assets/MetaMask-icon-fox.svg" 
+                alt="MetaMask" 
+                style={{ width: '48px', height: '48px', flexShrink: 0, marginTop: '0.25rem' }}
+              />
+              <div style={{ flex: 1 }}>
+                <p className={styles.infoText} style={{ marginBottom: '0.75rem' }}>
+                  <strong>🎉 Activation Campaign:</strong> This exclusive campaign is brought to you by{' '}
+                  <a 
+                    href="https://www.themiracle.io/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={styles.infoLink}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
+                  >
+                    Miracle
+                    <ExternalLink size={12} />
+                  </a>
+                  {' '}and{' '}
+                  <a 
+                    href="https://metamask.io/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={styles.infoLink}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
+                  >
+                    MetaMask
+                    <ExternalLink size={12} />
+                  </a>
+                  . Complete tasks to earn points and claim SSTL tokens at the end of the campaign!
+                </p>
+                <p className={styles.infoText} style={{ marginBottom: 0 }}>
+                  <strong style={{ color: '#ff7f50' }}>MetaMask Bonus:</strong> Connect with MetaMask to receive{' '}
+                  <strong>instant +10 bonus points</strong>! The more points you earn, the more tokens you can claim.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
@@ -976,7 +978,7 @@ const SidebarAirdrop = memo(() => {
               )}
               {isMetaMaskWallet && metaMaskBonusApplied && (
                 <div className={styles.statItem}>
-                  <div className="text-2xl">🦊</div>
+                  <Wallet className={styles.statIcon} size={24} />
                   <div>
                     <p className={styles.statLabel}>MetaMask Bonus</p>
                     <p className={styles.statValue}>+10 pts</p>
@@ -994,6 +996,9 @@ const SidebarAirdrop = memo(() => {
               <Coins className="mr-2" size={20} />
               {isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
             </Button>
+            <p className="text-center text-sm text-gray-500 mt-3 px-4">
+              ℹ️ Tokens will be available to claim at the end of this campaign. Keep earning points!
+            </p>
           </CardContent>
         </Card>
       </motion.div>
@@ -1124,7 +1129,7 @@ const SidebarAirdrop = memo(() => {
                                 ) : (
                                   <>
                                     <Button
-                                      onClick={() => window.location.href = '/hub?tab=nfts'}
+                                      onClick={() => window.location.href = '/hub/nfts'}
                                       size="sm"
                                       className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
                                     >
@@ -1150,7 +1155,7 @@ const SidebarAirdrop = memo(() => {
                                 ) : (
                                   <>
                                     <Button
-                                      onClick={() => window.location.href = '/hub?tab=nfts'}
+                                      onClick={() => window.location.href = '/hub/nfts'}
                                       size="sm"
                                       className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
                                     >

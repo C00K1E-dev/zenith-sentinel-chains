@@ -984,14 +984,6 @@ const SidebarAirdrop = memo(() => {
                 </div>
               )}
             </div>
-            
-            <div className={styles.progressSection}>
-              <div className={styles.progressHeader}>
-                <span className={styles.progressLabel}>Campaign Progress</span>
-                <span className={styles.progressValue}>{Math.round(progressPercentage)}%</span>
-              </div>
-              <Progress value={progressPercentage} className={styles.progress} />
-            </div>
 
             <Button 
               onClick={handleClaimTokens}

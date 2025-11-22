@@ -21,6 +21,7 @@ import { useActiveAccount } from 'thirdweb/react';
 import { getContract, readContract } from 'thirdweb';
 import { createThirdwebClient } from 'thirdweb';
 import { bsc } from 'thirdweb/chains';
+import { useAccount, useConnectorClient } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +60,13 @@ const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
 });
 
+// Helper function to detect if wallet is MetaMask
+const detectMetaMaskWallet = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const { ethereum } = window as any;
+  return ethereum?.isMetaMask === true;
+};
+
 interface Task {
   id: string;
   name: string;
@@ -80,8 +88,21 @@ interface LeaderboardEntry {
 
 const SidebarAirdrop = memo(() => {
   const account = useActiveAccount();
+  const { connector } = useAccount();
   const [userPoints, setUserPoints] = useState(0);
+  const [isMetaMaskWallet, setIsMetaMaskWallet] = useState(false);
+  const [metaMaskBonusApplied, setMetaMaskBonusApplied] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: 'connect-metamask',
+      name: 'Connect MetaMask Wallet',
+      description: 'Connect with MetaMask wallet to unlock an exclusive bonus and earn extra points',
+      points: 10,
+      icon: Sparkles,
+      completed: false,
+      type: 'social',
+      requiresVerification: false,
+    },
     {
       id: 'fill-form',
       name: 'Fill Registration Form',
@@ -242,6 +263,46 @@ const SidebarAirdrop = memo(() => {
 
     checkNFTBalances();
   }, [account?.address, genesisContract, aiAuditContract]);
+
+  // Detect MetaMask wallet and apply bonus
+  useEffect(() => {
+    if (!account?.address) {
+      setIsMetaMaskWallet(false);
+      setMetaMaskBonusApplied(false);
+      return;
+    }
+
+    // Check if MetaMask is the connected wallet
+    const isMetaMask = connector?.name === 'MetaMask' || detectMetaMaskWallet();
+    setIsMetaMaskWallet(isMetaMask);
+
+    // Apply MetaMask bonus if applicable and not yet applied
+    if (isMetaMask && !metaMaskBonusApplied) {
+      const savedBonus = localStorage.getItem(`metamask_bonus_${account.address}`);
+      if (!savedBonus) {
+        console.log('MetaMask detected! Adding 10 bonus points...');
+        
+        // Call completeTask which handles backend persistence
+        completeTask('connect-metamask', 10);
+        
+        setMetaMaskBonusApplied(true);
+        localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
+        
+        toast({
+          title: "MetaMask Bonus! 🦊",
+          description: "You received 10 bonus points for connecting with MetaMask!",
+        });
+      } else {
+        setMetaMaskBonusApplied(true);
+        // Mark the task as completed if bonus was already applied
+        setTasks(prevTasks =>
+          prevTasks.map(task =>
+            task.id === 'connect-metamask' ? { ...task, completed: true } : task
+          )
+        );
+      }
+    }
+  }, [account?.address, connector?.name, metaMaskBonusApplied]);
 
   // Load user progress from backend and localStorage
   useEffect(() => {
@@ -910,6 +971,15 @@ const SidebarAirdrop = memo(() => {
                   <div>
                     <p className={styles.statLabel}>Your Rank</p>
                     <p className={styles.statValue}>{getRankIcon(userRank)}</p>
+                  </div>
+                </div>
+              )}
+              {isMetaMaskWallet && metaMaskBonusApplied && (
+                <div className={styles.statItem}>
+                  <div className="text-2xl">🦊</div>
+                  <div>
+                    <p className={styles.statLabel}>MetaMask Bonus</p>
+                    <p className={styles.statValue}>+10 pts</p>
                   </div>
                 </div>
               )}

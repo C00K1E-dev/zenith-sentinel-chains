@@ -17,6 +17,7 @@ const SidebarAIAuditSmartContract = lazy(() => import('@/components/sidebarCompo
 const SidebarMarketplace = lazy(() => import('@/components/sidebarComponents/sidebarMarketplace'));
 const SidebarStaking = lazy(() => import('@/components/sidebarComponents/sidebarStaking'));
 const SidebarAirdrop = lazy(() => import('@/components/sidebarComponents/sidebarAirdrop'));
+const SidebarSeedRound = lazy(() => import('@/components/sidebarComponents/sidebarSeedRound'));
 
 const Hub = () => {
   const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
@@ -94,6 +95,7 @@ const Hub = () => {
             <Route path="my-devices" element={<Suspense fallback={<Loading />}><SidebarMyDevices /></Suspense>} />
             <Route path="my-rewards" element={<Suspense fallback={<Loading />}><SidebarMyRewards /></Suspense>} />
             <Route path="general-stats" element={<Suspense fallback={<Loading />}><SidebarGeneralStats /></Suspense>} />
+            <Route path="seed-round" element={<Suspense fallback={<Loading />}><SidebarSeedRound /></Suspense>} />
             <Route path="airdrop" element={<Suspense fallback={<Loading />}><SidebarAirdrop /></Suspense>} />
             <Route path="nfts" element={<Suspense fallback={<Loading />}><SidebarNFTsiNFTsHub /></Suspense>} />
             <Route path="audit" element={<Suspense fallback={<Loading />}><SidebarAIAuditSmartContract /></Suspense>} />

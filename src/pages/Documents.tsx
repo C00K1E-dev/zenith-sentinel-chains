@@ -8,7 +8,7 @@ import { MetaTags } from '@/components/MetaTags';
 const doc_data = [
 	{ name: 'Pitch Deck', file: '/PitchDeck.html', type: 'html' },
 	{ name: 'Whitepaper', file: '/documents/SmartSentinelsWhitepaper v0.2.pdf', type: 'pdf' },
-	{ name: 'Lightpaper', file: '/documents/LightpaperV0.2.pdf', type: 'pdf' },
+	{ name: 'Litepaper', file: '/documents/LightpaperV0.2.pdf', type: 'pdf' },
 	{ name: 'OnePager', file: '/documents/SmartSentinelsOnePager.pdf', type: 'pdf' },
 	{ name: 'Terms and Conditions', file: '/documents/Terms and Conditions.pdf', type: 'pdf' },
 	{ name: 'Privacy Policy', file: '/documents/Privacy Policy.pdf', type: 'pdf' },
@@ -56,7 +56,7 @@ const Documents = () => {
 		<>
 			<MetaTags 
 				title="Documents | SmartSentinels"
-				description="Download official SmartSentinels documents: whitepaper, lightpaper, pitch deck, and legal resources for the decentralized AI platform."
+				description="Download official SmartSentinels documents: whitepaper, litepaper, pitch deck, and legal resources for the decentralized AI platform."
 				path="/documents"
 			/>
 			<div className="min-h-screen gradient-animate relative">

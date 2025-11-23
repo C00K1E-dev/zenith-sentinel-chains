@@ -17,7 +17,8 @@ import {
   Sparkles,
   ClipboardList,
   Wallet,
-  Medal
+  Medal,
+  Info
 } from 'lucide-react';
 import { useActiveAccount } from 'thirdweb/react';
 import { getContract, readContract } from 'thirdweb';
@@ -910,7 +911,7 @@ const SidebarAirdrop = memo(() => {
               />
               <div style={{ flex: 1 }}>
                 <p className={styles.infoText} style={{ marginBottom: '0.75rem' }}>
-                  <strong>🎉 Activation Campaign:</strong> This exclusive campaign is brought to you by{' '}
+                  <strong><Sparkles size={16} className="inline mr-1" style={{display: 'inline'}} />Activation Campaign:</strong> This exclusive campaign is brought to you by{' '}
                   <a 
                     href="https://www.themiracle.io/" 
                     target="_blank" 
@@ -996,8 +997,8 @@ const SidebarAirdrop = memo(() => {
               <Coins className="mr-2" size={20} />
               {isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
             </Button>
-            <p className="text-center text-sm text-gray-500 mt-3 px-4">
-              ℹ️ Tokens will be available to claim at the end of this campaign. Keep earning points!
+            <p className="text-center text-sm text-gray-500 mt-3 px-4 flex items-center justify-center gap-2">
+              <Info size={16} /> Tokens will be available to claim at the end of this campaign. Keep earning points!
             </p>
           </CardContent>
         </Card>
@@ -1087,7 +1088,7 @@ const SidebarAirdrop = memo(() => {
                               <div className={styles.completedIcon}>
                                 <CheckCircle2 size={28} className="text-green-500" />
                               </div>
-                              <span className="text-xs text-green-600 font-semibold animate-pulse">Points awarded! 🎉</span>
+                              <span className="text-xs text-green-600 font-semibold animate-pulse flex items-center gap-1"><Sparkles size={12} /> Points awarded!</span>
                             </div>
                           ) : task.completed ? (
                             <div className={styles.completedIcon}>

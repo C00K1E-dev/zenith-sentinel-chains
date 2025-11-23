@@ -152,48 +152,72 @@ const Index = () => {
 
           {/* Token Information Card */}
           <div className="mb-16">
-            <div className="glass-card p-4 sm:p-6 md:p-8 text-center">
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-orbitron font-bold mb-4 sm:mb-6 neon-glow">
-                SSTL Token
-              </h3>
-              <div className="space-y-3 sm:space-y-4">
-                <div className="flex flex-col gap-3 sm:gap-4">
-                  <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center gap-2 sm:gap-4">
-                    <span className="text-sm sm:text-base lg:text-lg font-semibold text-primary">Contract Address:</span>
-                    <div className="flex items-center justify-center gap-2 flex-wrap">
-                      <code className="bg-muted px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-mono break-all max-w-full">
-                        <span className="inline sm:hidden">0x563...3aca</span>
-                        <span className="hidden sm:inline lg:hidden">0x56317...3aca</span>
-                        <span className="hidden lg:inline">0x56317dbCCd647C785883738fac9308ebcA063aca</span>
-                      </code>
-                      <div className="flex gap-1">
-                        <Button onClick={handleCopy} variant="ghost" size="sm" className="p-2 h-7 w-7 sm:h-8 sm:w-8">
-                          {copied ? <Check size={14} className="sm:w-4 sm:h-4" /> : <Copy size={14} className="sm:w-4 sm:h-4" />}
-                        </Button>
+            <div className="glass-card p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-8">
+                <div className="text-center md:text-left">
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-orbitron font-bold mb-4 sm:mb-6 neon-glow">
+                    SSTL Token
+                  </h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex flex-col gap-3 sm:gap-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-center sm:items-center gap-2 sm:gap-4 md:justify-start">
+                        <span className="text-sm sm:text-base lg:text-lg font-semibold text-primary">Contract Address:</span>
+                        <div className="flex items-center justify-center gap-2 flex-wrap md:justify-start">
+                          <code className="bg-muted px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-mono break-all max-w-full">
+                            <span className="inline sm:hidden">0x563...3aca</span>
+                            <span className="hidden sm:inline lg:hidden">0x56317...3aca</span>
+                            <span className="hidden lg:inline">0x56317dbCCd647C785883738fac9308ebcA063aca</span>
+                          </code>
+                          <div className="flex gap-1">
+                            <Button onClick={handleCopy} variant="ghost" size="sm" className="p-2 h-7 w-7 sm:h-8 sm:w-8">
+                              {copied ? <Check size={14} className="sm:w-4 sm:h-4" /> : <Copy size={14} className="sm:w-4 sm:h-4" />}
+                            </Button>
+                            <Button asChild variant="ghost" size="sm" className="p-2 h-7 w-7 sm:h-8 sm:w-8">
+                              <a href="https://bscscan.com/address/0x56317dbCCd647C785883738fac9308ebcA063aca" target="_blank" rel="noopener noreferrer">
+                                <ExternalLink size={14} className="sm:w-4 sm:h-4" />
+                              </a>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+                      <span className="font-semibold text-primary">Total Supply:</span> 100,000,000 SSTL
+                    </div>
+                    <div className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+                      <span className="font-semibold text-primary">Standard:</span> BEP-20 Token
+                    </div>
+                    <div className="flex justify-center items-center gap-4 md:justify-start">
+                      <div className="flex items-center gap-2">
                         <Button asChild variant="ghost" size="sm" className="p-2 h-7 w-7 sm:h-8 sm:w-8">
-                          <a href="https://bscscan.com/address/0x56317dbCCd647C785883738fac9308ebcA063aca" target="_blank" rel="noopener noreferrer">
+                          <a href="https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum" target="_blank" rel="noopener noreferrer">
                             <ExternalLink size={14} className="sm:w-4 sm:h-4" />
                           </a>
                         </Button>
+                        <a href="https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum" target="_blank" rel="noopener noreferrer" className="text-sm sm:text-base lg:text-lg font-semibold text-primary hover:text-primary/80 transition-colors">
+                          Audit
+                        </a>
+                      </div>
+                      <span className="text-primary/50">•</span>
+                      <div className="flex items-center gap-2">
+                        <Button asChild variant="ghost" size="sm" className="p-2 h-7 w-7 sm:h-8 sm:w-8">
+                          <a href="/documents/SmartSentinelsWhitepaper v0.2.pdf" target="_blank" rel="noopener noreferrer">
+                            <ExternalLink size={14} className="sm:w-4 sm:h-4" />
+                          </a>
+                        </Button>
+                        <a href="/documents/SmartSentinelsWhitepaper v0.2.pdf" target="_blank" rel="noopener noreferrer" className="text-sm sm:text-base lg:text-lg font-semibold text-primary hover:text-primary/80 transition-colors">
+                          Tokenomics
+                        </a>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-                  <span className="font-semibold text-primary">Total Supply:</span> 100,000,000 SSTL
-                </div>
-                <div className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-                  <span className="font-semibold text-primary">Standard:</span> BEP-20 Token
-                </div>
-                <div className="flex justify-center items-center gap-2">
-                  <Button asChild variant="ghost" size="sm" className="p-2 h-7 w-7 sm:h-8 sm:w-8">
-                    <a href="https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink size={14} className="sm:w-4 sm:h-4" />
-                    </a>
-                  </Button>
-                  <a href="https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum" target="_blank" rel="noopener noreferrer" className="text-sm sm:text-base lg:text-lg font-semibold text-primary hover:text-primary/80 transition-colors">
-                    Audit
-                  </a>
+                <div className="flex justify-center md:justify-end">
+                  <img 
+                    src="/assets/token.svg" 
+                    alt="SSTL Token" 
+                    className="w-40 sm:w-48 md:w-56 h-40 sm:h-48 md:h-56 object-contain flex-shrink-0"
+                  />
                 </div>
               </div>
             </div>

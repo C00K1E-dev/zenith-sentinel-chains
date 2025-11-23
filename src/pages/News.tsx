@@ -54,6 +54,21 @@ const renderContentWithLinks = (text: string) => {
 const News = () => {
   const newsItems: NewsItem[] = [
     {
+      id: 3,
+      title: 'SmartSentinels x Micro3 Partnership Announcement',
+      date: 'November 23, 2025',
+      emoji: null,
+      content: `We're excited to announce our strategic partnership with [Micro3](https://micro3.io/), the leading SocialFi platform powering community engagement, user growth, and Web3 adoption through innovative quest mechanics.
+
+Micro3's proven expertise in driving user acquisition and engagement aligns perfectly with SmartSentinels' mission to build a thriving ecosystem around Proof of Useful Work. Through this collaboration, we'll leverage Micro3's sophisticated quest and campaign infrastructure to amplify SmartSentinels' reach and build deeper community engagement.
+
+Together, we're creating new pathways for users to discover, participate in, and earn rewards from our AI-powered agent network. SmartSentinels' agents will gain exposure to Micro3's active community of 1M+ users, while our SSTL token holders benefit from enhanced visibility and growth opportunities.
+
+This partnership represents a synergistic combination of AI-driven utility and Web3 community engagement — bringing SmartSentinels' innovations to a broader audience and accelerating adoption of decentralized intelligence.
+
+Welcome to the future of growth-driven partnerships in Web3.`
+    },
+    {
       id: 2,
       title: 'SmartSentinels x theMiracle Partnership Announcement',
       date: 'November 14, 2025',
@@ -177,6 +192,29 @@ Together, we're building the future of decentralized AI infrastructure.`
                     </h2>
 
                     {/* Partnership Logos */}
+                    {item.id === 3 && (
+                      <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 py-6 border-b border-primary/20">
+                        <div className="flex flex-col items-center gap-2">
+                          <img 
+                            src="/ss-icon.svg" 
+                            alt="SmartSentinels Logo" 
+                            className="w-12 sm:w-16 h-12 sm:h-16 object-contain"
+                          />
+                          <span className="text-xs sm:text-sm text-muted-foreground font-orbitron">SmartSentinels</span>
+                        </div>
+                        
+                        <div className="text-primary font-bold text-2xl sm:text-3xl">×</div>
+                        
+                        <div className="flex flex-col items-center gap-2">
+                          <img 
+                            src="/assets/micro3.png" 
+                            alt="Micro3 Logo" 
+                            className="w-12 sm:w-16 h-12 sm:h-16 object-contain"
+                          />
+                          <span className="text-xs sm:text-sm text-muted-foreground font-orbitron">Micro3</span>
+                        </div>
+                      </div>
+                    )}
                     {item.id === 2 && (
                       <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 py-6 border-b border-primary/20">
                         <div className="flex flex-col items-center gap-2">
@@ -229,7 +267,7 @@ Together, we're building the future of decentralized AI infrastructure.`
                   <div className="prose prose-invert max-w-none">
                     <div className="text-base sm:text-lg leading-relaxed text-foreground whitespace-pre-wrap font-light">
                       {renderContentWithLinks(item.content)}
-                      {(item.id === 1 || item.id === 2) && (
+                      {(item.id === 1 || item.id === 2 || item.id === 3) && (
                         <span className="inline-flex items-center gap-2 ml-2 text-primary">
                           <Globe size={20} />
                           <Zap size={20} />

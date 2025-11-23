@@ -8,14 +8,14 @@ const PoweredBy = memo(() => {
     { name: 'Thirdweb', logo: '/assets/thirdweb-logo.svg' },
     { name: 'Google Cloud', logo: '/assets/google-cloud-logo.svg' },
     { name: 'AMD', logo: '/assets/amd-seeklogo.png' },
+    { name: 'MetaMask', logo: '/assets/MetaMask-icon-fox.svg' },
     { name: 'C15T', logo: '/assets/c15t-logo.png' },
-
   ];
 
   const partners = [
     { name: 'theMiracle', logo: '/assets/miracle.svg', link: 'https://www.themiracle.io/' },
     { name: 'Studio Blockchain', logo: '/assets/studio.png', link: 'https://studio-blockchain.com/' },
-    { name: 'Get featured here', logo: '', isText: true },
+    { name: 'Micro3', logo: '/assets/micro3.png', link: 'https://micro3.io/' },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },
@@ -77,7 +77,7 @@ const PoweredBy = memo(() => {
     <section className="py-12">
       <h2 className="text-center text-3xl md:text-4xl font-orbitron font-bold mb-6 neon-glow">Powered By</h2>
       <Marquee items={technologies} direction="left" />
-      <h3 className="text-center text-xl md:text-2xl font-orbitron font-semibold mt-10 mb-4 neon-glow">Partners</h3>
+      <h3 className="text-center text-3xl md:text-4xl font-orbitron font-bold mt-10 mb-4 neon-glow">Partners</h3>
       <Marquee items={partners} direction="right" isPartners={true} />
     </section>
   );

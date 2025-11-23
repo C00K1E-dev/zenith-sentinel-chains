@@ -92,37 +92,6 @@ const Team = memo(() => {
           ))}
         </div>
 
-        {/* Join Team CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-center mt-12 sm:mt-16"
-        >
-          <div className="glass-card-hover p-6 sm:p-8 max-w-2xl mx-auto">
-            <h3 className="text-xl sm:text-2xl font-orbitron font-bold text-foreground mb-3 sm:mb-4 neon-glow">
-              Join Our Mission
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
-              We're always looking for talented individuals who share our vision of decentralized AI. If you're passionate about blockchain, AI, or Web3, we'd love to hear from you.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <a
-                href="mailto:team@smartsentinels.ai"
-                className="glass-card-hover px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary/20 text-primary font-orbitron font-bold hover:bg-primary/30 transition-all duration-300 text-sm sm:text-base"
-              >
-                Contact Us
-              </a>
-              <Link
-                to="/hub"
-                className="glass-card-hover px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg border border-primary/30 text-primary font-orbitron font-bold hover:bg-primary/10 transition-all duration-300 text-sm sm:text-base"
-              >
-                Explore Opportunities
-              </Link>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </section>
   );

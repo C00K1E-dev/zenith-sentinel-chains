@@ -10,6 +10,7 @@ import heroImage from '@/assets/svghero.svg';
 import { MetaTags } from '@/components/MetaTags';
 
 const Roadmap = lazy(() => import('@/components/Roadmap'));
+const Vision = lazy(() => import('@/components/Vision'));
 const Team = lazy(() => import('@/components/Team'));
 const FAQ = lazy(() => import('@/components/FAQ'));
 const PoweredBy = lazy(() => import('@/components/PoweredBy'));
@@ -226,6 +227,11 @@ const Index = () => {
           {/* Roadmap Section */}
           <Suspense fallback={<Loading />}>
             <Roadmap />
+          </Suspense>
+
+          {/* Our Vision Section */}
+          <Suspense fallback={<Loading />}>
+            <Vision />
           </Suspense>
 
           {/* Team Section */}

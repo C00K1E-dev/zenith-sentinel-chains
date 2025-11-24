@@ -541,7 +541,7 @@ const SidebarAirdrop = memo(() => {
     }
   };
 
-  const handleTaskComplete = (taskId: string) => {
+  const handleTaskComplete = async (taskId: string) => {
     console.log('handleTaskComplete called with:', taskId);
     const task = tasks.find(t => t.id === taskId);
     console.log('Task found:', task);
@@ -584,6 +584,37 @@ const SidebarAirdrop = memo(() => {
         taskType: 'twitter-likes',
         actionUrl: task.actionUrl,
       });
+      return;
+    }
+
+    // Special handling for Connect MetaMask
+    if (taskId === 'connect-metamask') {
+      if (isMetaMaskWallet) {
+         if (!task.completed) {
+             // Wait for backend confirmation before showing success
+             const success = await completeTask('connect-metamask', 10);
+             
+             if (success) {
+                setMetaMaskBonusApplied(true);
+                localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
+                toast({
+                    title: "MetaMask Bonus! 🦊",
+                    description: "You received 10 bonus points for connecting with MetaMask!",
+                });
+             }
+         } else {
+            toast({
+              title: "Already Completed",
+              description: "You have already claimed the MetaMask bonus.",
+            });
+         }
+      } else {
+          toast({
+            title: "MetaMask Required",
+            description: "Please connect using MetaMask to claim this bonus.",
+            variant: "destructive",
+          });
+      }
       return;
     }
 
@@ -715,8 +746,8 @@ const SidebarAirdrop = memo(() => {
     completeTask('fill-form', 10);
   };
 
-  const completeTask = async (taskId: string, points: number, telegramUserId?: string) => {
-    if (!account?.address) return;
+  const completeTask = async (taskId: string, points: number, telegramUserId?: string): Promise<boolean> => {
+    if (!account?.address) return false;
 
     // For non-Telegram tasks, save to backend
     if (taskId !== 'join-telegram') {
@@ -737,20 +768,33 @@ const SidebarAirdrop = memo(() => {
           description: backendResult.error || "Failed to save progress",
           variant: "destructive",
         });
-        return;
+        return false;
+      }
+
+      // Use backend data to update state (source of truth)
+      if (backendResult.data) {
+        setUserPoints(backendResult.data.points);
+        setTasks(prevTasks => prevTasks.map(t => 
+          backendResult.data!.completedTasks.includes(t.id) ? { ...t, completed: true } : t
+        ));
+        saveProgressLocal(backendResult.data.points, backendResult.data.completedTasks);
+        return true;
       }
     }
 
-    // Mark task as completed locally
+    // Fallback: Mark task as completed locally if backend didn't return data
     const updatedTasks = tasks.map(t =>
       t.id === taskId ? { ...t, completed: true } : t
     );
-    const newPoints = userPoints + points;
-    const completedTaskIds = updatedTasks.filter(t => t.completed).map(t => t.id);
-
+    // Use functional update to avoid stale state
+    setUserPoints(prevPoints => {
+      const newPoints = prevPoints + points;
+      const completedTaskIds = updatedTasks.filter(t => t.completed).map(t => t.id);
+      saveProgressLocal(newPoints, completedTaskIds);
+      return newPoints;
+    });
     setTasks(updatedTasks);
-    setUserPoints(newPoints);
-    saveProgressLocal(newPoints, completedTaskIds);
+    return true;
   };
 
   const handleClaimTokens = async () => {

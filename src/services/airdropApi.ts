@@ -57,7 +57,7 @@ export async function completeTask(
   taskName?: string
 ): Promise<{ success: boolean; data?: AirdropUserData; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/task-complete`, {
+    const response = await fetch(`${API_BASE_URL}/task/complete`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

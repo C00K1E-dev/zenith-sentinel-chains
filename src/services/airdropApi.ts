@@ -53,10 +53,11 @@ export async function completeTask(
   walletAddress: string,
   taskId: string,
   points: number,
-  telegramUserId?: string
+  telegramUserId?: string,
+  taskName?: string
 ): Promise<{ success: boolean; data?: AirdropUserData; error?: string }> {
   try {
-    const response = await fetch(`${API_BASE_URL}/task/complete`, {
+    const response = await fetch(`${API_BASE_URL}/task-complete`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,6 +66,7 @@ export async function completeTask(
         walletAddress,
         taskId,
         points,
+        taskName: taskName || taskId,
         verificationData: telegramUserId ? { telegramUserId } : null
       }),
     });

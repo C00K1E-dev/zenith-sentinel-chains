@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, memo } from 'react';
+import { useState, useEffect, useMemo, memo, useRef } from 'react';
 import { ethers } from 'ethers';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,6 +13,8 @@ import {
   Flame,
   ExternalLink,
   AlertCircle,
+  Lock,
+  CheckCircle,
 } from 'lucide-react';
 import { useActiveAccount } from 'thirdweb/react';
 import { Button } from '@/components/ui/button';
@@ -22,7 +24,20 @@ import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import styles from './sidebarSeedRound.module.css';
 
-// Token & Contract Constants
+// Token & Contract Constants - TESTNET
+const SSTL_TOKEN_ADDRESS_TST = '0x53Efbb2DA9CDf2DDe6AD0A0402b7b4427a7F9e89'; // SSTLTST on testnet
+const SEED_ROUND_TST_ADDRESS = '0xA47F4322853c23F050D42A9D57adE67466EFA03E'; // SeedRoundSaleTST testnet (NEW)
+const TESTNET_CHAIN_ID = 97; // BSC Testnet
+const TESTNET_RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545';
+const FALLBACK_RPC_URLS = [
+  'https://bsc-testnet.publicnode.com',
+  'https://rpc.ankr.com/bsc_testnet_chapel',
+  'https://data-seed-prebsc-1-s1.binance.org:8545',
+  'https://data-seed-prebsc-2-s1.binance.org:8545',
+];
+const BSCSCAN_API_KEY = 'V8WAAJQ6JU31R5YMNSM7XCEUVGIASRN7T7'; // Replace with your actual API key
+
+// Mainnet addresses (keep for reference)
 const SSTL_TOKEN_ADDRESS = '0x56317dbCCd647C785883738fac9308ebcA063aca';
 const USD1_TOKEN_ADDRESS = '0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d'; // USD1 on BSC
 const BSC_CHAIN_ID = 56;
@@ -50,12 +65,28 @@ interface RecentBuy {
 }
 
 interface SeedRoundStats {
-  totalRaised: number; // in USD
+  totalRaised: number; // in BNB
   tokensSold: number;
   currentPrice: number;
   priceIncrease: number; // percentage
   participantsCount: number;
   percentageComplete: number;
+}
+
+interface VestingInfo {
+  totalTokens: number;
+  claimedTokens: number;
+  claimableTokens: number;
+  vestingStart: number;
+  nextClaimTime: number;
+  lockedTokens: number;
+}
+
+interface CountdownTime {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
 }
 
 const SidebarSeedRound = memo(() => {
@@ -66,6 +97,14 @@ const SidebarSeedRound = memo(() => {
   const [estimatedCost, setEstimatedCost] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [recentBuys, setRecentBuys] = useState<RecentBuy[]>([]);
+  const [vestingInfo, setVestingInfo] = useState<VestingInfo | null>(null);
+  const [countdown, setCountdown] = useState<CountdownTime>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [claimLoading, setClaimLoading] = useState(false);
 
   // Mock stats data (will be fetched from backend)
   const [stats, setStats] = useState<SeedRoundStats>({
@@ -77,19 +116,274 @@ const SidebarSeedRound = memo(() => {
     percentageComplete: 0,
   });
 
-  // Calculate estimated tokens based on input amount
+  // Calculate estimated tokens based on input amount and current price
   useEffect(() => {
-    if (purchaseAmount && !isNaN(Number(purchaseAmount))) {
-      const usdAmount = Number(purchaseAmount);
-      const tokens = usdAmount / stats.currentPrice;
-      const cost = tokens * stats.currentPrice;
+    if (purchaseAmount && !isNaN(Number(purchaseAmount)) && stats.currentPrice > 0) {
+      const tbnbAmount = Number(purchaseAmount);
+      // Use current price from contract stats
+      const tokens = tbnbAmount / stats.currentPrice;
       setEstimatedTokens(Math.floor(tokens));
-      setEstimatedCost(cost);
+      setEstimatedCost(tbnbAmount);
     } else {
       setEstimatedTokens(0);
       setEstimatedCost(0);
     }
   }, [purchaseAmount, stats.currentPrice]);
+
+  // Fetch vesting info for connected account
+  useEffect(() => {
+    const fetchVestingInfo = async () => {
+      if (!account?.address) {
+        setVestingInfo(null);
+        return;
+      }
+
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const contract = new ethers.Contract(
+          SEED_ROUND_TST_ADDRESS,
+          [
+            'function getVestingInfo(address _buyer) external view returns (uint256 totalTokens, uint256 claimedTokens, uint256 claimableTokens, uint256 vestingStart, uint256 nextClaimTime, uint256 lockedTokens)',
+          ],
+          provider
+        );
+
+        const info = await contract.getVestingInfo(account.address);
+        
+        const totalTokens = Number(ethers.formatEther(info[0]));
+        const claimedTokens = Number(ethers.formatEther(info[1]));
+        const claimableTokens = Number(ethers.formatEther(info[2]));
+        const lockedTokensRaw = Number(ethers.formatEther(info[5]));
+        // Handle dust/precision issues
+        const lockedTokens = lockedTokensRaw < 0.0001 ? 0 : lockedTokensRaw;
+        
+        setVestingInfo({
+          totalTokens,
+          claimedTokens,
+          claimableTokens,
+          vestingStart: Number(info[3]),
+          nextClaimTime: Number(info[4]),
+          lockedTokens,
+        });
+      } catch (error) {
+        console.log('No vesting info yet or error fetching:', error);
+        setVestingInfo(null);
+      }
+    };
+
+    fetchVestingInfo();
+    const interval = setInterval(fetchVestingInfo, 5000); // Refresh every 5 seconds
+    return () => clearInterval(interval);
+  }, [account?.address]);
+
+  // Fetch contract stats (sale progress)
+  const isFetchingStats = useRef(false);
+
+  useEffect(() => {
+    const fetchContractStats = async () => {
+      if (isFetchingStats.current) return;
+      isFetchingStats.current = true;
+
+      try {
+        // Use JsonRpcProvider for reliable data fetching without wallet connection
+        const provider = new ethers.JsonRpcProvider(TESTNET_RPC_URL);
+        const contract = new ethers.Contract(
+          SEED_ROUND_TST_ADDRESS,
+          [
+            'function tokensSold() view returns (uint256)',
+            'function totalTokensForSale() view returns (uint256)',
+            'function totalBNBRaised() view returns (uint256)',
+            'event TokensPurchased(address indexed buyer, uint256 amount, uint256 price, uint256 totalCost)',
+          ],
+          provider
+        );
+
+        const tokensSold = await contract.tokensSold();
+        const totalTokens = await contract.totalTokensForSale();
+        const bnbRaised = await contract.totalBNBRaised();
+        const currentPrice = await contract.getCurrentPrice();
+
+        const tokensSoldFormatted = Number(ethers.formatEther(tokensSold));
+        const totalTokensFormatted = Number(ethers.formatEther(totalTokens));
+        const bnbRaisedFormatted = Number(ethers.formatEther(bnbRaised));
+        const currentPriceFormatted = Number(ethers.formatEther(currentPrice));
+        const percentComplete = (tokensSoldFormatted / totalTokensFormatted) * 100;
+
+        console.log('Contract Stats:', {
+          tokensSold: tokensSoldFormatted,
+          totalTokens: totalTokensFormatted,
+          bnbRaised: bnbRaisedFormatted,
+          currentPrice: currentPriceFormatted,
+          percentComplete
+        });
+
+        setStats(prev => ({
+          ...prev,
+          tokensSold: tokensSoldFormatted,
+          totalRaised: bnbRaisedFormatted,
+          currentPrice: currentPriceFormatted,
+          percentageComplete: percentComplete,
+        }));
+
+        // Fetch recent purchases using Etherscan V2 API (Unified) or Fallback to RPC
+        try {
+          // 1. Get the topic hash for TokensPurchased
+          const iface = new ethers.Interface([
+            'event TokensPurchased(address indexed buyer, uint256 amount, uint256 price, uint256 totalCost)'
+          ]);
+          const topic0 = ethers.id('TokensPurchased(address,uint256,uint256,uint256)');
+
+          // 2. Construct Etherscan V2 API URL
+          // Note: This requires an Etherscan V2 API Key. Old BscScan keys might not work.
+          // Chain ID 97 is BSC Testnet.
+          const startBlock = 74000000; 
+          const apiUrl = `https://api.etherscan.io/v2/api?chainid=97&module=logs&action=getLogs&fromBlock=${startBlock}&toBlock=latest&address=${SEED_ROUND_TST_ADDRESS}&topic0=${topic0}&apikey=${BSCSCAN_API_KEY}`;
+
+          console.log('Fetching from Etherscan V2:', apiUrl);
+
+          const response = await fetch(apiUrl);
+          const data = await response.json();
+
+          if (data.status === '1' && Array.isArray(data.result)) {
+            console.log(`Etherscan V2 found ${data.result.length} logs`);
+            
+            const allPurchases: RecentBuy[] = data.result.reverse().slice(0, 10).map((log: any) => {
+              try {
+                const parsed = iface.parseLog({
+                  topics: log.topics,
+                  data: log.data
+                });
+
+                if (!parsed) return null;
+
+                let timestamp = Date.now();
+                if (log.timeStamp) {
+                    timestamp = Number(log.timeStamp) * 1000; 
+                }
+
+                return {
+                  id: log.transactionHash,
+                  buyer: parsed.args[0] as string,
+                  amount: Number(ethers.formatEther(parsed.args[1])),
+                  price: Number(ethers.formatEther(parsed.args[2])),
+                  total: Number(ethers.formatEther(parsed.args[3])),
+                  timestamp: timestamp,
+                  txHash: log.transactionHash,
+                };
+              } catch (e) {
+                console.error('Error parsing log from API:', e);
+                return null;
+              }
+            }).filter((item: any) => item !== null) as RecentBuy[];
+
+            setRecentBuys(allPurchases);
+          } else {
+            console.log('Etherscan V2 returned error:', data.message, data.result);
+            
+            // Fallback: Gentle RPC fetch for last 2000 blocks if API fails
+            if (data.message === 'NOTOK' || data.result?.includes('limit') || data.message?.includes('No records')) {
+                 console.log('Falling back to gentle RPC fetch (trying multiple nodes)...');
+                 
+                 let logs = [];
+                 let rpcSuccess = false;
+
+                 for (const rpcUrl of FALLBACK_RPC_URLS) {
+                    try {
+                        console.log(`Trying RPC: ${rpcUrl}`);
+                        const tempProvider = new ethers.JsonRpcProvider(rpcUrl);
+                        const currentBlock = await tempProvider.getBlockNumber();
+                        
+                        // Try to fetch last 40,000 blocks (approx 4 hours) to catch recent user txs
+                        // Public nodes might limit this, so we try the best ones first (Ankr/PublicNode)
+                        const range = 40000; 
+                        const fromBlock = Math.max(0, currentBlock - range);
+                        
+                        console.log(`Fetching logs from block ${fromBlock} to ${currentBlock} (${range} blocks)`);
+
+                        logs = await tempProvider.getLogs({
+                            address: SEED_ROUND_TST_ADDRESS,
+                            topics: [topic0],
+                            fromBlock: fromBlock,
+                            toBlock: 'latest'
+                        });
+                        
+                        console.log(`RPC success with ${rpcUrl}, found ${logs.length} logs`);
+                        rpcSuccess = true;
+                        break; // Stop if successful
+                    } catch (rpcError: any) {
+                        console.warn(`RPC failed ${rpcUrl}:`, rpcError.message || rpcError);
+                        continue; // Try next RPC
+                    }
+                 }
+
+                 if (rpcSuccess) {
+                    const rpcPurchases = logs.reverse().map((log: any) => {
+                        try {
+                            const parsed = iface.parseLog({ topics: [...log.topics], data: log.data });
+                            if (!parsed) return null;
+                            return {
+                                id: log.transactionHash,
+                                buyer: parsed.args[0] as string,
+                                amount: Number(ethers.formatEther(parsed.args[1])),
+                                price: Number(ethers.formatEther(parsed.args[2])),
+                                total: Number(ethers.formatEther(parsed.args[3])),
+                                timestamp: Date.now(), // Approximation for fallback
+                                txHash: log.transactionHash,
+                            };
+                        } catch (e) { return null; }
+                    }).filter((p: any) => p !== null) as RecentBuy[];
+                    
+                    if (rpcPurchases.length > 0) {
+                        setRecentBuys(rpcPurchases);
+                    }
+                 } else {
+                     console.error('All RPC fallbacks failed.');
+                 }
+            }
+            
+            if (data.message?.includes('No records found')) {
+                setRecentBuys([]);
+            }
+          }
+        } catch (error) {
+          console.log('Error fetching recent purchases:', error);
+        }
+      } catch (error) {
+        console.log('Error fetching contract stats:', error);
+      } finally {
+        isFetchingStats.current = false;
+      }
+    };
+
+    fetchContractStats();
+    const interval = setInterval(fetchContractStats, 15000); // Refresh every 15 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  // Update countdown timer
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!vestingInfo) return;
+
+      const now = Math.floor(Date.now() / 1000);
+      const remaining = vestingInfo.nextClaimTime - now;
+
+      if (remaining <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        setCountdown({
+          days: Math.floor(remaining / 86400),
+          hours: Math.floor((remaining % 86400) / 3600),
+          minutes: Math.floor((remaining % 3600) / 60),
+          seconds: remaining % 60,
+        });
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [vestingInfo]);
 
   // Get current tier number based on tokens sold
   const getCurrentTier = (tokensSold: number): number => {
@@ -120,31 +414,17 @@ const SidebarSeedRound = memo(() => {
     if (!purchaseAmount || Number(purchaseAmount) <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter a valid purchase amount",
+        description: "Please enter a valid purchase amount (in tBNB)",
         variant: "destructive",
       });
       return;
     }
 
-    const usdAmount = Number(purchaseAmount);
-    if (usdAmount < 10) {
+    const tbnbAmount = Number(purchaseAmount);
+    if (tbnbAmount < 0.01) {
       toast({
         title: "Minimum Purchase",
-        description: "Minimum purchase amount is $10 USD",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Calculate new totals after purchase
-    const newTokensAfterPurchase = stats.tokensSold + estimatedTokens;
-    const newTotalRaised = stats.totalRaised + estimatedCost;
-
-    // Check if tokens would exceed available
-    if (newTokensAfterPurchase > SEED_CONFIG.totalTokens) {
-      toast({
-        title: "Not Enough Tokens",
-        description: `Only ${SEED_CONFIG.totalTokens - stats.tokensSold} tokens remaining in this round`,
+        description: "Minimum purchase amount is 0.01 tBNB",
         variant: "destructive",
       });
       return;
@@ -153,7 +433,6 @@ const SidebarSeedRound = memo(() => {
     setIsLoading(true);
 
     try {
-      // Get the user's signer from window.ethereum
       if (!window.ethereum) {
         throw new Error("Ethereum provider not found");
       }
@@ -161,123 +440,116 @@ const SidebarSeedRound = memo(() => {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // USD1 token ABI (ERC20 standard + approve)
-      const USD1_ABI = [
-        'function approve(address spender, uint256 amount) returns (bool)',
-        'function balanceOf(address account) returns (uint256)',
+      // Seed Round TST ABI for testnet
+      const SEED_ROUND_TST_ABI = [
+        'function buyTokens() external payable',
       ];
-
-      // Seed Round Sale ABI
-      const SEED_ROUND_ABI = [
-        'function buyTokens(uint256 _tokenAmount) external',
-        'function tokenPrice() view returns (uint256)',
-        'function totalTokensForSale() view returns (uint256)',
-        'function tokensSold() view returns (uint256)',
-      ];
-
-      // TODO: Replace with your deployed SeedRoundSale contract address
-      const SEED_ROUND_ADDRESS = '0x...'; // UPDATE THIS AFTER DEPLOYMENT
-
-      // Check if user has enough USD1
-      const usd1Contract = new ethers.Contract(USD1_TOKEN_ADDRESS, USD1_ABI, provider);
-      const usdBalance = await usd1Contract.balanceOf(account.address);
-      const usdAmountWei = ethers.parseEther(usdAmount.toFixed(6)); // USD1 uses 18 decimals
-
-      if (usdBalance < usdAmountWei) {
-        toast({
-          title: "Insufficient Balance",
-          description: `You have insufficient USD1. You need ${usdAmount.toFixed(2)} USD1`,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Step 1: Approve USD1 spending
-      toast({
-        title: "Step 1: Approval",
-        description: "Approving USD1 spending...",
-      });
-
-      const usd1ContractSigner = new ethers.Contract(USD1_TOKEN_ADDRESS, USD1_ABI, signer);
-      const approveTx = await usd1ContractSigner.approve(
-        SEED_ROUND_ADDRESS,
-        usdAmountWei
-      );
-      const approveReceipt = await approveTx.wait();
-
-      if (!approveReceipt) {
-        throw new Error("Approval transaction failed");
-      }
-
-      // Step 2: Purchase tokens from seed round
-      toast({
-        title: "Step 2: Purchase",
-        description: "Purchasing SSTL tokens...",
-      });
 
       const seedRoundContract = new ethers.Contract(
-        SEED_ROUND_ADDRESS,
-        SEED_ROUND_ABI,
+        SEED_ROUND_TST_ADDRESS,
+        SEED_ROUND_TST_ABI,
         signer
       );
 
-      // Convert SSTL amount to wei (18 decimals)
-      const sstlAmountWei = ethers.parseEther(estimatedTokens.toString());
-      const purchaseTx = await seedRoundContract.buyTokens(sstlAmountWei);
+      // Send tBNB directly (no approval needed)
+      toast({
+        title: "Processing",
+        description: "Buying SSTLTST tokens with tBNB...",
+      });
+
+      const tbnbWei = ethers.parseEther(tbnbAmount.toString());
+      const purchaseTx = await seedRoundContract.buyTokens({ value: tbnbWei });
       const purchaseReceipt = await purchaseTx.wait();
 
       if (!purchaseReceipt) {
         throw new Error("Purchase transaction failed");
       }
 
-      // Get transaction hash
       const txHash = purchaseReceipt.hash;
+
+      // Parse logs to get exact tokens purchased and price
+      let tokensPurchased = 0;
+      let purchasePrice = 0;
+
+      const iface = new ethers.Interface([
+        'event TokensPurchased(address indexed buyer, uint256 amount, uint256 price, uint256 totalCost)'
+      ]);
+
+      for (const log of purchaseReceipt.logs) {
+        try {
+          const parsed = iface.parseLog({ topics: [...log.topics], data: log.data });
+          if (parsed && parsed.name === 'TokensPurchased') {
+            tokensPurchased = Number(ethers.formatEther(parsed.args.amount));
+            purchasePrice = Number(ethers.formatEther(parsed.args.price));
+            break;
+          }
+        } catch (e) {
+          // Ignore logs that don't match
+        }
+      }
+
+      // Fallback if log parsing fails (shouldn't happen if event exists)
+      if (tokensPurchased === 0) {
+         console.warn("Could not parse TokensPurchased event, using estimation");
+         // Fallback estimation (less accurate)
+         tokensPurchased = (tbnbAmount / stats.currentPrice); 
+         purchasePrice = stats.currentPrice;
+      }
 
       // Add to recent buys
       const newBuy: RecentBuy = {
         id: txHash,
         buyer: account.address,
-        amount: estimatedTokens,
-        price: stats.currentPrice,
-        total: estimatedCost,
+        amount: tokensPurchased,
+        price: purchasePrice,
+        total: tbnbAmount,
         timestamp: Date.now(),
         txHash: txHash,
       };
 
       setRecentBuys(prev => [newBuy, ...prev.slice(0, 9)]);
 
-      // Update stats
-      const newPrice = calculateDynamicPrice(newTokensAfterPurchase);
+      // Update stats from contract
       setStats(prev => ({
         ...prev,
-        totalRaised: newTotalRaised,
-        tokensSold: newTokensAfterPurchase,
-        currentPrice: newPrice,
-        priceIncrease: ((newPrice - SEED_CONFIG.startPrice) / SEED_CONFIG.startPrice) * 100,
+        totalRaised: prev.totalRaised + tbnbAmount,
+        tokensSold: prev.tokensSold + tokensPurchased,
         participantsCount: prev.participantsCount + 1,
-        percentageComplete: (newTokensAfterPurchase / SEED_CONFIG.totalTokens) * 100,
+        // Optimistically update price (approximate)
+        currentPrice: purchasePrice 
       }));
 
       toast({
         title: "Purchase Successful! 🎉",
-        description: `You purchased ${estimatedTokens.toLocaleString()} SSTL tokens for $${estimatedCost.toFixed(2)} USD. Tokens are now locked with vesting.`,
+        description: `You purchased ${tokensPurchased.toLocaleString(undefined, {maximumFractionDigits: 2})} SSTLTST tokens for ${tbnbAmount} tBNB. Tokens are locked and will vest over time.`,
       });
 
       setPurchaseAmount('');
       setEstimatedTokens(0);
       setEstimatedCost(0);
 
+      // Clear any errors from console
+      setTimeout(() => {
+        // Refresh vesting info to show new purchase
+        setVestingInfo(null);
+      }, 1000);
+
     } catch (error: any) {
       console.error('Purchase error:', error);
 
-      // Handle specific error cases
       let errorDescription = "An error occurred during your purchase. Please try again.";
       if (error.message?.includes("user rejected")) {
         errorDescription = "Transaction rejected by user";
       } else if (error.message?.includes("insufficient")) {
-        errorDescription = "Insufficient balance or allowance";
-      } else if (error.message?.includes("SeedRoundSale")) {
-        errorDescription = error.message;
+        errorDescription = "Insufficient tBNB balance";
+      } else if (error.message?.includes("not enough tokens")) {
+        errorDescription = "Not enough tokens available in this round";
+      } else if (error.message?.includes("Sale has ended")) {
+        errorDescription = "Sale period has ended. The contract needs to be reconfigured by the owner.";
+      } else if (error.message?.includes("Sale has not started")) {
+        errorDescription = "Sale has not started yet. Please wait for the sale to begin.";
+      } else if (error.message?.includes("revert")) {
+        errorDescription = error.reason || "Transaction reverted. Please check contract configuration.";
       }
 
       toast({
@@ -287,6 +559,88 @@ const SidebarSeedRound = memo(() => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleClaimTokens = async () => {
+    if (!account?.address || !vestingInfo) return;
+
+    setClaimLoading(true);
+
+    try {
+      if (!window.ethereum) {
+        throw new Error("Ethereum provider not found");
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const SEED_ROUND_TST_ABI = [
+        'function claimTokens() external',
+      ];
+
+      const seedRoundContract = new ethers.Contract(
+        SEED_ROUND_TST_ADDRESS,
+        SEED_ROUND_TST_ABI,
+        signer
+      );
+
+      toast({
+        title: "Processing",
+        description: "Claiming your vested tokens...",
+      });
+
+      const claimTx = await seedRoundContract.claimTokens();
+      const claimReceipt = await claimTx.wait();
+
+      if (!claimReceipt) {
+        throw new Error("Claim transaction failed");
+      }
+
+      toast({
+        title: "Tokens Claimed! ✨",
+        description: `You claimed ${vestingInfo.claimableTokens.toLocaleString()} SSTLTST tokens`,
+      });
+
+      // Force refresh vesting info immediately
+      setTimeout(async () => {
+        try {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const contract = new ethers.Contract(
+            SEED_ROUND_TST_ADDRESS,
+            ['function getVestingInfo(address _buyer) external view returns (uint256 totalTokens, uint256 claimedTokens, uint256 claimableTokens, uint256 vestingStart, uint256 nextClaimTime, uint256 lockedTokens)'],
+            provider
+          );
+          const info = await contract.getVestingInfo(account.address);
+          const totalTokens = Number(ethers.formatEther(info[0]));
+          const claimedTokens = Number(ethers.formatEther(info[1]));
+          const claimableTokens = Number(ethers.formatEther(info[2]));
+          const lockedTokensRaw = Number(ethers.formatEther(info[5]));
+          // Handle dust/precision issues
+          const lockedTokens = lockedTokensRaw < 0.0001 ? 0 : lockedTokensRaw;
+          
+          setVestingInfo({
+            totalTokens,
+            claimedTokens,
+            claimableTokens,
+            vestingStart: Number(info[3]),
+            nextClaimTime: Number(info[4]),
+            lockedTokens,
+          });
+        } catch (e) {
+          console.log('Error refreshing vesting info:', e);
+        }
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Claim error:', error);
+      toast({
+        title: "Claim Failed",
+        description: error.message || "Failed to claim tokens",
+        variant: "destructive",
+      });
+    } finally {
+      setClaimLoading(false);
     }
   };
 
@@ -523,12 +877,16 @@ const SidebarSeedRound = memo(() => {
           <CardContent className="pt-6">
             <div className={styles.progressHeader}>
               <span className={styles.progressLabel}>Sale Progress</span>
-              <span className={styles.progressPercent}>{stats.percentageComplete.toFixed(1)}%</span>
+              <span className={styles.progressPercent}>
+                {stats.percentageComplete < 0.01 
+                  ? stats.percentageComplete.toFixed(4) 
+                  : stats.percentageComplete.toFixed(2)}%
+              </span>
             </div>
             <div className={styles.progressBarContainer}>
               <div
                 className={styles.progressBar}
-                style={{ width: `${Math.min(stats.percentageComplete, 100)}%` }}
+                style={{ width: `${Math.max(0.5, Math.min(stats.percentageComplete, 100))}%` }}
               />
             </div>
             <div className={styles.progressFooter}>
@@ -536,7 +894,7 @@ const SidebarSeedRound = memo(() => {
                 {stats.tokensSold.toLocaleString()} / {SEED_CONFIG.totalTokens.toLocaleString()} SSTL
               </span>
               <span className={styles.progressUsd}>
-                ${stats.totalRaised.toLocaleString('en-US', { maximumFractionDigits: 0 })} raised
+                {stats.totalRaised.toFixed(2)} tBNB raised
               </span>
             </div>
           </CardContent>
@@ -560,19 +918,19 @@ const SidebarSeedRound = memo(() => {
                   <>
                     <div className={styles.purchaseForm}>
                       <label className={styles.formLabel}>
-                        <span>Amount to Invest (USD)</span>
-                        <span className={styles.formHint}>Minimum: $10</span>
+                        <span>Amount to Invest (tBNB - Testnet)</span>
+                        <span className={styles.formHint}>Minimum: 0.01 tBNB | Price: 0.015 tBNB per token</span>
                       </label>
                       <div className={styles.inputGroup}>
                         <DollarSign size={18} className={styles.inputPrefix} />
                         <Input
                           type="number"
-                          placeholder="Enter amount in USD"
+                          placeholder="Enter any amount in tBNB"
                           value={purchaseAmount}
                           onChange={(e) => setPurchaseAmount(e.target.value)}
                           className={styles.formInput}
-                          min="10"
-                          step="1"
+                          min="0.01"
+                          step="0.01"
                           disabled={isLoading}
                         />
                       </div>
@@ -585,18 +943,22 @@ const SidebarSeedRound = memo(() => {
                         className={styles.estimateBox}
                       >
                         <div className={styles.estimateRow}>
-                          <span className={styles.estimateLabel}>Current Price:</span>
-                          <span className={styles.estimateValue}>${stats.currentPrice.toFixed(4)} per token</span>
+                          <span className={styles.estimateLabel}>Exchange Rate:</span>
+                          <span className={styles.estimateValue}>1 token = 0.015 tBNB</span>
                         </div>
                         <div className={styles.estimateRow}>
-                          <span className={styles.estimateLabel}>Tokens You'll Receive:</span>
+                          <span className={styles.estimateLabel}>You Send:</span>
+                          <span className={styles.estimateValue}>{purchaseAmount} tBNB</span>
+                        </div>
+                        <div className={styles.estimateRow}>
+                          <span className={styles.estimateLabel}>You Receive:</span>
                           <span className={`${styles.estimateValue} text-green-400`}>
-                            {estimatedTokens.toLocaleString()} SSTL
+                            {estimatedTokens.toLocaleString()} SSTLTST
                           </span>
                         </div>
                         <div className={`${styles.estimateRow} ${styles.estimateTotal}`}>
                           <span className={styles.estimateLabel}>Total Cost:</span>
-                          <span className={styles.estimateValue}>${estimatedCost.toFixed(2)}</span>
+                          <span className={styles.estimateValue}>{purchaseAmount} tBNB</span>
                         </div>
                       </motion.div>
                     )}
@@ -604,7 +966,7 @@ const SidebarSeedRound = memo(() => {
                     <div className={styles.purchaseInfo}>
                       <Info size={16} />
                       <p>
-                        You will need to approve USD1 token spending before the transaction. Both tokens are on BSC mainnet.
+                        Tokens are locked upon purchase. You'll be able to claim them after the cliff period (1 hour on testnet, 12 months on mainnet). Vesting is linear over 2 hours (testnet) or 18 months (mainnet).
                       </p>
                     </div>
 
@@ -640,6 +1002,157 @@ const SidebarSeedRound = memo(() => {
                         with demand. Always verify transactions before confirming.
                       </p>
                     </div>
+
+                    {/* Vesting Status Section */}
+                    {account?.address && vestingInfo && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                          marginTop: '1.5rem',
+                          padding: '1rem',
+                          borderRadius: '12px',
+                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                          border: '1px solid rgba(139, 92, 246, 0.3)',
+                        }}
+                      >
+                        <h4 style={{ marginBottom: '1rem', fontSize: '0.95rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Lock size={16} />
+                          Your Vesting Schedule
+                        </h4>
+
+                        {/* Status Cards */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                          <div style={{
+                            padding: '0.75rem',
+                            borderRadius: '8px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            textAlign: 'center',
+                          }}>
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '0.25rem' }}>
+                              Total Purchased
+                            </div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#fff' }}>
+                              {vestingInfo.totalTokens.toLocaleString()}
+                            </div>
+                          </div>
+                          <div style={{
+                            padding: '0.75rem',
+                            borderRadius: '8px',
+                            background: 'rgba(34, 197, 94, 0.1)',
+                            textAlign: 'center',
+                            border: '1px solid rgba(34, 197, 94, 0.3)',
+                          }}>
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(34, 197, 94, 0.8)', marginBottom: '0.25rem' }}>
+                              Claimable Now
+                            </div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#22c55e' }}>
+                              {vestingInfo.claimableTokens.toLocaleString()}
+                            </div>
+                          </div>
+                          <div style={{
+                            padding: '0.75rem',
+                            borderRadius: '8px',
+                            background: 'rgba(249, 115, 22, 0.1)',
+                            textAlign: 'center',
+                            border: '1px solid rgba(249, 115, 22, 0.3)',
+                          }}>
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(249, 115, 22, 0.8)', marginBottom: '0.25rem' }}>
+                              Still Locked
+                            </div>
+                            <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#f97316' }}>
+                              {Math.max(0, vestingInfo.lockedTokens).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Countdown Timer */}
+                        {vestingInfo.claimableTokens === 0 && countdown && (
+                          <div style={{
+                            padding: '1rem',
+                            borderRadius: '8px',
+                            background: 'rgba(168, 85, 247, 0.1)',
+                            border: '1px solid rgba(168, 85, 247, 0.3)',
+                            marginBottom: '1rem',
+                            textAlign: 'center',
+                          }}>
+                            <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '0.5rem' }}>
+                              Cliff Ends In
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#a855f7' }}>
+                                  {countdown.days}
+                                </span>
+                                <span style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)' }}>Days</span>
+                              </div>
+                              <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>:</span>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#a855f7' }}>
+                                  {countdown.hours}
+                                </span>
+                                <span style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)' }}>Hours</span>
+                              </div>
+                              <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>:</span>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#a855f7' }}>
+                                  {countdown.minutes}
+                                </span>
+                                <span style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)' }}>Minutes</span>
+                              </div>
+                              <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>:</span>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#a855f7' }}>
+                                  {countdown.seconds}
+                                </span>
+                                <span style={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.6)' }}>Seconds</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Claim Button */}
+                        <Button
+                          onClick={handleClaimTokens}
+                          disabled={claimLoading || vestingInfo.claimableTokens === 0}
+                          style={{
+                            width: '100%',
+                            background: vestingInfo.claimableTokens === 0
+                              ? 'rgba(107, 114, 128, 0.5)'
+                              : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                            borderColor: vestingInfo.claimableTokens === 0 ? 'rgba(107, 114, 128, 0.3)' : undefined,
+                          }}
+                          size="sm"
+                        >
+                          {claimLoading ? (
+                            <>
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                                className="inline-block mr-2"
+                              >
+                                <Zap size={16} />
+                              </motion.div>
+                              Claiming...
+                            </>
+                          ) : vestingInfo.claimableTokens === 0 ? (
+                            <>
+                              <Lock size={16} className="mr-2" />
+                              Locked (Cliff Active)
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle size={16} className="mr-2" />
+                              Claim {vestingInfo.claimableTokens.toLocaleString()} Tokens
+                            </>
+                          )}
+                        </Button>
+
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.75rem', textAlign: 'center' }}>
+                          You can claim vested tokens at any time. Unclaimed tokens accumulate.
+                        </div>
+                      </motion.div>
+                    )}
                   </>
                 )}
 

@@ -1066,6 +1066,12 @@ const SidebarAirdrop = memo(() => {
               <Coins className="mr-2" size={20} />
               {isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
             </Button>
+
+            <div className="mt-4 p-3 sm:p-4 bg-blue-50/50 border border-blue-200 rounded-lg">
+              <p className="text-xs sm:text-sm text-blue-700 text-center leading-relaxed">
+                ℹ️ Tokens will be available to claim at the end of this campaign. Your points determine your token allocation.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </motion.div>

@@ -1,4 +1,4 @@
-import { ArrowRight, Zap, Shield, Cpu, Target, Copy, ExternalLink, Check } from 'lucide-react';
+import { ArrowRight, Zap, Shield, Cpu, Target, Copy, ExternalLink, Check, Sparkles, TrendingUp, Flame, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Suspense, lazy, useState } from 'react';
@@ -151,10 +151,55 @@ const Index = () => {
             />
           </div>
 
+          {/* ERC-7857 Intelligent NFTs Section */}
+          <div className="mb-16">
+            <div className="glass-card p-6 sm:p-8 md:p-10 border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
+              <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center">
+                <div className="flex-shrink-0">
+                  <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30">
+                    <Sparkles size={48} className="text-primary sm:w-16 sm:h-16" />
+                  </div>
+                </div>
+                <div className="flex-1 text-center lg:text-left">
+                  <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                    <h3 className="text-xl sm:text-2xl md:text-3xl font-orbitron font-bold neon-glow">
+                      ERC-7857: Intelligent NFTs
+                    </h3>
+                    <span className="px-3 py-1 text-xs font-bold bg-primary/20 text-primary rounded-full border border-primary/30">
+                      NEW STANDARD
+                    </span>
+                  </div>
+                  <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-6">
+                    SmartSentinels leverages <span className="text-primary font-semibold">ERC-7857</span>—a new NFT standard where tokens aren't just collectibles, they're autonomous AI agents. Each iNFT embeds ownership, intellectual property rights, and revenue-sharing logic directly in its metadata.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
+                      <Shield size={20} className="text-primary flex-shrink-0" />
+                      <span className="text-sm font-medium">Embedded IP Rights</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
+                      <Cpu size={20} className="text-primary flex-shrink-0" />
+                      <span className="text-sm font-medium">On-Chain AI Logic</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
+                      <Zap size={20} className="text-primary flex-shrink-0" />
+                      <span className="text-sm font-medium">Passive Income</span>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
+                      <Target size={20} className="text-primary flex-shrink-0" />
+                      <span className="text-sm font-medium">Real Utility</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Token Information Card */}
           <div className="mb-16">
             <div className="glass-card p-4 sm:p-6 md:p-8">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-8">
+              {/* Header Row */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 md:gap-8 mb-8">
                 <div className="text-center md:text-left">
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-orbitron font-bold mb-4 sm:mb-6 neon-glow">
                     SSTL Token
@@ -183,7 +228,7 @@ const Index = () => {
                       </div>
                     </div>
                     <div className="text-sm sm:text-base lg:text-lg text-muted-foreground">
-                      <span className="font-semibold text-primary">Total Supply:</span> 100,000,000 SSTL
+                      <span className="font-semibold text-primary">Total Supply:</span> 100,000,000 SSTL (Hard Cap)
                     </div>
                     <div className="text-sm sm:text-base lg:text-lg text-muted-foreground">
                       <span className="font-semibold text-primary">Standard:</span> BEP-20 Token
@@ -207,7 +252,7 @@ const Index = () => {
                           </a>
                         </Button>
                         <a href="/documents/SmartSentinelsWhitepaper v0.2.pdf" target="_blank" rel="noopener noreferrer" className="text-sm sm:text-base lg:text-lg font-semibold text-primary hover:text-primary/80 transition-colors">
-                          Tokenomics
+                          Full Tokenomics
                         </a>
                       </div>
                     </div>
@@ -219,6 +264,108 @@ const Index = () => {
                     alt="SSTL Token" 
                     className="w-40 sm:w-48 md:w-56 h-40 sm:h-48 md:h-56 object-contain flex-shrink-0"
                   />
+                </div>
+              </div>
+
+              {/* Token Distribution */}
+              <div className="border-t border-primary/20 pt-6">
+                <h4 className="text-lg sm:text-xl font-orbitron font-semibold mb-4 text-center">Token Distribution</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6">
+                  <div className="text-center p-3 rounded-lg bg-background/50 border border-primary/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">40%</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">PoUW Rewards</div>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-background/50 border border-primary/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">15%</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Liquidity</div>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-background/50 border border-primary/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">15%</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Marketing</div>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-background/50 border border-primary/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">10%</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Team</div>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-background/50 border border-primary/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">10%</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Strategic Reserve</div>
+                  </div>
+                  <div className="text-center p-3 rounded-lg bg-background/50 border border-primary/20">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">10%</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Fundraising</div>
+                  </div>
+                </div>
+
+                {/* PoUW Mechanism & Deflationary */}
+                <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
+                  {/* PoUW Distribution */}
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                    <h5 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                      <Sparkles size={18} />
+                      PoUW Emission Distribution
+                    </h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">iNFT & NFT Holders</span>
+                        <span className="font-semibold">60%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Treasury & Staking</span>
+                        <span className="font-semibold">20%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Business Clients</span>
+                        <span className="font-semibold">10%</span>
+                      </div>
+                      <div className="flex justify-between text-orange-400">
+                        <span>Burn (Deflationary)</span>
+                        <span className="font-semibold">10%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Halving Schedule */}
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                    <h5 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                      <TrendingUp size={18} />
+                      Halving Schedule
+                    </h5>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Phase H0</span>
+                        <span className="font-semibold">100% emission</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Phase H1</span>
+                        <span className="font-semibold">50% emission</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Phase H2</span>
+                        <span className="font-semibold">25% emission</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Phase H3</span>
+                        <span className="font-semibold">12.5% emission</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Key Features */}
+                <div className="mt-6 flex flex-wrap justify-center gap-3">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 text-sm">
+                    <Flame size={16} />
+                    <span>10% Burn per Emission</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 text-primary text-sm">
+                    <Lock size={16} />
+                    <span>Team: 12mo Cliff + 36mo Vesting</span>
+                  </div>
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+                    <Shield size={16} />
+                    <span>Audited Smart Contract</span>
+                  </div>
                 </div>
               </div>
             </div>

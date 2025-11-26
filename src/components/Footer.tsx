@@ -65,6 +65,14 @@ const Footer = () => {
                 >
                   Disclaimer
                 </a>
+                <a
+                  href="/documents/SmartSentinels - Intellectual Property Rights.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
+                >
+                  IP Rights
+                </a>
               </div>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, X, ShieldAlert, CheckCircle } from 'lucide-react';
+import { AlertTriangle, X, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // List of known copycat/scam domains
@@ -15,7 +15,7 @@ const SUSPICIOUS_DOMAINS = [
 const OFFICIAL_DOMAIN = 'smartsentinels.net';
 const WARNING_STORAGE_KEY = 'scam_warning_dismissed';
 const SUSPICIOUS_REFERRER_KEY = 'suspicious_referrer';
-const BANNER_STORAGE_KEY = 'official_banner_dismissed';
+const TICKER_STORAGE_KEY = 'security_ticker_dismissed';
 
 // Big red warning modal for users coming from scam sites
 const ScamWarningModal = ({ referrerDomain, onDismiss }: { referrerDomain: string; onDismiss: () => void }) => {
@@ -82,43 +82,70 @@ const ScamWarningModal = ({ referrerDomain, onDismiss }: { referrerDomain: strin
   );
 };
 
-// Green banner shown to ALL users
-const OfficialSiteBanner = () => {
+// Animated scrolling security ticker - positioned at bottom
+const SecurityTicker = () => {
   const [dismissed, setDismissed] = useState(false);
   
   useEffect(() => {
-    if (sessionStorage.getItem(BANNER_STORAGE_KEY)) {
+    if (sessionStorage.getItem(TICKER_STORAGE_KEY)) {
       setDismissed(true);
     }
   }, []);
 
   const handleDismiss = () => {
-    sessionStorage.setItem(BANNER_STORAGE_KEY, 'true');
+    sessionStorage.setItem(TICKER_STORAGE_KEY, 'true');
     setDismissed(true);
   };
 
   if (dismissed) return null;
 
+  const tickerText = "🛡️ SECURITY NOTICE: You are on the official SmartSentinels website → smartsentinels.net ← Always verify the URL before connecting your wallet. Beware of fake sites like .xyz .io .org .com — Only trust smartsentinels.net";
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: -50 }}
+      initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
-      className="fixed top-0 left-0 right-0 z-[9998] bg-gradient-to-r from-green-900/95 to-emerald-900/95 backdrop-blur-sm border-b border-green-500/30 px-4 py-2"
+      transition={{ delay: 0.5, duration: 0.3 }}
+      className="fixed bottom-0 left-0 right-0 z-[100] bg-gradient-to-r from-green-950 via-green-900 to-green-950 border-t border-green-500/30"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-sm">
-          <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
-          <span className="text-green-100">
-            <strong className="text-yellow-400">🔒 Security Check:</strong> Always verify you're on <strong className="text-green-400">smartsentinels.net</strong> before connecting your wallet.
-          </span>
-          <span className="text-red-400 text-xs hidden sm:inline">
-            ❌ Avoid fake sites like .xyz, .io, .org
-          </span>
+      <div className="flex items-center h-8 sm:h-9 overflow-hidden">
+        {/* Shield icon - fixed */}
+        <div className="flex-shrink-0 bg-green-800/50 px-3 h-full flex items-center gap-2 border-r border-green-500/30">
+          <ShieldCheck className="w-4 h-4 text-green-400" />
+          <span className="text-green-400 text-xs font-bold hidden sm:inline">VERIFIED</span>
         </div>
+        
+        {/* Scrolling text container */}
+        <div className="flex-1 overflow-hidden relative">
+          <motion.div
+            className="flex whitespace-nowrap"
+            animate={{
+              x: ['0%', '-50%'],
+            }}
+            transition={{
+              x: {
+                repeat: Infinity,
+                repeatType: 'loop',
+                duration: 30,
+                ease: 'linear',
+              },
+            }}
+          >
+            {/* Duplicate the text for seamless loop */}
+            <span className="text-green-100 text-xs sm:text-sm px-4 inline-flex items-center">
+              {tickerText}
+            </span>
+            <span className="text-green-100 text-xs sm:text-sm px-4 inline-flex items-center">
+              {tickerText}
+            </span>
+          </motion.div>
+        </div>
+        
+        {/* Close button - fixed */}
         <button
           onClick={handleDismiss}
-          className="text-green-300 hover:text-white transition-colors p-1"
-          aria-label="Dismiss"
+          className="flex-shrink-0 px-3 h-full flex items-center text-green-400 hover:text-white hover:bg-green-800/50 transition-colors border-l border-green-500/30"
+          aria-label="Dismiss security notice"
         >
           <X className="w-4 h-4" />
         </button>
@@ -176,10 +203,10 @@ const ScamWarning = () => {
 
   return (
     <>
-      {/* Always show green banner to educate users */}
-      <OfficialSiteBanner />
+      {/* Animated scrolling security ticker at bottom */}
+      <SecurityTicker />
       
-      {/* Show red warning if user came from scam site */}
+      {/* Red warning modal if user came from scam site */}
       <AnimatePresence>
         {showWarning && (
           <ScamWarningModal 

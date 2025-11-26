@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSentinels - Intellectual Property Rights</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(180deg, rgba(248, 244, 66, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(248, 244, 66, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #f8f442 0%, #d4af37 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 0 40px rgba(248, 244, 66, 0.3);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #f8f442;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(248, 244, 66, 0.5);
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .copyright-box {
+            background: rgba(248, 244, 66, 0.1);
+            border: 1px solid rgba(248, 244, 66, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .copyright-box h2 {
+            color: #f8f442;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .copyright-box p {
+            color: #ccc;
+            margin: 4px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section-header {
+            background: linear-gradient(90deg, rgba(248, 244, 66, 0.2) 0%, transparent 100%);
+            border-left: 4px solid #f8f442;
+            padding: 16px 24px;
+            margin: 40px 0 24px;
+            font-size: 1.3rem;
+            color: #f8f442;
+            font-weight: 600;
+        }
+
+        section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        section h3 {
+            color: #f8f442;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(248, 244, 66, 0.2);
+        }
+
+        section p {
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            position: relative;
+            padding-left: 28px;
+            margin-bottom: 10px;
+            color: #bbb;
+        }
+
+        .protected-list li::before {
+            content: "•";
+            position: absolute;
+            left: 8px;
+            color: #f8f442;
+            font-weight: bold;
+        }
+
+        .restricted-list li::before {
+            content: "✕";
+            position: absolute;
+            left: 4px;
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .allowed-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 4px;
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(153, 27, 27, 0.15) 100%);
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+
+        .warning-box p {
+            color: #fca5a5;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .legal-text {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .user-rights {
+            border-color: rgba(34, 197, 94, 0.3);
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        .user-rights h3 {
+            color: #22c55e;
+            border-bottom-color: rgba(34, 197, 94, 0.3);
+        }
+
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+        }
+
+        footer .brand {
+            color: #f8f442;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        footer .tagline {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        footer a {
+            color: #f8f442;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-box {
+            background: rgba(248, 244, 66, 0.05);
+            border: 1px solid rgba(248, 244, 66, 0.2);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 32px;
+        }
+
+        .contact-box h4 {
+            color: #f8f442;
+            margin-bottom: 12px;
+        }
+
+        .contact-box a {
+            color: #f8f442;
+            font-weight: 500;
+        }
+
+        .contact-box p {
+            color: #999;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            section {
+                padding: 24px 20px;
+            }
+
+            header {
+                padding: 40px 16px;
+            }
+
+            .section-header {
+                font-size: 1.1rem;
+                padding: 12px 16px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            section {
+                border: 1px solid #ccc;
+                break-inside: avoid;
+            }
+
+            h1, h3, .copyright-box h2, .section-header {
+                color: #333;
+            }
+
+            .badge {
+                background: #dc2626;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">🛡️</div>
+        <h1>Intellectual Property Rights</h1>
+        <p class="subtitle">Platform License & User Rights Agreement</p>
+    </header>
+
+    <div class="container">
+        <div class="copyright-box">
+            <h2>Copyright © 2025 Andrei Galea & SmartSentinels</h2>
+            <p>All Rights Reserved</p>
+            <p><strong>Author:</strong> Andrei Galea (Founder & Core Developer)</p>
+            <span class="badge">Proprietary Platform License</span>
+        </div>
+
+        <p style="text-align: center; color: #888; margin-bottom: 20px;">
+            This document outlines the intellectual property rights governing the 
+            SmartSentinels platform, its software, and the decentralized network.
+        </p>
+
+        <!-- SECTION A -->
+        <div class="section-header">
+            SECTION A: PLATFORM & SOFTWARE (PROPRIETARY)
+        </div>
+
+        <section>
+            <h3>1. Protected Intellectual Property</h3>
+            <p>The following components are the exclusive property of Andrei Galea and SmartSentinels. 
+               Unauthorized use, copying, or distribution is strictly prohibited:</p>
+            <ul class="protected-list">
+                <li>Website source code, design, and user interface</li>
+                <li>Smart contract code and blockchain architecture</li>
+                <li>AI audit systems and algorithms</li>
+                <li>Proof of Useful Work (PoUW) protocol implementation</li>
+                <li>Backend services, APIs, and infrastructure</li>
+                <li>Mobile applications and PWA implementations</li>
+                <li>Documentation, whitepapers, and specifications</li>
+                <li>Branding, logos, trademarks, and visual identity</li>
+                <li>Marketing materials and content</li>
+            </ul>
+        </section>
+
+        <section>
+            <h3>2. Restrictions</h3>
+            <p>Without prior written authorization from SmartSentinels, you may NOT:</p>
+            <ul class="restricted-list">
+                <li>Copy, reproduce, scrape, or duplicate any part of the platform</li>
+                <li>Create derivative works, clones, or imitations of the platform</li>
+                <li>Reverse engineer, decompile, or extract source code</li>
+                <li>Use SmartSentinels branding, logos, or trademarks</li>
+                <li>Impersonate or misrepresent affiliation with SmartSentinels</li>
+                <li>Create fraudulent websites or phishing attempts</li>
+                <li>Redistribute or resell platform components</li>
+            </ul>
+        </section>
+
+        <section>
+            <h3>3. Trade Secrets</h3>
+            <p>
+                The Software contains proprietary trade secrets and confidential information. 
+                Any unauthorized disclosure may result in legal action.
+            </p>
+        </section>
+
+        <!-- SECTION B -->
+        <div class="section-header" style="background: linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, transparent 100%); border-left-color: #22c55e; color: #22c55e;">
+            SECTION B: DECENTRALIZED NETWORK (USER RIGHTS)
+        </div>
+
+        <p style="color: #888; margin-bottom: 24px;">
+            SmartSentinels operates a decentralized network where participants can contribute and benefit. 
+            The following rights apply to network participants:
+        </p>
+
+        <section class="user-rights">
+            <h3>1. User-Created Content</h3>
+            <p>Users who create AI agents, models, or services on the SmartSentinels network RETAIN ownership of:</p>
+            <ul class="allowed-list">
+                <li>Their custom AI agent configurations and logic</li>
+                <li>Models they develop and train</li>
+                <li>Services they provide through the network</li>
+                <li>Earnings generated from their contributions</li>
+                <li>Data they choose to share or process</li>
+            </ul>
+        </section>
+
+        <section class="user-rights">
+            <h3>2. Network Participation</h3>
+            <p>By participating in the SmartSentinels network, users agree to:</p>
+            <ul class="protected-list">
+                <li>Operate within the network's terms of service</li>
+                <li>Respect other participants' intellectual property</li>
+                <li>Not use the network for illegal or harmful purposes</li>
+                <li>Accept that network protocols may be updated</li>
+            </ul>
+        </section>
+
+        <section class="user-rights">
+            <h3>3. Token Rights</h3>
+            <p>
+                $SSTL token holders have rights as defined in the Token Sale Terms and applicable documentation. 
+                Token ownership does not grant ownership of platform intellectual property.
+            </p>
+        </section>
+
+        <!-- SECTION C -->
+        <div class="section-header">
+            SECTION C: LEGAL PROVISIONS
+        </div>
+
+        <section>
+            <h3>1. No Warranty</h3>
+            <div class="legal-text">
+                THE PLATFORM IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+                INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+                PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+            </div>
+        </section>
+
+        <section>
+            <h3>2. Limitation of Liability</h3>
+            <div class="legal-text">
+                IN NO EVENT SHALL SMARTSENTINELS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER 
+                LIABILITY ARISING FROM THE USE OF THE PLATFORM OR NETWORK.
+            </div>
+        </section>
+
+        <section>
+            <h3>3. Termination</h3>
+            <p>
+                SmartSentinels reserves the right to terminate access to the platform for violations of these terms.
+            </p>
+        </section>
+
+        <section>
+            <h3>4. Governing Law</h3>
+            <p>
+                This agreement shall be governed by applicable international intellectual property laws and regulations.
+            </p>
+        </section>
+
+        <section>
+            <h3>5. Enforcement</h3>
+            <div class="warning-box">
+                <p>
+                    ⚠️ Violations of this agreement, including but not limited to website scraping, cloning, 
+                    phishing, or trademark infringement, will be prosecuted to the maximum extent permitted by law.
+                    This includes civil damages and criminal penalties where applicable.
+                </p>
+            </div>
+        </section>
+
+        <!-- SECTION D -->
+        <div class="contact-box">
+            <h4>Contact & Licensing</h4>
+            <p>For licensing inquiries, partnership opportunities, or permissions:</p>
+            <a href="mailto:office@smartsentinels.com">office@smartsentinels.com</a>
+            <p style="margin-top: 16px;">To report intellectual property violations or fraudulent websites:</p>
+            <a href="mailto:legal@smartsentinels.net">legal@smartsentinels.net</a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="brand">SmartSentinels</div>
+        <div class="tagline">AI Agents. Real Work. Real Rewards.</div>
+        <a href="https://smartsentinels.net" target="_blank">https://smartsentinels.net</a>
+    </footer>
+</body>
+</html>

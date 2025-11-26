@@ -1,81 +1,131 @@
-SmartSentinels Proprietary License
+SmartSentinels Intellectual Property Rights
 Copyright (c) 2025 Andrei Galea & SmartSentinels. All Rights Reserved.
 
 Author: Andrei Galea (Founder & Core Developer)
 
-PROPRIETARY AND CONFIDENTIAL
+================================================================================
+                         PROPRIETARY PLATFORM LICENSE
+================================================================================
 
-This software and associated documentation files (the "Software") are the 
-exclusive property of Andrei Galea, SmartSentinels, and its licensors.
+This document outlines the intellectual property rights governing the 
+SmartSentinels platform, its software, and the decentralized network.
 
-1. RESTRICTIONS
+--------------------------------------------------------------------------------
+SECTION A: PLATFORM & SOFTWARE (PROPRIETARY - ALL RIGHTS RESERVED)
+--------------------------------------------------------------------------------
 
-   You may NOT, without prior written authorization from SmartSentinels:
+The following components are the exclusive property of Andrei Galea and 
+SmartSentinels. Unauthorized use, copying, or distribution is strictly 
+prohibited:
 
-   a) Copy, reproduce, or duplicate any part of the Software
-   b) Modify, adapt, translate, or create derivative works based on the Software
-   c) Distribute, sublicense, lease, rent, loan, or otherwise transfer the Software
-   d) Reverse engineer, disassemble, decompile, or attempt to derive source code
-   e) Remove or alter any proprietary notices, labels, or marks
-   f) Use the Software for any commercial purpose
-   g) Use the Software to compete with SmartSentinels or its services
-   h) Share, publish, or make the Software available to any third party
+1. PROTECTED INTELLECTUAL PROPERTY
 
-2. INTELLECTUAL PROPERTY
+   • Website source code, design, and user interface
+   • Smart contract code and blockchain architecture
+   • AI audit systems and algorithms
+   • Proof of Useful Work (PoUW) protocol implementation
+   • Backend services, APIs, and infrastructure
+   • Mobile applications and PWA implementations
+   • Documentation, whitepapers, and specifications
+   • Branding, logos, trademarks, and visual identity
+   • Marketing materials and content
 
-   All intellectual property rights in and to the Software, including but not 
-   limited to patents, copyrights, trademarks, trade secrets, and any other 
-   proprietary rights, are and shall remain the exclusive property of 
-   SmartSentinels.
+2. RESTRICTIONS
 
-   This includes but is not limited to:
-   - Smart contract code and architecture
-   - AI agent implementations and algorithms
-   - Proof of Useful Work (PoUW) mechanisms
-   - User interface designs and components
-   - Backend services and APIs
-   - Documentation and specifications
+   Without prior written authorization from SmartSentinels, you may NOT:
 
-3. CONFIDENTIALITY
+   a) Copy, reproduce, scrape, or duplicate any part of the platform
+   b) Create derivative works, clones, or imitations of the platform
+   c) Reverse engineer, decompile, or extract source code
+   d) Use SmartSentinels branding, logos, or trademarks
+   e) Impersonate or misrepresent affiliation with SmartSentinels
+   f) Create fraudulent websites or phishing attempts
+   g) Redistribute or resell platform components
 
-   The Software contains trade secrets and confidential information belonging 
-   to SmartSentinels. You agree to maintain the confidentiality of the Software 
-   and not disclose any part of it to any third party without prior written 
-   consent from SmartSentinels.
+3. TRADE SECRETS
 
-4. NO WARRANTY
+   The Software contains proprietary trade secrets and confidential 
+   information. Any unauthorized disclosure may result in legal action.
 
-   THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+--------------------------------------------------------------------------------
+SECTION B: DECENTRALIZED NETWORK (USER RIGHTS)
+--------------------------------------------------------------------------------
+
+SmartSentinels operates a decentralized network where participants can 
+contribute and benefit. The following rights apply to network participants:
+
+1. USER-CREATED CONTENT
+
+   Users who create AI agents, models, or services on the SmartSentinels 
+   network RETAIN ownership of:
+
+   • Their custom AI agent configurations and logic
+   • Models they develop and train
+   • Services they provide through the network
+   • Earnings generated from their contributions
+   • Data they choose to share or process
+
+2. NETWORK PARTICIPATION
+
+   By participating in the SmartSentinels network, users agree to:
+
+   • Operate within the network's terms of service
+   • Respect other participants' intellectual property
+   • Not use the network for illegal or harmful purposes
+   • Accept that network protocols may be updated
+
+3. TOKEN RIGHTS
+
+   $SSTL token holders have rights as defined in the Token Sale Terms 
+   and applicable documentation. Token ownership does not grant ownership 
+   of platform intellectual property.
+
+--------------------------------------------------------------------------------
+SECTION C: LEGAL PROVISIONS
+--------------------------------------------------------------------------------
+
+1. NO WARRANTY
+
+   THE PLATFORM IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS 
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
    FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
 
-5. LIMITATION OF LIABILITY
+2. LIMITATION OF LIABILITY
 
-   IN NO EVENT SHALL SMARTSENTINELS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER 
-   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING 
-   FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-   DEALINGS IN THE SOFTWARE.
+   IN NO EVENT SHALL SMARTSENTINELS BE LIABLE FOR ANY CLAIM, DAMAGES, OR 
+   OTHER LIABILITY ARISING FROM THE USE OF THE PLATFORM OR NETWORK.
 
-6. TERMINATION
+3. TERMINATION
 
-   This license is effective until terminated. SmartSentinels may terminate 
-   this license at any time without notice. Upon termination, you must destroy 
-   all copies of the Software in your possession.
+   SmartSentinels reserves the right to terminate access to the platform 
+   for violations of these terms.
 
-7. GOVERNING LAW
+4. GOVERNING LAW
 
-   This license shall be governed by and construed in accordance with 
-   applicable laws, without regard to conflicts of law principles.
+   This agreement shall be governed by applicable international intellectual 
+   property laws and regulations.
 
-8. ENFORCEMENT
+5. ENFORCEMENT
 
-   Any unauthorized use, copying, or distribution of the Software may result 
-   in severe civil and criminal penalties, and will be prosecuted to the 
-   maximum extent possible under law.
+   Violations of this agreement, including but not limited to website 
+   scraping, cloning, phishing, or trademark infringement, will be 
+   prosecuted to the maximum extent permitted by law.
 
-For licensing inquiries, partnership opportunities, or permissions, contact:
-office@smartsentinels.com
+   This includes civil damages and criminal penalties where applicable.
 
----
+--------------------------------------------------------------------------------
+SECTION D: CONTACT & LICENSING
+--------------------------------------------------------------------------------
+
+For licensing inquiries, partnership opportunities, or permissions:
+
+Email: office@smartsentinels.com
+Website: https://smartsentinels.net
+
+To report intellectual property violations or fraudulent websites:
+Email: legal@smartsentinels.net
+
+================================================================================
 SmartSentinels - AI Agents. Real Work. Real Rewards.
 https://smartsentinels.net
+================================================================================

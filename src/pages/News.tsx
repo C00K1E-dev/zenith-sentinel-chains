@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Rocket, Handshake, Globe, Zap } from 'lucide-react';
+import { ArrowLeft, Calendar, Rocket, Trophy, Globe, Zap, Brain, Users, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -11,6 +11,7 @@ interface NewsItem {
   date: string;
   content: string;
   emoji?: string;
+  image?: string;
 }
 
 const renderContentWithLinks = (text: string) => {
@@ -53,6 +54,32 @@ const renderContentWithLinks = (text: string) => {
 
 const News = () => {
   const newsItems: NewsItem[] = [
+    {
+      id: 4,
+      title: 'Explore SmartSentinels on Micro3 Quest',
+      date: 'November 26, 2025',
+      emoji: null,
+      image: '/assets/micro3.png',
+      content: `Join the SmartSentinels Quest on Micro3 and earn rewards while exploring our AI-powered agent network!
+
+We're thrilled to launch an exclusive quest on [Micro3](https://micro3.io/quest/explore-smartsentinels-3891ffbf), the leading SocialFi platform for Web3 engagement. This quest is designed to help you discover the power of SmartSentinels' Proof of Useful Work ecosystem while earning rewards.
+
+**What You'll Do:**
+Complete a series of engaging tasks designed to familiarize you with SmartSentinels' mission, technology, and community. Each task brings you closer to understanding how AI agents create real, measurable value in the decentralized world.
+
+**Rewards:**
+Finish all tasks in the quest to unlock exclusive rewards and recognition within both the SmartSentinels and Micro3 communities.
+
+**Why Participate:**
+• Learn about cutting-edge AI integration in blockchain
+• Join a thriving community of Web3 pioneers
+• Earn rewards while supporting decentralized intelligence
+• Become part of the future of useful work
+
+[Start the Quest Now](https://micro3.io/quest/explore-smartsentinels-3891ffbf) and take your first step into the SmartSentinels ecosystem!
+
+Don't miss this opportunity to engage with innovation at the intersection of AI and blockchain. See you on Micro3!`
+    },
     {
       id: 3,
       title: 'SmartSentinels x Micro3 Partnership Announcement',
@@ -183,7 +210,11 @@ Together, we're building the future of decentralized AI infrastructure.`
                         </div>
                         <div className="flex items-center gap-3">
                           <Rocket size={24} className="text-primary" />
-                          <Handshake size={24} className="text-primary" />
+                          {item.id === 4 ? (
+                            <Trophy size={24} className="text-primary" />
+                          ) : (
+                            <Globe size={24} className="text-primary" />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -258,6 +289,29 @@ Together, we're building the future of decentralized AI infrastructure.`
                             className="w-12 sm:w-16 h-12 sm:h-16 object-contain"
                           />
                           <span className="text-xs sm:text-sm text-muted-foreground font-orbitron">Studio Blockchain</span>
+                        </div>
+                      </div>
+                    )}
+                    {item.id === 4 && (
+                      <div className="flex items-center justify-center gap-4 sm:gap-8 mb-8 py-6 border-b border-primary/20">
+                        <div className="flex flex-col items-center gap-2">
+                          <img 
+                            src="/ss-icon.svg" 
+                            alt="SmartSentinels Logo" 
+                            className="w-12 sm:w-16 h-12 sm:h-16 object-contain"
+                          />
+                          <span className="text-xs sm:text-sm text-muted-foreground font-orbitron">SmartSentinels</span>
+                        </div>
+                        
+                        <div className="text-primary font-bold text-2xl sm:text-3xl">×</div>
+                        
+                        <div className="flex flex-col items-center gap-2">
+                          <img 
+                            src="/assets/micro3.png" 
+                            alt="Micro3 Logo" 
+                            className="w-12 sm:w-16 h-12 sm:h-16 object-contain"
+                          />
+                          <span className="text-xs sm:text-sm text-muted-foreground font-orbitron">Micro3</span>
                         </div>
                       </div>
                     )}

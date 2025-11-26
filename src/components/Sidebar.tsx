@@ -46,7 +46,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
 
   const menuItems: SidebarItem[] = useMemo(() => [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
-    { name: 'Seed Round', path: '/hub/seed-round', icon: DollarSign },
+    // { name: 'Seed Round', path: '/hub/seed-round', icon: DollarSign }, // Hidden - needs testing before production
     { name: 'Airdrop', path: '/hub/airdrop', icon: Gift },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },

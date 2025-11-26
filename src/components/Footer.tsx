@@ -20,7 +20,7 @@ const TelegramIcon = ({ size, className }: { size?: number; className?: string }
 
 const Footer = () => {
   const socialLinks = [
-    { icon: TwitterIcon, label: 'X (Twitter)', href: '#' },
+    { icon: TwitterIcon, label: 'X (Twitter)', href: 'https://x.com/SmartSentinels_' },
     { icon: TelegramIcon, label: 'Telegram', href: 'https://t.me/SmartSentinelsCommunity' },
     { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/company/smartsentinels/' },
     { icon: TikTokIcon, label: 'TikTok', href: 'https://www.tiktok.com/@smartsentinels_official' },

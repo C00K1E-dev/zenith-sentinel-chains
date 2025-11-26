@@ -99,7 +99,7 @@ const SecurityTicker = () => {
 
   if (dismissed) return null;
 
-  const tickerText = "🛡️ SECURITY NOTICE: You are on the official SmartSentinels website → smartsentinels.net ← Always verify the URL before connecting your wallet. Beware of fake sites like .xyz .io .org .com — Only trust smartsentinels.net";
+  const tickerText = "🛡️ SECURITY NOTICE: Make sure you're on the official SmartSentinels website → Check your URL bar shows smartsentinels.net ← Always verify before connecting your wallet. Beware of fake sites like .xyz .io .org .com — Only trust smartsentinels.net";
 
   return (
     <motion.div

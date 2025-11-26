@@ -24,9 +24,10 @@ import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import styles from './sidebarSeedRound.module.css';
 
-// Token & Contract Constants - TESTNET
+// Token & Contract Constants - TESTNET (USDT VERSION)
 const SSTL_TOKEN_ADDRESS_TST = '0x53Efbb2DA9CDf2DDe6AD0A0402b7b4427a7F9e89'; // SSTLTST on testnet
-const SEED_ROUND_TST_ADDRESS = '0xA47F4322853c23F050D42A9D57adE67466EFA03E'; // SeedRoundSaleTST testnet (NEW)
+const SEED_ROUND_USD_ADDRESS_TST = '0x[DEPLOY_ADDRESS_HERE]'; // SeedRoundSaleUSD testnet - UPDATE AFTER DEPLOY
+const USDT_ADDRESS_TST = '0x337610d27c682E347C9cD60BD4b3b107C9d34dDd'; // USDT on BSC Testnet
 const TESTNET_CHAIN_ID = 97; // BSC Testnet
 const TESTNET_RPC_URL = 'https://data-seed-prebsc-1-s1.binance.org:8545';
 const FALLBACK_RPC_URLS = [
@@ -35,11 +36,11 @@ const FALLBACK_RPC_URLS = [
   'https://data-seed-prebsc-1-s1.binance.org:8545',
   'https://data-seed-prebsc-2-s1.binance.org:8545',
 ];
-const BSCSCAN_API_KEY = 'V8WAAJQ6JU31R5YMNSM7XCEUVGIASRN7T7'; // Replace with your actual API key
+const BSCSCAN_API_KEY = import.meta.env.VITE_BSCSCAN_API_KEY || '';
 
 // Mainnet addresses (keep for reference)
 const SSTL_TOKEN_ADDRESS = '0x56317dbCCd647C785883738fac9308ebcA063aca';
-const USD1_TOKEN_ADDRESS = '0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d'; // USD1 on BSC
+const USDT_ADDRESS_MAINNET = '0x55d398326f99059fF775485246999027B3197955'; // USDT on BSC Mainnet
 const BSC_CHAIN_ID = 56;
 const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org:8545';
 
@@ -48,8 +49,10 @@ const SEED_CONFIG = {
   totalTokens: 1_000_000,
   tokensPerTier: 10_000, // 10k tokens per tier
   totalTiers: 100,
-  startPrice: 0.015, // Starting price in USD for tier 1
+  startPrice: 0.015, // Starting price in USDT
   priceMultiplier: 0.075, // Price increase formula: startPrice × (1 + tier × multiplier)
+  minPurchase: 10, // Minimum 10 USDT
+  targetRaise: 7500000, // Target $7.5M USDT
   tokensSold: 0, // Will be updated from backend
   lastUpdateTime: Date.now(),
 };
@@ -65,12 +68,14 @@ interface RecentBuy {
 }
 
 interface SeedRoundStats {
-  totalRaised: number; // in BNB
+  totalRaised: number; // in USDT
   tokensSold: number;
   currentPrice: number;
   priceIncrease: number; // percentage
   participantsCount: number;
   percentageComplete: number;
+  salePaused: boolean;
+  saleClosed: boolean;
 }
 
 interface VestingInfo {
@@ -105,8 +110,39 @@ const SidebarSeedRound = memo(() => {
     seconds: 0,
   });
   const [claimLoading, setClaimLoading] = useState(false);
+  const [approvalLoading, setApprovalLoading] = useState(false);
+  const [usdtBalance, setUsdtBalance] = useState<number>(0);
+  const [usdtAllowance, setUsdtAllowance] = useState<number>(0);
 
-  // Mock stats data (will be fetched from backend)
+  // Fetch USDT balance for connected account
+  useEffect(() => {
+    const fetchUsdtBalance = async () => {
+      if (!account?.address) {
+        setUsdtBalance(0);
+        return;
+      }
+
+      try {
+        const provider = new ethers.JsonRpcProvider(TESTNET_RPC_URL);
+        const usdtContract = new ethers.Contract(
+          USDT_ADDRESS_TST,
+          ['function balanceOf(address) view returns (uint256)'],
+          provider
+        );
+        const balance = await usdtContract.balanceOf(account.address);
+        setUsdtBalance(Number(ethers.formatUnits(balance, 18)));
+      } catch (error) {
+        console.log('Error fetching USDT balance:', error);
+        setUsdtBalance(0);
+      }
+    };
+
+    fetchUsdtBalance();
+    const interval = setInterval(fetchUsdtBalance, 10000); // Refresh every 10 seconds
+    return () => clearInterval(interval);
+  }, [account?.address]);
+
+  // Mock stats data (will be fetched from contract)
   const [stats, setStats] = useState<SeedRoundStats>({
     totalRaised: 0,
     tokensSold: 0,
@@ -114,6 +150,8 @@ const SidebarSeedRound = memo(() => {
     priceIncrease: 0,
     participantsCount: 0,
     percentageComplete: 0,
+    salePaused: false,
+    saleClosed: false,
   });
 
   // Calculate estimated tokens based on input amount and current price
@@ -141,7 +179,7 @@ const SidebarSeedRound = memo(() => {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const contract = new ethers.Contract(
-          SEED_ROUND_TST_ADDRESS,
+          SEED_ROUND_USD_ADDRESS_TST,
           [
             'function getVestingInfo(address _buyer) external view returns (uint256 totalTokens, uint256 claimedTokens, uint256 claimableTokens, uint256 vestingStart, uint256 nextClaimTime, uint256 lockedTokens)',
           ],
@@ -188,12 +226,14 @@ const SidebarSeedRound = memo(() => {
         // Use JsonRpcProvider for reliable data fetching without wallet connection
         const provider = new ethers.JsonRpcProvider(TESTNET_RPC_URL);
         const contract = new ethers.Contract(
-          SEED_ROUND_TST_ADDRESS,
+          SEED_ROUND_USD_ADDRESS_TST,
           [
             'function tokensSold() view returns (uint256)',
             'function totalTokensForSale() view returns (uint256)',
-            'function totalBNBRaised() view returns (uint256)',
+            'function totalUSDTRaised() view returns (uint256)',
             'function getCurrentPrice() view returns (uint256)',
+            'function salePaused() view returns (bool)',
+            'function saleClosed() view returns (bool)',
             'event TokensPurchased(address indexed buyer, uint256 amount, uint256 price, uint256 totalCost)',
           ],
           provider
@@ -201,13 +241,16 @@ const SidebarSeedRound = memo(() => {
 
         const tokensSold = await contract.tokensSold();
         const totalTokens = await contract.totalTokensForSale();
-        const bnbRaised = await contract.totalBNBRaised();
+        const usdtRaised = await contract.totalUSDTRaised();
         const currentPrice = await contract.getCurrentPrice();
+        const salePaused = await contract.salePaused();
+        const saleClosed = await contract.saleClosed();
 
         const tokensSoldFormatted = Number(ethers.formatEther(tokensSold));
         const totalTokensFormatted = Number(ethers.formatEther(totalTokens));
-        const bnbRaisedFormatted = Number(ethers.formatEther(bnbRaised));
-        const currentPriceFormatted = Number(ethers.formatEther(currentPrice));
+        const usdtRaisedFormatted = Number(ethers.formatUnits(usdtRaised, 18)); // USDT has 18 decimals
+        const currentPriceFormatted = Number(ethers.formatUnits(currentPrice, 18));
+        
         // Calculate percentage using BigInt before converting to avoid precision loss
         const percentComplete = totalTokensFormatted > 0 
           ? (Number(tokensSold) / Number(totalTokens)) * 100 
@@ -221,7 +264,7 @@ const SidebarSeedRound = memo(() => {
         console.log('Contract Stats (Formatted):', {
           tokensSold: tokensSoldFormatted,
           totalTokens: totalTokensFormatted,
-          bnbRaised: bnbRaisedFormatted,
+          usdtRaised: usdtRaisedFormatted,
           currentPrice: currentPriceFormatted,
           percentComplete
         });
@@ -229,9 +272,11 @@ const SidebarSeedRound = memo(() => {
         setStats(prev => ({
           ...prev,
           tokensSold: tokensSoldFormatted,
-          totalRaised: bnbRaisedFormatted,
+          totalRaised: usdtRaisedFormatted,
           currentPrice: currentPriceFormatted,
           percentageComplete: percentComplete,
+          salePaused,
+          saleClosed,
         }));
 
         // Fetch recent purchases using Etherscan V2 API (Unified) or Fallback to RPC
@@ -246,7 +291,7 @@ const SidebarSeedRound = memo(() => {
           // Note: This requires an Etherscan V2 API Key. Old BscScan keys might not work.
           // Chain ID 97 is BSC Testnet.
           const startBlock = 74000000; 
-          const apiUrl = `https://api.etherscan.io/v2/api?chainid=97&module=logs&action=getLogs&fromBlock=${startBlock}&toBlock=latest&address=${SEED_ROUND_TST_ADDRESS}&topic0=${topic0}&apikey=${BSCSCAN_API_KEY}`;
+          const apiUrl = `https://api.etherscan.io/v2/api?chainid=97&module=logs&action=getLogs&fromBlock=${startBlock}&toBlock=latest&address=${SEED_ROUND_USD_ADDRESS_TST}&topic0=${topic0}&apikey=${BSCSCAN_API_KEY}`;
 
           console.log('Fetching from Etherscan V2:', apiUrl);
 
@@ -310,7 +355,7 @@ const SidebarSeedRound = memo(() => {
                         console.log(`Fetching logs from block ${fromBlock} to ${currentBlock} (${range} blocks)`);
 
                         logs = await tempProvider.getLogs({
-                            address: SEED_ROUND_TST_ADDRESS,
+                            address: SEED_ROUND_USD_ADDRESS_TST,
                             topics: [topic0],
                             fromBlock: fromBlock,
                             toBlock: 'latest'
@@ -394,14 +439,15 @@ const SidebarSeedRound = memo(() => {
     return () => clearInterval(interval);
   }, [vestingInfo]);
 
-  // Get current tier number based on tokens sold
+  // Get current tier number based on tokens sold (0-indexed like contract)
   const getCurrentTier = (tokensSold: number): number => {
-    return Math.floor(tokensSold / SEED_CONFIG.tokensPerTier) + 1;
+    return Math.floor(tokensSold / SEED_CONFIG.tokensPerTier);
   };
 
-  // Get price for a specific tier
+  // Get price for a specific tier (matches contract formula)
   const getPriceForTier = (tierNumber: number): number => {
-    return SEED_CONFIG.startPrice * (1 + tierNumber * SEED_CONFIG.priceMultiplier);
+    // Contract: (START_PRICE * (1000 + (currentTier * 75))) / 1000
+    return SEED_CONFIG.startPrice * (1000 + tierNumber * 75) / 1000;
   };
 
   // Calculate price based on tokens sold (tier-based pricing)
@@ -423,17 +469,47 @@ const SidebarSeedRound = memo(() => {
     if (!purchaseAmount || Number(purchaseAmount) <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter a valid purchase amount (in tBNB)",
+        description: "Please enter a valid purchase amount (in USDT)",
         variant: "destructive",
       });
       return;
     }
 
-    const tbnbAmount = Number(purchaseAmount);
-    if (tbnbAmount < 0.01) {
+    const usdtAmount = Number(purchaseAmount);
+    
+    // Validate purchase limits
+    if (usdtAmount < SEED_CONFIG.minPurchase) {
       toast({
         title: "Minimum Purchase",
-        description: "Minimum purchase amount is 0.01 tBNB",
+        description: `Minimum purchase amount is ${SEED_CONFIG.minPurchase} USDT`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check sale status
+    if (stats.salePaused) {
+      toast({
+        title: "Sale Paused",
+        description: "The sale is currently paused. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (stats.saleClosed) {
+      toast({
+        title: "Sale Closed",
+        description: "The sale has ended.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (usdtBalance < usdtAmount) {
+      toast({
+        title: "Insufficient Balance",
+        description: `You have ${usdtBalance} USDT, but need ${usdtAmount} USDT`,
         variant: "destructive",
       });
       return;
@@ -449,25 +525,64 @@ const SidebarSeedRound = memo(() => {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // Seed Round TST ABI for testnet
-      const SEED_ROUND_TST_ABI = [
-        'function buyTokens() external payable',
+      // Seed Round USD ABI
+      const SEED_ROUND_USD_ABI = [
+        'function buyTokens(uint256 usdtAmount) external',
+      ];
+
+      // USDT ABI
+      const USDT_ABI = [
+        'function approve(address spender, uint256 amount) external returns (bool)',
+        'function allowance(address owner, address spender) external view returns (uint256)',
       ];
 
       const seedRoundContract = new ethers.Contract(
-        SEED_ROUND_TST_ADDRESS,
-        SEED_ROUND_TST_ABI,
+        SEED_ROUND_USD_ADDRESS_TST,
+        SEED_ROUND_USD_ABI,
         signer
       );
 
-      // Send tBNB directly (no approval needed)
+      const usdtContract = new ethers.Contract(
+        USDT_ADDRESS_TST,
+        USDT_ABI,
+        signer
+      );
+
+      const usdtWei = ethers.parseUnits(usdtAmount.toString(), 18);
+
+      // Step 1: Check current allowance
       toast({
         title: "Processing",
-        description: "Buying SSTLTST tokens with tBNB...",
+        description: "Checking USDT allowance...",
       });
 
-      const tbnbWei = ethers.parseEther(tbnbAmount.toString());
-      const purchaseTx = await seedRoundContract.buyTokens({ value: tbnbWei });
+      const currentAllowance = await usdtContract.allowance(account.address, SEED_ROUND_USD_ADDRESS_TST);
+
+      // Step 2: If insufficient, approve USDT
+      if (BigInt(currentAllowance) < usdtWei) {
+        setApprovalLoading(true);
+        toast({
+          title: "Approval Required",
+          description: "Approving USDT spending. Please confirm in your wallet...",
+        });
+
+        const approveTx = await usdtContract.approve(SEED_ROUND_USD_ADDRESS_TST, usdtWei);
+        await approveTx.wait();
+
+        setApprovalLoading(false);
+        toast({
+          title: "Approved",
+          description: "USDT approved. Proceeding with purchase...",
+        });
+      }
+
+      // Step 3: Buy tokens with USDT
+      toast({
+        title: "Processing",
+        description: "Buying SSTL tokens with USDT...",
+      });
+
+      const purchaseTx = await seedRoundContract.buyTokens(usdtWei);
       const purchaseReceipt = await purchaseTx.wait();
 
       if (!purchaseReceipt) {
@@ -489,7 +604,7 @@ const SidebarSeedRound = memo(() => {
           const parsed = iface.parseLog({ topics: [...log.topics], data: log.data });
           if (parsed && parsed.name === 'TokensPurchased') {
             tokensPurchased = Number(ethers.formatEther(parsed.args.amount));
-            purchasePrice = Number(ethers.formatEther(parsed.args.price));
+            purchasePrice = Number(ethers.formatUnits(parsed.args.price, 18));
             break;
           }
         } catch (e) {
@@ -497,11 +612,10 @@ const SidebarSeedRound = memo(() => {
         }
       }
 
-      // Fallback if log parsing fails (shouldn't happen if event exists)
+      // Fallback if log parsing fails
       if (tokensPurchased === 0) {
          console.warn("Could not parse TokensPurchased event, using estimation");
-         // Fallback estimation (less accurate)
-         tokensPurchased = (tbnbAmount / stats.currentPrice); 
+         tokensPurchased = (usdtAmount / stats.currentPrice); 
          purchasePrice = stats.currentPrice;
       }
 
@@ -511,7 +625,7 @@ const SidebarSeedRound = memo(() => {
         buyer: account.address,
         amount: tokensPurchased,
         price: purchasePrice,
-        total: tbnbAmount,
+        total: usdtAmount,
         timestamp: Date.now(),
         txHash: txHash,
       };
@@ -521,16 +635,15 @@ const SidebarSeedRound = memo(() => {
       // Update stats from contract
       setStats(prev => ({
         ...prev,
-        totalRaised: prev.totalRaised + tbnbAmount,
+        totalRaised: prev.totalRaised + usdtAmount,
         tokensSold: prev.tokensSold + tokensPurchased,
         participantsCount: prev.participantsCount + 1,
-        // Optimistically update price (approximate)
         currentPrice: purchasePrice 
       }));
 
       toast({
         title: "Purchase Successful! 🎉",
-        description: `You purchased ${tokensPurchased.toLocaleString(undefined, {maximumFractionDigits: 2})} SSTLTST tokens for ${tbnbAmount} tBNB. Tokens are locked and will vest over time.`,
+        description: `You purchased ${tokensPurchased.toLocaleString(undefined, {maximumFractionDigits: 2})} SSTL tokens for ${usdtAmount} USDT. Tokens are locked and will vest over time.`,
       });
 
       setPurchaseAmount('');
@@ -550,7 +663,7 @@ const SidebarSeedRound = memo(() => {
       if (error.message?.includes("user rejected")) {
         errorDescription = "Transaction rejected by user";
       } else if (error.message?.includes("insufficient")) {
-        errorDescription = "Insufficient tBNB balance";
+        errorDescription = "Insufficient USDT balance";
       } else if (error.message?.includes("not enough tokens")) {
         errorDescription = "Not enough tokens available in this round";
       } else if (error.message?.includes("Sale has ended")) {
@@ -584,13 +697,13 @@ const SidebarSeedRound = memo(() => {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      const SEED_ROUND_TST_ABI = [
+      const SEED_ROUND_USD_ABI = [
         'function claimTokens() external',
       ];
 
       const seedRoundContract = new ethers.Contract(
-        SEED_ROUND_TST_ADDRESS,
-        SEED_ROUND_TST_ABI,
+        SEED_ROUND_USD_ADDRESS_TST,
+        SEED_ROUND_USD_ABI,
         signer
       );
 
@@ -616,7 +729,7 @@ const SidebarSeedRound = memo(() => {
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
           const contract = new ethers.Contract(
-            SEED_ROUND_TST_ADDRESS,
+            SEED_ROUND_USD_ADDRESS_TST,
             ['function getVestingInfo(address _buyer) external view returns (uint256 totalTokens, uint256 claimedTokens, uint256 claimableTokens, uint256 vestingStart, uint256 nextClaimTime, uint256 lockedTokens)'],
             provider
           );
@@ -739,10 +852,10 @@ const SidebarSeedRound = memo(() => {
             <div>
               <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>How It Works</h3>
               <ol style={{ fontSize: '0.9rem', lineHeight: '1.6', opacity: 0.95, paddingLeft: '1.25rem' }}>
-                <li>Select your purchase amount in USD</li>
+                <li>Select your purchase amount in USDT</li>
                 <li>View the number of SSTL tokens you'll receive at current price</li>
-                <li>Approve USD1 spending and confirm transaction</li>
-                <li>Receive SSTL tokens directly in your wallet</li>
+                <li>Approve USDT spending and confirm transaction</li>
+                <li>Receive SSTL tokens directly in your wallet (locked with vesting)</li>
               </ol>
             </div>
 
@@ -764,10 +877,10 @@ const SidebarSeedRound = memo(() => {
               <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.5rem' }}>Key Details</h3>
               <ul style={{ fontSize: '0.9rem', lineHeight: '1.6', opacity: 0.95, paddingLeft: '1.25rem' }}>
                 <li>Total Tokens Available: {SEED_CONFIG.totalTokens.toLocaleString()}</li>
-                <li>Minimum Purchase: $10 USD</li>
-                <li>Payment Token: USD1 on BSC</li>
+                <li>Minimum Purchase: ${SEED_CONFIG.minPurchase} USDT</li>
+                <li>Payment Token: USDT on BSC</li>
                 <li>Receipt Token: SSTL</li>
-                <li>Vesting: 12-month Cliff, 18-month Linear Vesting</li>
+                <li>Vesting: 1-hour Cliff (Testnet), 12-month Cliff (Mainnet) + Linear Vesting</li>
               </ul>
             </div>
 
@@ -907,7 +1020,7 @@ const SidebarSeedRound = memo(() => {
                 {stats.tokensSold.toLocaleString()} / {SEED_CONFIG.totalTokens.toLocaleString()} SSTL
               </span>
               <span className={styles.progressUsd}>
-                {stats.totalRaised.toFixed(2)} tBNB raised
+                {stats.totalRaised.toFixed(2)} USDT raised
               </span>
             </div>
           </CardContent>
@@ -931,20 +1044,20 @@ const SidebarSeedRound = memo(() => {
                   <>
                     <div className={styles.purchaseForm}>
                       <label className={styles.formLabel}>
-                        <span>Amount to Invest (tBNB - Testnet)</span>
-                        <span className={styles.formHint}>Minimum: 0.01 tBNB | Price: 0.015 tBNB per token</span>
+                        <span>Amount to Invest (USDT - Testnet)</span>
+                        <span className={styles.formHint}>Minimum: {SEED_CONFIG.minPurchase} USDT | Price: 0.015 USDT per token (increases with demand)</span>
                       </label>
                       <div className={styles.inputGroup}>
                         <DollarSign size={18} className={styles.inputPrefix} />
                         <Input
                           type="number"
-                          placeholder="Enter any amount in tBNB"
+                          placeholder="Enter amount in USDT"
                           value={purchaseAmount}
                           onChange={(e) => setPurchaseAmount(e.target.value)}
                           className={styles.formInput}
-                          min="0.01"
-                          step="0.01"
-                          disabled={isLoading}
+                          min={SEED_CONFIG.minPurchase.toString()}
+                          step="1"
+                          disabled={isLoading || approvalLoading}
                         />
                       </div>
                     </div>
@@ -957,11 +1070,11 @@ const SidebarSeedRound = memo(() => {
                       >
                         <div className={styles.estimateRow}>
                           <span className={styles.estimateLabel}>Exchange Rate:</span>
-                          <span className={styles.estimateValue}>1 token = 0.015 tBNB</span>
+                          <span className={styles.estimateValue}>1 token = ${stats.currentPrice.toFixed(4)} USDT</span>
                         </div>
                         <div className={styles.estimateRow}>
                           <span className={styles.estimateLabel}>You Send:</span>
-                          <span className={styles.estimateValue}>{purchaseAmount} tBNB</span>
+                          <span className={styles.estimateValue}>{purchaseAmount} USDT</span>
                         </div>
                         <div className={styles.estimateRow}>
                           <span className={styles.estimateLabel}>You Receive:</span>
@@ -971,7 +1084,7 @@ const SidebarSeedRound = memo(() => {
                         </div>
                         <div className={`${styles.estimateRow} ${styles.estimateTotal}`}>
                           <span className={styles.estimateLabel}>Total Cost:</span>
-                          <span className={styles.estimateValue}>{purchaseAmount} tBNB</span>
+                          <span className={styles.estimateValue}>{purchaseAmount} USDT</span>
                         </div>
                       </motion.div>
                     )}
@@ -985,11 +1098,11 @@ const SidebarSeedRound = memo(() => {
 
                     <Button
                       onClick={handlePurchase}
-                      disabled={isLoading || !purchaseAmount || Number(purchaseAmount) <= 0}
+                      disabled={isLoading || approvalLoading || !purchaseAmount || Number(purchaseAmount) <= 0}
                       className={styles.purchaseButton}
                       size="lg"
                     >
-                      {isLoading ? (
+                      {isLoading || approvalLoading ? (
                         <>
                           <motion.div
                             animate={{ rotate: 360 }}
@@ -998,7 +1111,7 @@ const SidebarSeedRound = memo(() => {
                           >
                             <Zap size={18} />
                           </motion.div>
-                          Processing...
+                          {approvalLoading ? 'Approving USDT...' : 'Processing...'}
                         </>
                       ) : (
                         <>

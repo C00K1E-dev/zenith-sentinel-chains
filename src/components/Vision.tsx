@@ -160,7 +160,9 @@ const Vision = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 pointer-events-none max-[425px]:left-0 max-[425px]:translate-x-0 max-[425px]:-translate-x-1/4"
+                        onMouseEnter={() => setHoveredIndustry(industry)}
+                        onMouseLeave={() => setHoveredIndustry(null)}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 pb-2 z-50 max-[425px]:left-0 max-[425px]:translate-x-0 max-[425px]:-translate-x-1/4"
                       >
                         <div className="bg-[#1a1a1a] p-3 sm:p-5 rounded-xl border border-emerald-500/50 shadow-2xl shadow-emerald-500/20 w-64 sm:w-80">
                           {/* Header */}
@@ -230,7 +232,7 @@ const Vision = () => {
                             href="https://aida-lac.vercel.app/" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="pointer-events-auto flex items-center justify-center gap-1.5 w-full py-1.5 sm:py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-semibold rounded-lg transition-colors"
+                            className="flex items-center justify-center gap-1.5 w-full py-1.5 sm:py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-semibold rounded-lg transition-colors"
                           >
                             <ExternalLink size={12} className="sm:w-[14px] sm:h-[14px]" />
                             See Live Demo

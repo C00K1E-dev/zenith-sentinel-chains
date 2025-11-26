@@ -16,6 +16,7 @@ import News from "./pages/News";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import C15TCookieProvider from './components/CookiePolicy';
+import ScamWarning from './components/ScamWarning';
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
         <ThirdwebProvider>
           <C15TCookieProvider>
             <TooltipProvider>
+              <ScamWarning />
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <Toaster />
                 <Sonner />

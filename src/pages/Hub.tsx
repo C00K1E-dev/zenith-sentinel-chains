@@ -95,7 +95,8 @@ const Hub = () => {
             <Route path="my-devices" element={<Suspense fallback={<Loading />}><SidebarMyDevices /></Suspense>} />
             <Route path="my-rewards" element={<Suspense fallback={<Loading />}><SidebarMyRewards /></Suspense>} />
             <Route path="general-stats" element={<Suspense fallback={<Loading />}><SidebarGeneralStats /></Suspense>} />
-            <Route path="seed-round" element={<Suspense fallback={<Loading />}><SidebarSeedRound /></Suspense>} />
+            {/* TODO: Seed Round - Coming Soon */}
+            {/* <Route path="seed-round" element={<Suspense fallback={<Loading />}><SidebarSeedRound /></Suspense>} /> */}
             <Route path="airdrop" element={<Suspense fallback={<Loading />}><SidebarAirdrop /></Suspense>} />
             <Route path="nfts" element={<Suspense fallback={<Loading />}><SidebarNFTsiNFTsHub /></Suspense>} />
             <Route path="audit" element={<Suspense fallback={<Loading />}><SidebarAIAuditSmartContract /></Suspense>} />

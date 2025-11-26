@@ -181,6 +181,7 @@ const SidebarAirdrop = memo(() => {
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const [isClaiming, setIsClaiming] = useState(false);
   const [activeTab, setActiveTab] = useState<'tasks' | 'leaderboard'>('tasks');
@@ -432,6 +433,16 @@ const SidebarAirdrop = memo(() => {
     if (!account?.address) return;
 
     try {
+      // Check registration status
+      const registrationData = localStorage.getItem(`airdrop_registration_${account.address}`);
+      const hasRegistration = registrationData ? JSON.parse(registrationData) : null;
+      
+      if (hasRegistration?.xHandle && hasRegistration?.telegramHandle) {
+        setIsRegistered(true);
+      } else {
+        setIsRegistered(false);
+      }
+
       // Try to load from backend first
       const backendData = await getUserProgress(account.address);
       
@@ -559,6 +570,18 @@ const SidebarAirdrop = memo(() => {
     // Special handling for registration form - open modal
     if (taskId === 'fill-form') {
       console.log('Opening registration form modal');
+      setRegistrationFormOpen(true);
+      return;
+    }
+
+    // CHECK REGISTRATION: All other tasks require registration with X and Telegram handles
+    if (taskId !== 'fill-form' && !isRegistered) {
+      toast({
+        title: "Registration Required 📋",
+        description: "You must complete the registration form with your X and Telegram handles before completing other tasks.",
+        variant: "destructive",
+      });
+      // Open registration form
       setRegistrationFormOpen(true);
       return;
     }
@@ -742,6 +765,8 @@ const SidebarAirdrop = memo(() => {
   };
 
   const handleRegistrationSuccess = async () => {
+    // Update registration state
+    setIsRegistered(true);
     // Mark the registration form task as complete
     completeTask('fill-form', 10);
   };
@@ -763,6 +788,17 @@ const SidebarAirdrop = memo(() => {
       );
 
       if (!backendResult.success) {
+        // Check if error is due to registration requirement
+        if (backendResult.error === 'Registration required') {
+          toast({
+            title: "Registration Required 📋",
+            description: backendResult.message || "Please complete the registration form with your X and Telegram handles first.",
+            variant: "destructive",
+          });
+          setRegistrationFormOpen(true);
+          return false;
+        }
+        
         toast({
           title: "Error",
           description: backendResult.error || "Failed to save progress",
@@ -1005,6 +1041,37 @@ const SidebarAirdrop = memo(() => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Registration Status Warning */}
+      {!isRegistered && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Card className={styles.infoCard} style={{ borderColor: '#dc2626', backgroundColor: 'rgba(220, 38, 38, 0.05)' }}>
+            <CardContent className="pt-6">
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+                <div style={{ fontSize: '1.5rem', flexShrink: 0 }}>⚠️</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 'bold', color: '#991b1b', marginBottom: '0.5rem' }}>
+                    Registration Required
+                  </p>
+                  <p style={{ fontSize: '0.875rem', color: '#7f1d1d', marginBottom: '0.75rem' }}>
+                    You must complete the <strong>"Fill Registration Form"</strong> task with your X (Twitter) handle and Telegram handle before you can earn points on other tasks. This ensures all participants are verified and eligible for token claims.
+                  </p>
+                  <Button
+                    onClick={() => setRegistrationFormOpen(true)}
+                    size="sm"
+                    style={{ backgroundColor: '#dc2626', color: 'white' }}
+                  >
+                    Complete Registration Now
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* User Stats Card */}
       <motion.div

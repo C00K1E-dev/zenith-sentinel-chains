@@ -193,6 +193,7 @@ const SidebarSeedRound = memo(() => {
             'function tokensSold() view returns (uint256)',
             'function totalTokensForSale() view returns (uint256)',
             'function totalBNBRaised() view returns (uint256)',
+            'function getCurrentPrice() view returns (uint256)',
             'event TokensPurchased(address indexed buyer, uint256 amount, uint256 price, uint256 totalCost)',
           ],
           provider
@@ -207,9 +208,17 @@ const SidebarSeedRound = memo(() => {
         const totalTokensFormatted = Number(ethers.formatEther(totalTokens));
         const bnbRaisedFormatted = Number(ethers.formatEther(bnbRaised));
         const currentPriceFormatted = Number(ethers.formatEther(currentPrice));
-        const percentComplete = (tokensSoldFormatted / totalTokensFormatted) * 100;
+        // Calculate percentage using BigInt before converting to avoid precision loss
+        const percentComplete = totalTokensFormatted > 0 
+          ? (Number(tokensSold) / Number(totalTokens)) * 100 
+          : 0;
 
-        console.log('Contract Stats:', {
+        console.log('Contract Stats (Raw BigInt):', {
+          tokensSold: tokensSold.toString(),
+          totalTokens: totalTokens.toString(),
+        });
+
+        console.log('Contract Stats (Formatted):', {
           tokensSold: tokensSoldFormatted,
           totalTokens: totalTokensFormatted,
           bnbRaised: bnbRaisedFormatted,
@@ -878,8 +887,12 @@ const SidebarSeedRound = memo(() => {
             <div className={styles.progressHeader}>
               <span className={styles.progressLabel}>Sale Progress</span>
               <span className={styles.progressPercent}>
-                {stats.percentageComplete < 0.01 
-                  ? stats.percentageComplete.toFixed(4) 
+                {stats.percentageComplete < 0.001
+                  ? stats.percentageComplete.toFixed(6)
+                  : stats.percentageComplete < 0.01
+                  ? stats.percentageComplete.toFixed(5)
+                  : stats.percentageComplete < 0.1
+                  ? stats.percentageComplete.toFixed(4)
                   : stats.percentageComplete.toFixed(2)}%
               </span>
             </div>

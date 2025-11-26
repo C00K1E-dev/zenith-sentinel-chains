@@ -55,7 +55,7 @@ export async function completeTask(
   points: number,
   telegramUserId?: string,
   taskName?: string
-): Promise<{ success: boolean; data?: AirdropUserData; error?: string }> {
+): Promise<{ success: boolean; data?: AirdropUserData; error?: string; message?: string }> {
   try {
     const response = await fetch(`${API_BASE_URL}/task/complete`, {
       method: 'POST',
@@ -89,7 +89,8 @@ export async function completeTask(
     
     return {
       success: false,
-      error: data.error || 'Failed to complete task'
+      error: data.error || 'Failed to complete task',
+      message: data.message || undefined
     };
   } catch (error) {
     console.error('Error completing task:', error);

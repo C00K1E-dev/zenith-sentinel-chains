@@ -1019,17 +1019,6 @@ const SidebarAirdrop = memo(() => {
                     Miracle
                     <ExternalLink size={12} />
                   </a>
-                  {' '}and{' '}
-                  <a 
-                    href="https://metamask.io/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className={styles.infoLink}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
-                  >
-                    MetaMask
-                    <ExternalLink size={12} />
-                  </a>
                   . Complete tasks to earn points and claim SSTL tokens at the end of the campaign!
                 </p>
                 <p className={styles.infoText} style={{ marginBottom: 0 }}>

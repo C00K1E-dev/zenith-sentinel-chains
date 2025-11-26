@@ -109,10 +109,10 @@ const OfficialSiteBanner = () => {
         <div className="flex items-center gap-2 text-sm">
           <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
           <span className="text-green-100">
-            <strong className="text-green-400">Official Website:</strong> You are on <strong>smartsentinels.net</strong> - the only legitimate SmartSentinels site.
+            <strong className="text-yellow-400">🔒 Security Check:</strong> Always verify you're on <strong className="text-green-400">smartsentinels.net</strong> before connecting your wallet.
           </span>
-          <span className="text-yellow-400 text-xs hidden sm:inline">
-            ⚠️ Beware of copycat sites like .xyz or .io
+          <span className="text-red-400 text-xs hidden sm:inline">
+            ❌ Avoid fake sites like .xyz, .io, .org
           </span>
         </div>
         <button

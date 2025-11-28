@@ -62,8 +62,6 @@ const Navbar = () => {
                     {/* News Icon Button */}
                     <Link
                       to="/news"
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="flex items-center justify-center p-2 rounded-lg transition-all duration-200 text-primary hover:text-primary hover:bg-primary/10 neon-glow shadow-[0_0_15px_rgba(248,244,66,0.3)] hover:shadow-[0_0_25px_rgba(248,244,66,0.5)]"
                       title="News & Announcements"
                     >
@@ -71,8 +69,6 @@ const Navbar = () => {
                     </Link>
                     <Link
                       to={link.path}
-                      target="_blank"
-                      rel="noopener"
                       className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(248,244,66,0.5)] hover:shadow-[0_0_30px_rgba(248,244,66,0.7)] font-orbitron font-bold transition-all duration-200"
                     >
                       <span className="text-primary-foreground font-orbitron font-bold text-xs lg:text-sm neon-glow">
@@ -112,8 +108,6 @@ const Navbar = () => {
           <div className="md:hidden flex items-center gap-2">
             <Link
               to="/news"
-              target="_blank"
-              rel="noopener noreferrer"
               className="flex items-center justify-center p-2 rounded-lg transition-all duration-200 text-primary hover:text-primary hover:bg-primary/10 neon-glow shadow-[0_0_15px_rgba(248,244,66,0.3)] hover:shadow-[0_0_25px_rgba(248,244,66,0.5)]"
               title="News & Announcements"
             >
@@ -139,8 +133,6 @@ const Navbar = () => {
                   <Link
                     key={link.name}
                     to={link.path}
-                    target="_blank"
-                    rel="noopener"
                     onClick={() => setIsOpen(false)}
                     className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 transition-colors duration-200"
                   >
@@ -168,8 +160,6 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  target={link.name === 'Hub' ? '_blank' : undefined}
-                  rel={link.name === 'Hub' ? 'noopener' : undefined}
                   onClick={() => setIsOpen(false)}
                   className="block px-4 py-2.5 rounded-lg transition-colors text-primary hover:bg-white/5 neon-glow text-sm text-center"
                 >

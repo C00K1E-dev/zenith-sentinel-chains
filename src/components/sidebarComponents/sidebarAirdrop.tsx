@@ -433,16 +433,6 @@ const SidebarAirdrop = memo(() => {
     if (!account?.address) return;
 
     try {
-      // Check registration status
-      const registrationData = localStorage.getItem(`airdrop_registration_${account.address}`);
-      const hasRegistration = registrationData ? JSON.parse(registrationData) : null;
-      
-      if (hasRegistration?.xHandle && hasRegistration?.telegramHandle) {
-        setIsRegistered(true);
-      } else {
-        setIsRegistered(false);
-      }
-
       // Try to load from backend first
       const backendData = await getUserProgress(account.address);
       
@@ -454,6 +444,18 @@ const SidebarAirdrop = memo(() => {
             backendData.completedTasks.includes(task.id) ? { ...task, completed: true } : { ...task, completed: false }
           )
         );
+        
+        // Check registration status from backend OR localStorage
+        const isFormComplete = backendData.completedTasks.includes('fill-form');
+        const registrationData = localStorage.getItem(`airdrop_registration_${account.address}`);
+        const hasLocalRegistration = registrationData ? JSON.parse(registrationData) : null;
+        
+        // User is registered if either the form task is complete OR localStorage has registration data
+        if (isFormComplete || (hasLocalRegistration?.xHandle && hasLocalRegistration?.telegramHandle)) {
+          setIsRegistered(true);
+        } else {
+          setIsRegistered(false);
+        }
         
         // Auto-verify NFT tasks if user has NFTs but hasn't completed the tasks yet
         if (genesisNFTBalance > 0 && !backendData.completedTasks.includes('mint-genesis')) {

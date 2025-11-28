@@ -202,7 +202,6 @@ const ScamWarning = () => {
     
     if (isCurrentDomainSuspicious) {
       sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, currentDomain);
-      localStorage.setItem(SUSPICIOUS_REFERRER_KEY, currentDomain);
       setReferrerDomain(currentDomain);
       setShowWarning(true);
       console.warn(`[SECURITY] Running on suspicious domain: ${currentDomain}`);
@@ -210,13 +209,13 @@ const ScamWarning = () => {
     }
 
     // Check if warning was already dismissed (only check this if we're on the official domain)
-    if (sessionStorage.getItem(WARNING_STORAGE_KEY)) {
-      return;
-    }
-
-    // Check for stored suspicious referrer
+    // Check for stored suspicious referrer first to know which domain to check dismissal for
     const storedReferrer = sessionStorage.getItem(SUSPICIOUS_REFERRER_KEY);
     if (storedReferrer) {
+      // Check if warning was dismissed for this specific referrer
+      if (sessionStorage.getItem(`${WARNING_STORAGE_KEY}_${storedReferrer}`)) {
+        return;
+      }
       setReferrerDomain(storedReferrer);
       setShowWarning(true);
       return;
@@ -234,8 +233,11 @@ const ScamWarning = () => {
         );
         
         if (isSuspicious) {
+          // Check if already dismissed for this referrer
+          if (sessionStorage.getItem(`${WARNING_STORAGE_KEY}_${domain}`)) {
+            return;
+          }
           sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, domain);
-          localStorage.setItem(SUSPICIOUS_REFERRER_KEY, domain); // Also set in localStorage for new tabs
           setReferrerDomain(domain);
           setShowWarning(true);
           console.warn(`[SECURITY] User arrived from suspicious domain: ${domain}`);
@@ -258,7 +260,6 @@ const ScamWarning = () => {
         
         if (isSuspicious) {
           sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, openerLocation);
-          localStorage.setItem(SUSPICIOUS_REFERRER_KEY, openerLocation);
           setReferrerDomain(openerLocation);
           setShowWarning(true);
           console.warn(`[SECURITY] Opened from suspicious domain: ${openerLocation}`);
@@ -271,25 +272,13 @@ const ScamWarning = () => {
         console.log('[SECURITY] Cross-origin opener detected');
       }
     }
-
-    // Method 3: Check localStorage flag set by parent page
-    // This works across new tabs even with noopener noreferrer
-    try {
-      const suspiciousFlag = localStorage.getItem(SUSPICIOUS_REFERRER_KEY);
-      if (suspiciousFlag) {
-        setReferrerDomain(suspiciousFlag);
-        setShowWarning(true);
-        console.warn(`[SECURITY] Suspicious domain detected from localStorage: ${suspiciousFlag}`);
-        return;
-      }
-    } catch (e) {
-      // localStorage might be disabled
-    }
   }, []);
 
   const handleDismiss = () => {
-    sessionStorage.setItem(WARNING_STORAGE_KEY, 'true');
+    // Only dismiss for this specific referrer domain
+    sessionStorage.setItem(`${WARNING_STORAGE_KEY}_${referrerDomain}`, 'true');
     sessionStorage.removeItem(SUSPICIOUS_REFERRER_KEY);
+    localStorage.removeItem(SUSPICIOUS_REFERRER_KEY);
     setShowWarning(false);
   };
 

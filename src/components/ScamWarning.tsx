@@ -19,6 +19,12 @@ const TICKER_STORAGE_KEY = 'security_ticker_dismissed';
 
 // Big red warning modal for users coming from scam sites
 const ScamWarningModal = ({ referrerDomain, onDismiss }: { referrerDomain: string; onDismiss: () => void }) => {
+  // Check if we're currently ON the scam domain
+  const currentDomain = window.location.hostname.toLowerCase();
+  const isOnScamDomain = SUSPICIOUS_DOMAINS.some(
+    suspicious => currentDomain === suspicious || currentDomain.endsWith('.' + suspicious)
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -100 }}
@@ -40,28 +46,47 @@ const ScamWarningModal = ({ referrerDomain, onDismiss }: { referrerDomain: strin
               <AlertTriangle className="w-5 h-5" />
               Security Warning
             </h2>
-            <p className="text-white mb-3">
-              You were redirected from a <strong className="text-red-400">suspicious website</strong>:
-            </p>
-            <code className="block bg-red-900/50 px-3 py-2 rounded text-red-300 mb-4 break-all">
-              {referrerDomain}
-            </code>
-            <p className="text-gray-300 mb-4">
-              This is <strong>NOT</strong> an official SmartSentinels website. 
-              It may be a scam attempting to steal your funds or information.
-            </p>
+            {isOnScamDomain ? (
+              <>
+                <p className="text-white mb-3">
+                  You are currently on a <strong className="text-red-400">FAKE/COPYCAT website</strong>:
+                </p>
+                <code className="block bg-red-900/50 px-3 py-2 rounded text-red-300 mb-4 break-all">
+                  {currentDomain}
+                </code>
+                <p className="text-gray-300 mb-4">
+                  This is <strong>NOT</strong> the official SmartSentinels website. 
+                  This is a SCAM attempting to steal your funds or information!
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-white mb-3">
+                  You were redirected from a <strong className="text-red-400">suspicious website</strong>:
+                </p>
+                <code className="block bg-red-900/50 px-3 py-2 rounded text-red-300 mb-4 break-all">
+                  {referrerDomain}
+                </code>
+                <p className="text-gray-300 mb-4">
+                  This is <strong>NOT</strong> an official SmartSentinels website. 
+                  It may be a scam attempting to steal your funds or information.
+                </p>
+              </>
+            )}
             <div className="bg-green-900/30 border border-green-500/50 rounded-lg p-3 mb-4">
               <p className="text-green-400 text-sm">
                 ✅ The only official website is: <strong>smartsentinels.net</strong>
               </p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={onDismiss}
-                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
-              >
-                I Understand
-              </button>
+              {!isOnScamDomain && (
+                <button
+                  onClick={onDismiss}
+                  className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
+                >
+                  I Understand
+                </button>
+              )}
               <a
                 href="https://smartsentinels.net"
                 className="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 px-4 rounded-lg text-center transition-colors"
@@ -70,12 +95,14 @@ const ScamWarningModal = ({ referrerDomain, onDismiss }: { referrerDomain: strin
               </a>
             </div>
           </div>
-          <button
-            onClick={onDismiss}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!isOnScamDomain && (
+            <button
+              onClick={onDismiss}
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -159,7 +186,30 @@ const ScamWarning = () => {
   const [referrerDomain, setReferrerDomain] = useState('');
 
   useEffect(() => {
-    // Check if warning was already dismissed
+    // Debug logging
+    console.log('[SECURITY] ScamWarning component mounted');
+    console.log('[SECURITY] Current domain:', window.location.hostname);
+    console.log('[SECURITY] Document referrer:', document.referrer);
+    console.log('[SECURITY] Has opener:', !!window.opener);
+    
+    // FIRST: Check current domain immediately - this is the most important check
+    const currentDomain = window.location.hostname.toLowerCase();
+    
+    // If we're running on a suspicious domain, show warning immediately
+    const isCurrentDomainSuspicious = SUSPICIOUS_DOMAINS.some(
+      suspicious => currentDomain === suspicious || currentDomain.endsWith('.' + suspicious)
+    );
+    
+    if (isCurrentDomainSuspicious) {
+      sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, currentDomain);
+      localStorage.setItem(SUSPICIOUS_REFERRER_KEY, currentDomain);
+      setReferrerDomain(currentDomain);
+      setShowWarning(true);
+      console.warn(`[SECURITY] Running on suspicious domain: ${currentDomain}`);
+      return;
+    }
+
+    // Check if warning was already dismissed (only check this if we're on the official domain)
     if (sessionStorage.getItem(WARNING_STORAGE_KEY)) {
       return;
     }
@@ -185,6 +235,7 @@ const ScamWarning = () => {
         
         if (isSuspicious) {
           sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, domain);
+          localStorage.setItem(SUSPICIOUS_REFERRER_KEY, domain); // Also set in localStorage for new tabs
           setReferrerDomain(domain);
           setShowWarning(true);
           console.warn(`[SECURITY] User arrived from suspicious domain: ${domain}`);
@@ -207,6 +258,7 @@ const ScamWarning = () => {
         
         if (isSuspicious) {
           sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, openerLocation);
+          localStorage.setItem(SUSPICIOUS_REFERRER_KEY, openerLocation);
           setReferrerDomain(openerLocation);
           setShowWarning(true);
           console.warn(`[SECURITY] Opened from suspicious domain: ${openerLocation}`);
@@ -220,20 +272,18 @@ const ScamWarning = () => {
       }
     }
 
-    // Method 3: Check current domain - if we're NOT on the official domain, show warning
-    const currentDomain = window.location.hostname.toLowerCase();
-    if (currentDomain !== OFFICIAL_DOMAIN && currentDomain !== 'localhost' && currentDomain !== '127.0.0.1') {
-      const isSuspicious = SUSPICIOUS_DOMAINS.some(
-        suspicious => currentDomain === suspicious || currentDomain.endsWith('.' + suspicious)
-      );
-      
-      if (isSuspicious) {
-        sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, currentDomain);
-        setReferrerDomain(currentDomain);
+    // Method 3: Check localStorage flag set by parent page
+    // This works across new tabs even with noopener noreferrer
+    try {
+      const suspiciousFlag = localStorage.getItem(SUSPICIOUS_REFERRER_KEY);
+      if (suspiciousFlag) {
+        setReferrerDomain(suspiciousFlag);
         setShowWarning(true);
-        console.warn(`[SECURITY] Running on suspicious domain: ${currentDomain}`);
+        console.warn(`[SECURITY] Suspicious domain detected from localStorage: ${suspiciousFlag}`);
         return;
       }
+    } catch (e) {
+      // localStorage might be disabled
     }
   }, []);
 

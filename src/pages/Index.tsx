@@ -83,7 +83,7 @@ const Index = () => {
                   </p>
                   
                   <div className="flex justify-center">
-                    <Link to="/hub" target="_blank" rel="noopener noreferrer">
+                    <Link to="/hub" target="_blank" rel="noopener">
                       <Button variant="hero" size="lg" className="group text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4">
                         Join the Network
                         <ArrowRight className="group-hover:translate-x-1 transition-transform ml-2" />
@@ -403,7 +403,7 @@ const Index = () => {
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 px-2">
               Where AI works, devices earn, and you hold the key.
             </p>
-            <Link to="/hub" target="_blank" rel="noopener noreferrer">
+            <Link to="/hub" target="_blank" rel="noopener">
               <Button variant="hero" size="lg" className="group text-sm sm:text-base px-6 sm:px-8 py-3 sm:py-4">
                 Get Started Now
                 <ArrowRight className="group-hover:translate-x-1 transition-transform ml-2" />

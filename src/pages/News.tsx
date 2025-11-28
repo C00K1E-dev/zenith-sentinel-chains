@@ -348,7 +348,7 @@ Together, we're building the future of decentralized AI infrastructure.`
               <p className="text-base sm:text-lg text-muted-foreground mb-6">
                 Be part of the revolution. Explore SmartSentinels and discover what's possible.
               </p>
-              <Link to="/hub/airdrop" target="_blank" rel="noopener noreferrer">
+              <Link to="/hub/airdrop" target="_blank" rel="noopener">
                 <Button variant="hero" size="lg" className="text-sm sm:text-base">
                   Explore Now
                 </Button>

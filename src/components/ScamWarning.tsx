@@ -172,7 +172,7 @@ const ScamWarning = () => {
       return;
     }
 
-    // Check current referrer
+    // Method 1: Check current referrer
     const referrer = document.referrer;
     if (referrer) {
       try {
@@ -188,9 +188,51 @@ const ScamWarning = () => {
           setReferrerDomain(domain);
           setShowWarning(true);
           console.warn(`[SECURITY] User arrived from suspicious domain: ${domain}`);
+          return;
         }
       } catch (e) {
         // Invalid referrer URL
+      }
+    }
+
+    // Method 2: Check if opened from another window (for new tabs with noreferrer)
+    // Check opener's location if accessible
+    if (window.opener) {
+      try {
+        // Try to access opener location (will fail if cross-origin)
+        const openerLocation = window.opener.location.hostname.toLowerCase();
+        const isSuspicious = SUSPICIOUS_DOMAINS.some(
+          suspicious => openerLocation === suspicious || openerLocation.endsWith('.' + suspicious)
+        );
+        
+        if (isSuspicious) {
+          sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, openerLocation);
+          setReferrerDomain(openerLocation);
+          setShowWarning(true);
+          console.warn(`[SECURITY] Opened from suspicious domain: ${openerLocation}`);
+          return;
+        }
+      } catch (e) {
+        // Cross-origin opener - can't access location
+        // But the fact that there IS an opener from a different origin is suspicious
+        // when combined with being on the hub page
+        console.log('[SECURITY] Cross-origin opener detected');
+      }
+    }
+
+    // Method 3: Check current domain - if we're NOT on the official domain, show warning
+    const currentDomain = window.location.hostname.toLowerCase();
+    if (currentDomain !== OFFICIAL_DOMAIN && currentDomain !== 'localhost' && currentDomain !== '127.0.0.1') {
+      const isSuspicious = SUSPICIOUS_DOMAINS.some(
+        suspicious => currentDomain === suspicious || currentDomain.endsWith('.' + suspicious)
+      );
+      
+      if (isSuspicious) {
+        sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, currentDomain);
+        setReferrerDomain(currentDomain);
+        setShowWarning(true);
+        console.warn(`[SECURITY] Running on suspicious domain: ${currentDomain}`);
+        return;
       }
     }
   }, []);

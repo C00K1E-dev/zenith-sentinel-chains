@@ -59,6 +59,17 @@ const ScamWarningModal = ({ referrerDomain, onDismiss }: { referrerDomain: strin
                   This is a SCAM attempting to steal your funds or information!
                 </p>
               </>
+            ) : referrerDomain === 'unknown external site' ? (
+              <>
+                <p className="text-white mb-3">
+                  <strong className="text-red-400">⚠️ Security Alert</strong>
+                </p>
+                <p className="text-gray-300 mb-4">
+                  This page was opened from an external website in a way that prevents us from verifying its safety.
+                  <br /><br />
+                  <strong>Be cautious:</strong> Only connect your wallet if you intentionally navigated here yourself.
+                </p>
+              </>
             ) : (
               <>
                 <p className="text-white mb-3">
@@ -191,6 +202,7 @@ const ScamWarning = () => {
     console.log('[SECURITY] Current domain:', window.location.hostname);
     console.log('[SECURITY] Document referrer:', document.referrer);
     console.log('[SECURITY] Has opener:', !!window.opener);
+    console.log('[SECURITY] Full URL:', window.location.href);
     
     // FIRST: Check current domain immediately - this is the most important check
     const currentDomain = window.location.hostname.toLowerCase();
@@ -206,6 +218,40 @@ const ScamWarning = () => {
       setShowWarning(true);
       console.warn(`[SECURITY] Running on suspicious domain: ${currentDomain}`);
       return;
+    }
+
+    // ADDED: Check if page was opened in a new window/tab (suspicious behavior)
+    // If there's an opener but no referrer, it's likely from a noopener noreferrer link
+    if (window.opener && !document.referrer) {
+      // This is suspicious - likely opened from external site with noreferrer
+      console.warn('[SECURITY] Page opened in new window with no referrer - potential scam redirect');
+      // Try to get opener's origin (will fail due to CORS but we can try)
+      try {
+        if (window.opener.location) {
+          const openerDomain = window.opener.location.hostname.toLowerCase();
+          const isSuspicious = SUSPICIOUS_DOMAINS.some(
+            suspicious => openerDomain === suspicious || openerDomain.endsWith('.' + suspicious)
+          );
+          if (isSuspicious) {
+            sessionStorage.setItem(SUSPICIOUS_REFERRER_KEY, openerDomain);
+            setReferrerDomain(openerDomain);
+            setShowWarning(true);
+            console.warn(`[SECURITY] Opened from suspicious domain via window.opener: ${openerDomain}`);
+            return;
+          }
+        }
+      } catch (e) {
+        // CORS blocked - opener is from different origin
+        // Check if we're on Hub or News page (common scam targets)
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('/hub') || path.includes('/news')) {
+          // Show warning with generic message
+          setReferrerDomain('unknown external site');
+          setShowWarning(true);
+          console.warn('[SECURITY] Suspicious: Hub/News opened in new window from cross-origin opener');
+          return;
+        }
+      }
     }
 
     // Check if warning was already dismissed (only check this if we're on the official domain)

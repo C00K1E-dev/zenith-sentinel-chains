@@ -311,15 +311,22 @@ const SidebarAirdrop = memo(() => {
         console.log('MetaMask detected! Adding 10 bonus points...');
         
         // Call completeTask which handles backend persistence
-        completeTask('connect-metamask', 10);
-        
-        setMetaMaskBonusApplied(true);
-        localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
-        
-        toast({
-          title: "MetaMask Bonus! 🦊",
-          description: "You received 10 bonus points for connecting with MetaMask!",
-        });
+        // Wrap in try-catch to handle mobile errors gracefully
+        try {
+          await completeTask('connect-metamask', 10);
+          
+          setMetaMaskBonusApplied(true);
+          localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
+          
+          toast({
+            title: "MetaMask Bonus! 🦊",
+            description: "You received 10 bonus points for connecting with MetaMask!",
+          });
+        } catch (error) {
+          console.error('[METAMASK] Error auto-applying bonus:', error);
+          // Don't block the user, just log the error
+          // They can manually click "Complete" on the task
+        }
       } else {
         setMetaMaskBonusApplied(true);
         // Mark the task as completed if bonus was already applied
@@ -641,31 +648,46 @@ const SidebarAirdrop = memo(() => {
 
     // Special handling for Connect MetaMask
     if (taskId === 'connect-metamask') {
-      if (isMetaMaskWallet) {
-         if (!task.completed) {
-             // Wait for backend confirmation before showing success
-             const success = await completeTask('connect-metamask', 10);
-             
-             if (success) {
-                setMetaMaskBonusApplied(true);
-                localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
-                toast({
-                    title: "MetaMask Bonus! 🦊",
-                    description: "You received 10 bonus points for connecting with MetaMask!",
-                });
-             }
-         } else {
+      try {
+        if (isMetaMaskWallet) {
+          if (!task.completed) {
+            // Wait for backend confirmation before showing success
+            const success = await completeTask('connect-metamask', 10);
+            
+            if (success) {
+              setMetaMaskBonusApplied(true);
+              localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
+              toast({
+                title: "MetaMask Bonus! 🦊",
+                description: "You received 10 bonus points for connecting with MetaMask!",
+              });
+            } else {
+              toast({
+                title: "Error",
+                description: "Failed to claim MetaMask bonus. Please try again.",
+                variant: "destructive",
+              });
+            }
+          } else {
             toast({
               title: "Already Completed",
               description: "You have already claimed the MetaMask bonus.",
             });
-         }
-      } else {
+          }
+        } else {
           toast({
             title: "MetaMask Required",
             description: "Please connect using MetaMask to claim this bonus.",
             variant: "destructive",
           });
+        }
+      } catch (error) {
+        console.error('[METAMASK] Error claiming bonus:', error);
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to claim MetaMask bonus. Please try again.",
+          variant: "destructive",
+        });
       }
       return;
     }

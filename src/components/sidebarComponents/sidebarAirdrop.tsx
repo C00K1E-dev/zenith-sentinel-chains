@@ -312,21 +312,23 @@ const SidebarAirdrop = memo(() => {
         
         // Call completeTask which handles backend persistence
         // Wrap in try-catch to handle mobile errors gracefully
-        try {
-          await completeTask('connect-metamask', 10);
-          
-          setMetaMaskBonusApplied(true);
-          localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
-          
-          toast({
-            title: "MetaMask Bonus! 🦊",
-            description: "You received 10 bonus points for connecting with MetaMask!",
-          });
-        } catch (error) {
-          console.error('[METAMASK] Error auto-applying bonus:', error);
-          // Don't block the user, just log the error
-          // They can manually click "Complete" on the task
-        }
+        (async () => {
+          try {
+            await completeTask('connect-metamask', 10);
+            
+            setMetaMaskBonusApplied(true);
+            localStorage.setItem(`metamask_bonus_${account.address}`, 'true');
+            
+            toast({
+              title: "MetaMask Bonus! 🦊",
+              description: "You received 10 bonus points for connecting with MetaMask!",
+            });
+          } catch (error) {
+            console.error('[METAMASK] Error auto-applying bonus:', error);
+            // Don't block the user, just log the error
+            // They can manually click "Complete" on the task
+          }
+        })();
       } else {
         setMetaMaskBonusApplied(true);
         // Mark the task as completed if bonus was already applied

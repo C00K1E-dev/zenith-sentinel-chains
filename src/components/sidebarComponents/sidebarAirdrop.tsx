@@ -64,7 +64,23 @@ const thirdwebClient = createThirdwebClient({
 const detectMetaMaskWallet = (): boolean => {
   if (typeof window === 'undefined') return false;
   const { ethereum } = window as any;
-  return ethereum?.isMetaMask === true;
+  
+  // Check for MetaMask on desktop
+  if (ethereum?.isMetaMask === true) return true;
+  
+  // Check for MetaMask mobile in-app browser
+  // MetaMask mobile sets specific user agent
+  if (typeof navigator !== 'undefined') {
+    const userAgent = navigator.userAgent || '';
+    if (userAgent.includes('MetaMask')) return true;
+  }
+  
+  // Additional check for injected provider
+  if (ethereum?.providers) {
+    return ethereum.providers.some((provider: any) => provider.isMetaMask);
+  }
+  
+  return false;
 };
 
 interface Task {
@@ -274,7 +290,18 @@ const SidebarAirdrop = memo(() => {
     }
 
     // Check if MetaMask is the connected wallet
-    const isMetaMask = connector?.name === 'MetaMask' || detectMetaMaskWallet();
+    const isMetaMask = 
+      connector?.name === 'MetaMask' || 
+      connector?.name?.toLowerCase().includes('metamask') ||
+      detectMetaMaskWallet();
+    
+    console.log('[METAMASK] Detection:', { 
+      connectorName: connector?.name, 
+      detectResult: detectMetaMaskWallet(), 
+      isMetaMask,
+      userAgent: navigator.userAgent 
+    });
+    
     setIsMetaMaskWallet(isMetaMask);
 
     // Apply MetaMask bonus if applicable and not yet applied

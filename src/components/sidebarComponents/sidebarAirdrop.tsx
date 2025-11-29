@@ -1318,6 +1318,84 @@ const SidebarAirdrop = memo(() => {
                 </motion.div>
               ))}
             </div>
+
+            {/* How It Works - Informative Card - Moved under tasks */}
+            <Card className={styles.infoCard} style={{ borderColor: 'rgba(248, 244, 66, 0.3)', backgroundColor: 'rgba(248, 244, 66, 0.05)', marginTop: '1.5rem' }}>
+              <CardHeader>
+                <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
+                  <Award className="text-primary" size={24} />
+                  How the Airdrop Works
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {/* Step 1 */}
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      1
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--foreground)' }}>Complete Registration</p>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                        Fill out the registration form with your wallet address, X (Twitter) handle, and Telegram handle. This is required to participate.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      2
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--foreground)' }}>Complete Tasks</p>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                        Earn points by following us on social media, minting NFTs, and engaging with our community. Each task has a specific point value.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      3
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--foreground)' }}>Climb the Leaderboard</p>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                        The more points you earn, the higher your rank. Check the leaderboard to see where you stand among all participants.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 4 */}
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                      4
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 'bold', marginBottom: '0.25rem', color: 'var(--foreground)' }}>Claim SSTL Tokens</p>
+                      <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>
+                        At the end of the campaign, your points will be converted to SSTL tokens. The "Claim SSTL Tokens" button will become active when the campaign ends.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Important Notes */}
+                  <div style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'rgba(248, 244, 66, 0.1)', borderRadius: '8px', borderLeft: '3px solid var(--primary)' }}>
+                    <p style={{ fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--foreground)' }}>
+                      📌 Important Notes:
+                    </p>
+                    <ul style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)', paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <li>Some tasks require manual verification by our team (1-48 hours)</li>
+                      <li>You must complete registration before earning points on other tasks</li>
+                      <li>Connect with MetaMask wallet to earn an instant +10 bonus points</li>
+                      <li>Token distribution will happen after the campaign ends on TGE (Token Generation Event)</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         ) : (
           <motion.div

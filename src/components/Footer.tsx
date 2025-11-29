@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXTwitter, faTiktok, faTelegram } from '@fortawesome/free-brands-svg-icons';
 import { Github, Linkedin } from 'lucide-react';
+import { useState, useEffect } from 'react';
 const ssIcon = "/ss-icon.svg";
 
 // Twitter Icon Component
@@ -19,6 +20,23 @@ const TelegramIcon = ({ size, className }: { size?: number; className?: string }
 );
 
 const Footer = () => {
+  const [tickerDismissed, setTickerDismissed] = useState(false);
+  
+  useEffect(() => {
+    // Listen for custom event when ticker is dismissed
+    const handleTickerDismissed = () => {
+      console.log('[FOOTER] Received ticker dismissed event');
+      setTickerDismissed(true);
+    };
+    
+    window.addEventListener('securityTickerDismissed', handleTickerDismissed);
+    console.log('[FOOTER] Event listener added');
+    
+    return () => {
+      window.removeEventListener('securityTickerDismissed', handleTickerDismissed);
+    };
+  }, []);
+  
   const socialLinks = [
     { icon: TwitterIcon, label: 'X (Twitter)', href: 'https://x.com/SmartSentinels_' },
     { icon: TelegramIcon, label: 'Telegram', href: 'https://t.me/SmartSentinelsCommunity' },
@@ -27,7 +45,10 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="glass-card border-t neon-border mt-20">
+    <footer 
+      className="glass-card border-t neon-border mt-20 transition-all duration-300"
+      style={{ marginBottom: tickerDismissed ? '0' : '2.4rem' }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo & Copyright */}

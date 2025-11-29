@@ -121,19 +121,26 @@ const ScamWarningModal = ({ referrerDomain, onDismiss }: { referrerDomain: strin
 };
 
 // Animated scrolling security ticker - positioned at bottom
-const SecurityTicker = () => {
+// Export the dismissed state management hook
+export const useSecurityTickerState = () => {
   const [dismissed, setDismissed] = useState(false);
   
-  useEffect(() => {
-    if (sessionStorage.getItem(TICKER_STORAGE_KEY)) {
-      setDismissed(true);
-    }
-  }, []);
+  // Don't check sessionStorage - always start as not dismissed
+  // useEffect removed - we want it to always show on page load
 
   const handleDismiss = () => {
-    sessionStorage.setItem(TICKER_STORAGE_KEY, 'true');
+    // Don't persist to sessionStorage - just dismiss for this session
     setDismissed(true);
+    console.log('[SECURITY] Ticker dismissed, dispatching event');
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('securityTickerDismissed'));
   };
+
+  return { dismissed, handleDismiss };
+};
+
+const SecurityTicker = () => {
+  const { dismissed, handleDismiss } = useSecurityTickerState();
 
   if (dismissed) return null;
 

@@ -47,7 +47,7 @@ const Footer = () => {
   return (
     <footer 
       className="glass-card border-t neon-border mt-20 transition-all duration-300"
-      style={{ marginBottom: tickerDismissed ? '0' : '2.4rem' }}
+      style={{ marginBottom: tickerDismissed ? '0' : '2.2rem' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">

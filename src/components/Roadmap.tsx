@@ -27,8 +27,10 @@ const Roadmap = memo(() => {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-12"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-orbitron font-bold mb-3 sm:mb-4 neon-glow">
-            Roadmap
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Roadmap
+            </span>
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Our strategic journey to revolutionize decentralized AI infrastructure
@@ -51,7 +53,7 @@ const Roadmap = memo(() => {
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <div className="flex items-center gap-2">
                     {getStatusIcon(index)}
-                    <span className="text-xs font-orbitron font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">
+                    <span className="text-xs font-display font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
                       {item.sub_title}
                     </span>
                   </div>
@@ -61,7 +63,7 @@ const Roadmap = memo(() => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-base sm:text-lg font-orbitron font-bold text-foreground mb-2 sm:mb-3 leading-tight flex-grow">
+                <h3 className="text-base sm:text-lg font-display font-semibold text-foreground mb-2 sm:mb-3 leading-tight flex-grow">
                   {item.title}
                 </h3>
 

@@ -90,30 +90,30 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
 
   const expandedConnectButtonStyle = useMemo(() => ({
     width: "100%",
-    background: "hsl(var(--primary))",
-    color: "hsl(var(--primary-foreground))",
+    background: "linear-gradient(to right, hsl(220, 90%, 56%), hsl(220, 90%, 46%))",
+    color: "white",
     border: "none",
-    borderRadius: "0.5rem",
+    borderRadius: "0.75rem",
     padding: "0.75rem 1rem",
-    fontFamily: "'Orbitron', sans-serif",
-    fontWeight: "700",
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontWeight: "600",
     fontSize: "0.875rem",
-    boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
-    transition: "all 0.2s ease",
+    boxShadow: "0 4px 12px rgba(99, 179, 237, 0.3)",
+    transition: "all 0.3s ease",
   }), []);
 
   const collapsedConnectButtonStyle = useMemo(() => ({
     width: "2.5rem",
     height: "2.5rem",
-    background: "hsl(var(--primary))",
-    color: "hsl(var(--primary-foreground))",
+    background: "linear-gradient(to right, hsl(220, 90%, 56%), hsl(220, 90%, 46%))",
+    color: "white",
     border: "none",
-    borderRadius: "0.5rem",
+    borderRadius: "0.75rem",
     padding: "0.5rem",
-    fontFamily: "'Orbitron', sans-serif",
-    fontWeight: "700",
-    boxShadow: "0 0 20px rgba(248, 244, 66, 0.5)",
-    transition: "all 0.2s ease",
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontWeight: "600",
+    boxShadow: "0 4px 12px rgba(99, 179, 237, 0.3)",
+    transition: "all 0.3s ease",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -124,11 +124,11 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
 
   const detailsButtonStyle = useMemo(() => ({
     width: "100%",
-    background: "rgba(255, 255, 255, 0.05)",
-    border: "1px solid rgba(248, 244, 66, 0.2)",
-    borderRadius: "0.5rem",
+    background: "rgba(20, 30, 48, 0.6)",
+    border: "1px solid rgba(99, 179, 237, 0.2)",
+    borderRadius: "0.75rem",
     padding: "0.75rem",
-    fontFamily: "'Orbitron', sans-serif",
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontSize: "0.75rem",
     color: "hsl(var(--foreground))",
   }), []);
@@ -136,7 +136,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   return (
     <aside
       className={cn(
-        'glass-card border-r border-yellow-400/20 transition-all duration-300 h-screen flex flex-col overflow-hidden flex-shrink-0',
+        'glass-card border-r border-border/50 transition-all duration-300 h-screen flex flex-col overflow-hidden flex-shrink-0',
         collapsed 
           ? 'w-20' 
           : 'w-64 md:w-72 lg:w-80 fixed md:static left-0 top-0 z-50 md:z-auto'
@@ -145,13 +145,13 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       {/* Toggle Button */}
       <button
         onClick={handleToggle}
-        className="absolute -right-3 top-4 glass-card-hover p-1.5 rounded-full neon-border z-10 hover:shadow-[0_0_30px_rgba(248,244,66,0.8)] transition-all duration-150"
+        className="absolute -right-3 top-4 glass-card-hover p-1.5 rounded-full border border-primary/30 z-10 hover:shadow-[0_0_20px_rgba(99,179,237,0.4)] hover:border-primary/50 transition-all duration-300"
       >
         {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
 
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-white/10">
+      <div className="p-4 border-b border-border/50">
         {!collapsed && (
           <div className="flex items-center gap-3">
             <img
@@ -159,7 +159,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
               alt="SmartSentinels Logo"
               className="w-8 h-8"
             />
-            <h2 className="font-orbitron font-bold text-lg neon-glow whitespace-nowrap">SmartSentinels</h2>
+            <h2 className="font-display font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent whitespace-nowrap">SmartSentinels</h2>
           </div>
         )}
         {collapsed && (
@@ -214,7 +214,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       </div>      {/* My Stats Section */}
       <div className="px-4 pt-2 pb-2">
         {!collapsed && (
-          <h3 className="text-xs font-orbitron font-bold text-primary/70 uppercase tracking-wider mb-2">
+          <h3 className="text-xs font-display font-bold text-primary/70 uppercase tracking-wider mb-2">
             My Stats
           </h3>
         )}
@@ -228,7 +228,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                 key={item.name}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group relative text-sm font-orbitron',
+                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group relative text-sm font-medium',
                   active
                     ? 'bg-primary/20 text-primary border border-primary/30'
                     : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
@@ -244,7 +244,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
 
                 {/* Tooltip for collapsed state */}
                 {collapsed && (
-                  <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-orbitron">
+                  <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
                     {item.name}
                   </div>
                 )}
@@ -268,7 +268,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
               key={item.name}
               to={item.path}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-orbitron',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-medium',
                 item.name === 'Seed Funding / Token Sale' && 'mt-1',
                 active
                   ? 'bg-primary/20 text-primary border border-primary/30'
@@ -281,7 +281,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                 <>
                   <span className="flex-1 text-sm">{item.name}</span>
                   {item.badge && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary border border-primary/30 font-orbitron">
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary border border-primary/30 font-medium">
                       {item.badge}
                     </span>
                   )}
@@ -290,10 +290,10 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
               
               {/* Tooltip for collapsed state */}
               {collapsed && (
-                <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-orbitron">
+                <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
                   {item.name}
                   {item.badge && (
-                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-orbitron">
+                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-medium">
                       {item.badge}
                     </span>
                   )}
@@ -307,7 +307,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
         <Link
           to="/"
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-orbitron',
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-medium',
             'text-muted-foreground hover:bg-white/5 hover:text-foreground',
             collapsed && 'justify-center'
           )}

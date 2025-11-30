@@ -19,7 +19,7 @@ const StatCard = memo(({ title, value, icon: Icon, description }: StatCardProps)
       </div>
 
       <h3 className="text-xs sm:text-sm text-muted-foreground mb-1 sm:mb-2">{title}</h3>
-      <p className="text-xl sm:text-2xl md:text-3xl font-orbitron font-bold text-foreground mb-1 break-words">{value}</p>
+      <p className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-1 break-words">{value}</p>
 
       {description && (
         <p className="text-xs text-muted-foreground">{description}</p>

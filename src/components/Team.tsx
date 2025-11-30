@@ -54,8 +54,8 @@ const Team = memo(() => {
 
                 {/* Member Info */}
                 <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-orbitron font-bold text-foreground neon-glow">
-                    {member.title}
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-display font-semibold text-foreground">
+                    {member.name}
                   </h3>
                   <p className="text-primary font-semibold text-xs sm:text-sm md:text-base">
                     {member.designasion}

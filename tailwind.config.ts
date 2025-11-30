@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        orbitron: ['Orbitron', 'sans-serif'],
-        sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        display: ['Space Grotesk', 'Inter', 'sans-serif'],
+        orbitron: ['Space Grotesk', 'Inter', 'sans-serif'], // Keep for compatibility
       },
       colors: {
         border: "hsl(var(--border))",

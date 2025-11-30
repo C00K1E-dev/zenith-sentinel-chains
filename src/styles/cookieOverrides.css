@@ -1,38 +1,39 @@
-/* C15T Cookie Banner & Dialog - Yellow Accent Override */
+/* C15T Cookie Banner & Dialog - Modern Blue Professional Design */
 
-/* Override C15T root variables globally */
+/* Override C15T root variables globally with new color system */
 :root {
-  --switch-background-color-checked: #f8f442 !important;
-  --switch-background-color-checked-dark: #f8f442 !important;
+  --switch-background-color-checked: hsl(220, 90%, 56%) !important;
+  --switch-background-color-checked-dark: hsl(220, 90%, 56%) !important;
 }
 
 .c15t-dark {
-  --switch-background-color-checked: #f8f442 !important;
-  --switch-background-color-checked-dark: #f8f442 !important;
+  --switch-background-color-checked: hsl(220, 90%, 56%) !important;
+  --switch-background-color-checked-dark: hsl(220, 90%, 56%) !important;
 }
 
 /* C15T Links - Privacy Policy, Terms, Disclaimer */
 .c15t-link {
-  color: #f8f442 !important;
+  color: hsl(220, 90%, 56%) !important;
   text-decoration: underline !important;
   cursor: pointer !important;
-  transition: color 0.3s ease !important;
+  transition: all 0.3s ease !important;
   border: none !important;
   outline: none !important;
   background: none !important;
   padding: 0 !important;
   margin: 0 !important;
   font-size: inherit !important;
-  font-family: inherit !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-weight: 500 !important;
 }
 
 .c15t-link:hover {
-  color: #ffff66 !important;
-  text-shadow: 0 0 8px rgba(248, 244, 66, 0.5) !important;
+  color: hsl(220, 90%, 66%) !important;
+  text-shadow: 0 0 12px rgba(99, 179, 237, 0.4) !important;
 }
 
 .c15t-link:visited {
-  color: #f8f442 !important;
+  color: hsl(220, 90%, 56%) !important;
 }
 
 .c15t-link:focus {
@@ -45,35 +46,51 @@
   border: none !important;
 }
 
-/* Replace C15T blue with yellow - all variants */
+/* Modern Professional Design System */
 .c15t-container {
-  --button-primary: #f8f442 !important;
-  --button-primary-dark: #f8f442 !important;
-  --button-primary-hover: rgba(248, 244, 66, 0.1) !important;
-  --button-primary-hover-dark: rgba(248, 244, 66, 0.1) !important;
-  --button-focus-ring: #f8f442 !important;
-  --button-focus-ring-dark: #f8f442 !important;
-  --dialog-branding-focus-color: #f8f442 !important;
-  --dialog-branding-focus-color-dark: #f8f442 !important;
+  --button-primary: hsl(220, 90%, 56%) !important;
+  --button-primary-dark: hsl(220, 90%, 56%) !important;
+  --button-primary-hover: rgba(99, 179, 237, 0.15) !important;
+  --button-primary-hover-dark: rgba(99, 179, 237, 0.15) !important;
+  --button-focus-ring: hsl(220, 90%, 56%) !important;
+  --button-focus-ring-dark: hsl(220, 90%, 56%) !important;
+  --dialog-branding-focus-color: hsl(220, 90%, 56%) !important;
+  --dialog-branding-focus-color-dark: hsl(220, 90%, 56%) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
-/* Override button background and text colors */
+/* Override button styling with modern design */
 .c15t-container button {
   background-color: var(--button-background-color-dark) !important;
-  color: var(--button-primary-dark) !important;
+  color: hsl(220, 90%, 56%) !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-weight: 500 !important;
+  border-radius: 0.75rem !important;
+  transition: all 0.3s ease !important;
 }
 
-/* Customize button - stroke style */
+/* Customize button - modern stroke style */
 .c15t-container [class*="c15t-button-primary-stroke"] {
   background-color: transparent !important;
-  border: 1px solid #f8f442 !important;
-  color: #f8f442 !important;
+  border: 1.5px solid hsl(220, 90%, 56%) !important;
+  color: hsl(220, 90%, 56%) !important;
+  border-radius: 0.75rem !important;
 }
 
 .c15t-container [class*="c15t-button-primary-stroke"]:hover {
-  background-color: rgba(248, 244, 66, 0.05) !important;
-  border-color: #ffff66 !important;
-  color: #ffff66 !important;
+  background-color: rgba(99, 179, 237, 0.1) !important;
+  border-color: hsl(220, 90%, 66%) !important;
+  color: hsl(220, 90%, 66%) !important;
+  box-shadow: 0 0 20px rgba(99, 179, 237, 0.2) !important;
+}
+
+/* Modern glassmorphism effect for banner */
+.c15t-container [class*="banner"] {
+  backdrop-filter: blur(16px) !important;
+  background-color: rgba(20, 30, 48, 0.9) !important;
+  border: 1px solid rgba(99, 179, 237, 0.15) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Direct color replacement */
@@ -81,69 +98,100 @@
   color: inherit !important;
 }
 
-/* Change any remaining blue text to yellow */
+/* Modern dark theme */
 .c15t-container {
   color-scheme: dark;
 }
 
-/* Force specific color on customize button text */
+/* Customize button with professional styling */
 button[data-testid="cookie-banner-customize-button"] {
-  color: #f8f442 !important;
-  border-color: #f8f442 !important;
-  border: 1px solid #f8f442 !important;
+  color: hsl(220, 90%, 56%) !important;
+  border: 1.5px solid hsl(220, 90%, 56%) !important;
   background-color: transparent !important;
-  box-shadow: inset 0 0 0 1px #f8f442 !important;
+  border-radius: 0.75rem !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500 !important;
+  padding: 0.625rem 1.5rem !important;
+  transition: all 0.3s ease !important;
 }
 
 button[data-testid="cookie-banner-customize-button"]:hover {
-  color: #ffff66 !important;
-  border-color: #ffff66 !important;
-  border: 1px solid #ffff66 !important;
-  box-shadow: inset 0 0 0 1px #ffff66 !important;
+  color: hsl(220, 90%, 66%) !important;
+  border-color: hsl(220, 90%, 66%) !important;
+  background-color: rgba(99, 179, 237, 0.1) !important;
+  box-shadow: 0 0 20px rgba(99, 179, 237, 0.2) !important;
 }
 
-/* Dialog - Save Settings button (widget footer) */
+/* Accept All button - gradient style */
+button[data-testid="cookie-banner-accept-button"] {
+  background: linear-gradient(to right, hsl(220, 90%, 56%), hsl(220, 90%, 46%)) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  padding: 0.625rem 1.5rem !important;
+  transition: all 0.3s ease !important;
+}
+
+button[data-testid="cookie-banner-accept-button"]:hover {
+  background: linear-gradient(to right, hsl(220, 90%, 66%), hsl(220, 90%, 56%)) !important;
+  box-shadow: 0 0 30px rgba(99, 179, 237, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Dialog - Save Settings button */
 button[data-testid="consent-manager-widget-footer-save-button"] {
-  color: #f8f442 !important;
-  border-color: #f8f442 !important;
-  border: 1px solid #f8f442 !important;
+  color: hsl(220, 90%, 56%) !important;
+  border: 1.5px solid hsl(220, 90%, 56%) !important;
   background-color: transparent !important;
-  box-shadow: inset 0 0 0 1px #f8f442 !important;
+  border-radius: 0.75rem !important;
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
 }
 
 button[data-testid="consent-manager-widget-footer-save-button"]:hover {
-  color: #ffff66 !important;
-  border-color: #ffff66 !important;
-  border: 1px solid #ffff66 !important;
-  box-shadow: inset 0 0 0 1px #ffff66 !important;
+  color: hsl(220, 90%, 66%) !important;
+  border-color: hsl(220, 90%, 66%) !important;
+  background-color: rgba(99, 179, 237, 0.1) !important;
+  box-shadow: 0 0 20px rgba(99, 179, 237, 0.2) !important;
 }
 
-/* Dialog - Toggle switches (accent color) */
+/* Dialog - Modern glassmorphism */
+.c15t-container [class*="dialog"],
+.c15t-container [class*="widget"] {
+  backdrop-filter: blur(16px) !important;
+  background-color: rgba(20, 30, 48, 0.95) !important;
+  border: 1px solid rgba(99, 179, 237, 0.15) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Dialog - Toggle switches with modern electric blue */
 .c15t-container [class*="c15t-track"],
 .c15t-container [class*="switch"] {
-  --switch-background-color-checked: #f8f442 !important;
-  --switch-background-color-checked-dark: #f8f442 !important;
+  --switch-background-color-checked: hsl(220, 90%, 56%) !important;
+  --switch-background-color-checked-dark: hsl(220, 90%, 56%) !important;
 }
 
-/* Target the exact track element and force yellow background */
-.c15t-container .c15t-track-OlfR7 {
-  background-color: #f8f442 !important;
-  background: #f8f442 !important;
-}
-
-/* All c15t-track elements in container */
+/* Target track elements with modern blue */
+.c15t-container .c15t-track-OlfR7,
 .c15t-container [class^="c15t-track-"] {
-  background-color: #f8f442 !important;
-  background: #f8f442 !important;
+  background-color: hsl(220, 90%, 56%) !important;
+  background: hsl(220, 90%, 56%) !important;
+  border-radius: 9999px !important;
 }
 
-/* When switch is checked, track should be yellow */
+/* When switch is checked, track should be electric blue */
 .c15t-container [role="switch"][aria-checked="true"] > [class^="c15t-track-"] {
-  background-color: #f8f442 !important;
-  background: #f8f442 !important;
+  background-color: hsl(220, 90%, 56%) !important;
+  background: hsl(220, 90%, 56%) !important;
 }
 
-/* Thumb inside track - white for contrast */
+/* Thumb inside track - white for contrast with smooth transition */
 .c15t-container [class^="c15t-track-"] > [class^="c15t-thumb-"] {
   background-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
 }

@@ -50,29 +50,27 @@ const Hub = () => {
         description="Access your SmartSentinels dashboard: manage AI agents, monitor devices, view rewards, and participate in the decentralized workforce."
         path="/hub"
       />
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 relative overflow-x-hidden overflow-y-auto">
-      {/* Optimized Background Elements - Further reduced animations */}
+      <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Modern Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Static Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
-        <div className="absolute inset-0 bg-gradient-to-tl from-accent/5 via-transparent to-primary/5" />
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
+        <div className="absolute inset-0 bg-gradient-to-tl from-accent/3 via-transparent to-primary/3" />
 
-        {/* Simplified Circuit Pattern - Reduced complexity */}
-        <div className="absolute inset-0 opacity-3">
-          <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        {/* Modern Grid Pattern */}
+        <div className="absolute inset-0 opacity-[0.02]">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="circuit" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                <circle cx="20" cy="20" r="0.5" fill="rgba(248, 244, 66, 0.1)"/>
-                <line x1="20" y1="20" x2="40" y2="20" stroke="rgba(248, 244, 66, 0.05)" strokeWidth="0.2"/>
-                <line x1="20" y1="20" x2="20" y2="0" stroke="rgba(248, 244, 66, 0.05)" strokeWidth="0.2"/>
+              <pattern id="hub-grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1"/>
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#circuit)"/>
+            <rect width="100%" height="100%" fill="url(#hub-grid)" />
           </svg>
         </div>
 
-        {/* Reduced Floating Elements - Only one static element */}
-        <div className="absolute top-1/3 right-1/4 w-64 h-64 bg-primary/2 rounded-full blur-2xl" />
+        {/* Subtle Floating Element */}
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
       <div className="flex w-full h-screen">
@@ -87,7 +85,7 @@ const Hub = () => {
         <Sidebar collapsed={collapsed} setCollapsed={handleSetCollapsed} />
 
         <main className={cn("flex-1 relative z-10 transition-all duration-300 overflow-auto", collapsed ? "ml-0" : "ml-0 md:ml-0")}>
-          <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+          <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 xl:p-12">
           <Routes>
             <Route index element={<Suspense fallback={<Loading />}><SidebarGeneralStats /></Suspense>} />
             <Route path="my-nfts" element={<Suspense fallback={<Loading />}><SidebarMyNFTs /></Suspense>} />

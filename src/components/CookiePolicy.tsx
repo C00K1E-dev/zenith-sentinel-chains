@@ -17,18 +17,18 @@ export function C15TCookieProvider({ children }: { children: React.ReactNode }) 
       <div 
         className="c15t-container"
         style={{
-          '--button-primary': '#f8f442',
-          '--button-primary-dark': '#f8f442',
-          '--button-primary-hover': 'rgba(248, 244, 66, 0.1)',
-          '--button-primary-hover-dark': 'rgba(248, 244, 66, 0.1)',
-          '--button-focus-ring': '#f8f442',
-          '--button-focus-ring-dark': '#f8f442',
-          '--dialog-branding-focus-color': '#f8f442',
-          '--dialog-branding-focus-color-dark': '#f8f442',
-          '--switch-thumb-background-color': '#f8f442',
-          '--switch-thumb-background-color-dark': '#f8f442',
-          '--switch-background-color-checked': '#f8f442',
-          '--switch-background-color-checked-dark': '#f8f442',
+          '--button-primary': 'hsl(220 90% 56%)',
+          '--button-primary-dark': 'hsl(220 90% 56%)',
+          '--button-primary-hover': 'rgba(99, 179, 237, 0.1)',
+          '--button-primary-hover-dark': 'rgba(99, 179, 237, 0.1)',
+          '--button-focus-ring': 'hsl(220 90% 56%)',
+          '--button-focus-ring-dark': 'hsl(220 90% 56%)',
+          '--dialog-branding-focus-color': 'hsl(220 90% 56%)',
+          '--dialog-branding-focus-color-dark': 'hsl(220 90% 56%)',
+          '--switch-thumb-background-color': 'hsl(220 90% 56%)',
+          '--switch-thumb-background-color-dark': 'hsl(220 90% 56%)',
+          '--switch-background-color-checked': 'hsl(220 90% 56%)',
+          '--switch-background-color-checked-dark': 'hsl(220 90% 56%)',
         } as React.CSSProperties}
       >
         <CookieBanner

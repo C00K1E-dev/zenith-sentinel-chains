@@ -46,16 +46,19 @@ const Footer = () => {
 
   return (
     <footer 
-      className="glass-card border-t neon-border mt-20 transition-all duration-300"
+      className="backdrop-blur-xl bg-card/60 border-t border-border/50 mt-20 transition-all duration-300"
       style={{ marginBottom: tickerDismissed ? '0' : '2.2rem' }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16 py-8 sm:py-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo & Copyright */}
           <div className="flex flex-col items-center md:items-start w-full md:w-auto">
-            <div className="flex items-center space-x-2 mb-3 sm:mb-2">
-              <img src={ssIcon} alt="SmartSentinels" className="w-7 h-7 sm:w-8 sm:h-8" />
-              <span className="font-orbitron font-bold text-foreground text-sm sm:text-base">SmartSentinels</span>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-xl blur-lg" />
+                <img src={ssIcon} alt="SmartSentinels" className="relative w-9 h-9 sm:w-10 sm:h-10" />
+              </div>
+              <span className="font-display font-bold text-foreground text-base sm:text-lg">SmartSentinels</span>
             </div>
             <div className="flex flex-col items-center md:items-start space-y-3 md:space-y-2 w-full">
               <p className="text-xs sm:text-sm text-muted-foreground text-center md:text-left">
@@ -109,9 +112,9 @@ const Footer = () => {
                   aria-label={social.label}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="glass-card-hover p-2 sm:p-3 rounded-lg"
+                  className="glass-card-hover p-3 rounded-xl hover:scale-110 transition-all duration-300"
                 >
-                  <Icon size={18} className="sm:w-5 sm:h-5 text-muted-foreground hover:text-primary transition-colors" />
+                  <Icon size={20} className="text-muted-foreground hover:text-primary transition-colors" />
                 </a>
               );
             })}

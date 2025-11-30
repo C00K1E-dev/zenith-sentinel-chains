@@ -63,7 +63,7 @@ const Index = () => {
           <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
               {/* Hero Content */}
-              <div className="space-y-8">
+              <div className="space-y-8 order-2 lg:order-1">
                 <div className="space-y-6">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
                     <Sparkles className="w-4 h-4 text-primary" />
@@ -113,20 +113,17 @@ const Index = () => {
                 </div>
               </div>
               
-              {/* Hero Visual - Globe Image - Absolutely Positioned */}
-              <div className="lg:absolute lg:right-0 xl:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:w-[750px] lg:h-[750px] hidden lg:block">
+              {/* Hero Visual - Globe Image */}
+              <div className="relative w-full h-64 sm:h-80 md:h-[450px] lg:h-[750px] lg:absolute lg:right-0 xl:right-0 lg:top-1/2 lg:-translate-y-1/2 lg:w-[750px] order-1 lg:order-2">
                 {/* Background Glow */}
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 rounded-full blur-3xl animate-pulse-glow pointer-events-none z-0" />
                 
-                {/* Globe Image - NO wrapper */}
+                {/* Globe Image */}
                 <img 
                   src="/assets/pouwGlobe.png" 
                   alt="Global AI Network" 
-                  className="absolute inset-0 w-full h-full object-contain object-center animate-float z-10"
+                  className="w-full h-full object-contain object-center animate-float z-10"
                 />
-                
-                {/* Overlay Labels */}
-              
               </div>
             </div>
           </div>

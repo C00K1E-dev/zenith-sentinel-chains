@@ -51,7 +51,7 @@ const Navbar = () => {
                 className="relative w-10 h-10 sm:w-12 sm:h-12"
               />
             </div>
-            <span className="font-display font-bold text-xl lg:text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <span className="font-display font-bold text-xl lg:text-2xl text-white">
               SmartSentinels
             </span>
           </Link>
@@ -86,7 +86,7 @@ const Navbar = () => {
                     key={link.name}
                     href={link.path}
                     onClick={(e) => handleNavClick(link.path, e)}
-                    className="text-foreground/80 hover:text-primary font-medium transition-colors duration-300 relative group"
+                    className="text-foreground hover:text-primary font-medium transition-colors duration-300 relative group"
                   >
                     {link.name}
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary group-hover:w-full transition-all duration-300" />
@@ -98,7 +98,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className="text-foreground/80 hover:text-primary font-medium transition-colors duration-300 relative group"
+                  className="text-foreground hover:text-primary font-medium transition-colors duration-300 relative group"
                 >
                   {link.name}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-secondary group-hover:w-full transition-all duration-300" />

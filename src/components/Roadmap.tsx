@@ -17,8 +17,8 @@ const Roadmap = memo(() => {
   };
 
   return (
-    <section id="roadmap" className="py-12 sm:py-16 px-4">
-      <div className="max-w-7xl mx-auto">
+    <section id="roadmap" className="py-12 sm:py-16">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

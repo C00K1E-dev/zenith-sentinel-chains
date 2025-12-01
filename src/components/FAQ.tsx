@@ -22,8 +22,7 @@ const FAQ = memo(() => {
   ];
 
   return (
-    <section id="faq" className="py-12 sm:py-16 md:py-20 px-4">
-      <div className="max-w-6xl mx-auto">
+    <>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -32,8 +31,10 @@ const FAQ = memo(() => {
           transition={{ duration: 0.6 }}
           className="text-center mb-10 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4 neon-glow">
-            Frequently Asked Questions
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Frequently Asked Questions
+            </span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             Everything you need to know about SmartSentinels, SSTL tokens, and Proof of Useful Work
@@ -46,7 +47,7 @@ const FAQ = memo(() => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-8 sm:mb-10 md:mb-12 max-w-4xl mx-auto"
+          className="flex flex-col md:flex-row gap-3 sm:gap-4 mb-8 sm:mb-10 md:mb-12"
         >
           {tabs.map((tab) => (
             <button
@@ -78,7 +79,6 @@ const FAQ = memo(() => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="max-w-4xl mx-auto"
         >
           <Accordion type="single" collapsible className="space-y-3 sm:space-y-4">
             {filteredFaqs.map((faq, index) => (
@@ -115,35 +115,38 @@ const FAQ = memo(() => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-10 sm:mt-12 md:mt-16"
+          className="mt-10 sm:mt-12 md:mt-16"
         >
-          <div className="glass-card-hover p-6 sm:p-8 max-w-2xl mx-auto">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-orbitron font-bold text-foreground mb-3 sm:mb-4 neon-glow">
-              Still Have Questions?
-            </h3>
-            <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
-              Can't find the answer you're looking for? Our community and team are here to help.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <a
-                href="https://t.me/SmartSentinelsCommunity"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="glass-card-hover px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-primary/20 text-primary font-orbitron font-bold hover:bg-primary/30 transition-all duration-300 text-sm sm:text-base"
-              >
-                Join Telegram
-              </a>
-              <a
-                href="mailto:support@smartsentinels.ai"
-                className="glass-card-hover px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg border border-primary/30 text-primary font-orbitron font-bold hover:bg-primary/10 transition-all duration-300 text-sm sm:text-base"
-              >
-                Contact Support
-              </a>
+          <div className="glass-card-hover p-8 sm:p-10 md:p-12 lg:p-16 text-center relative overflow-hidden">
+            <div className="relative space-y-6">
+              <h3 className="text-2xl sm:text-3xl md:text-4xl font-orbitron font-bold mb-4">
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  Still Have Questions?
+                </span>
+              </h3>
+              <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+                Can't find the answer you're looking for? Our community and team are here to help.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <a
+                  href="https://t.me/SmartSentinelsCommunity"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-orbitron font-bold shadow-lg hover:shadow-primary/25 transition-all duration-300 text-base sm:text-lg"
+                >
+                  Join Telegram
+                </a>
+                <a
+                  href="mailto:support@smartsentinels.ai"
+                  className="px-8 py-4 rounded-xl border-2 border-primary/30 hover:border-primary/50 text-foreground font-orbitron font-bold hover:bg-primary/10 transition-all duration-300 text-base sm:text-lg"
+                >
+                  Contact Support
+                </a>
+              </div>
             </div>
           </div>
         </motion.div>
-      </div>
-    </section>
+    </>
   );
 });
 

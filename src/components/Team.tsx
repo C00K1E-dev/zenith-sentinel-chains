@@ -8,8 +8,7 @@ import founder_data from '@/data/team';
 
 const Team = memo(() => {
   return (
-    <section id="team" className="py-12 sm:py-16 md:py-20 px-4">
-      <div className="max-w-7xl mx-auto">
+    <>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -18,8 +17,10 @@ const Team = memo(() => {
           transition={{ duration: 0.6 }}
           className="text-center mb-10 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4 neon-glow">
-            Our Team
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Our Team
+            </span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             Meet the visionaries driving SmartSentinels forward - experts in AI, blockchain, and decentralized systems
@@ -91,9 +92,7 @@ const Team = memo(() => {
             </motion.div>
           ))}
         </div>
-
-      </div>
-    </section>
+    </>
   );
 });
 

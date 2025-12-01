@@ -54,7 +54,7 @@ const Vision = () => {
         </p>
       </motion.div>
 
-      <div className="glass-card p-4 sm:p-6 md:p-8 lg:p-12 neon-border">
+      <div className="glass-card-hover p-4 sm:p-6 md:p-8 lg:p-12 neon-border">
         {/* Main Section - Content & Image Side by Side */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center mb-12 md:mb-16">
           {/* Left - Rich Content */}

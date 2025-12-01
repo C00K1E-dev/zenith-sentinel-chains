@@ -11,14 +11,16 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Custom brand colors based on user request */
+        /* Custom brand colors - Updated to new style */
         :root {
-            --highlight: #f8f442; /* Bright Yellow */
-            --bg-dark: #1f1f1f; /* Dark Black */
+            --primary: hsl(220, 90%, 56%); /* Blue */
+            --secondary: hsl(280, 60%, 60%); /* Purple */
+            --accent: hsl(170, 70%, 50%); /* Teal */
+            --bg-dark: hsl(220, 25%, 8%); /* Dark background */
             --text-light: #e6e6e6; /* Light Grey */
-            --card-bg: #2d2d2d; /* Slightly lighter than background for depth */
-            --dark-text: #000000; /* For text on the bright yellow highlight */
-            --divider: rgba(230, 230, 230, 0.1); /* E6E6E6 with 10% opacity for divider */
+            --card-bg: rgba(255, 255, 255, 0.05); /* Glass effect */
+            --border-color: rgba(248, 244, 66, 0.2); /* Border with opacity */
+            --divider: rgba(230, 230, 230, 0.1); /* Divider */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -29,12 +31,21 @@
         }
         
         /* Utility classes for colors */
-        .text-highlight { color: var(--highlight); }
-        .bg-highlight { background-color: var(--highlight); }
-        .bg-card { background-color: var(--card-bg); }
-        .text-dark { color: var(--dark-text); }
+        .text-primary { color: var(--primary); }
+        .text-secondary { color: var(--secondary); }
+        .text-accent { color: var(--accent); }
+        .bg-primary { background-color: var(--primary); }
+        .bg-secondary { background-color: var(--secondary); }
+        .bg-accent { background-color: var(--accent); }
+        .bg-card { 
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
         .text-text-light { color: var(--text-light); }
-        .border-highlight { border-color: var(--highlight); }
+        .border-primary { border-color: var(--primary); }
+        .border-secondary { border-color: var(--secondary); }
+        .border-accent { border-color: var(--accent); }
         .slide {
             min-height: 100vh;
             display: flex;
@@ -154,7 +165,7 @@
         
         /* Fix text overlay on logo for 375px to 424px */
         @media (min-width: 375px) and (max-width: 424px) {
-            #intro p.text-highlight {
+            #intro p.text-primary {
                 margin-top: -2rem !important;
             }
         }
@@ -504,7 +515,7 @@
         
         /* Custom styles for 375px screens */
         @media (min-width: 375px) and (max-width: 424px) {
-            #intro p.text-highlight {
+            #intro p.text-primary {
                 font-size: 1.5rem !important; /* Larger title text for 375px */
                 margin-top: -8rem !important; /* Move text more upward */
             }
@@ -538,7 +549,7 @@
             #tokenomics ul li {
                 font-size: 0.875rem !important; /* 14px */
             }
-            #tokenomics ul li span.text-highlight {
+            #tokenomics ul li span.text-primary {
                 font-size: 0.875rem !important; /* 14px for label */
             }
             #tokenomics ul li span.font-black {
@@ -596,7 +607,7 @@
         /* 768px screen optimizations */
         @media (min-width: 768px) and (max-width: 1023px) {
             /* Slide 1 - Move text up significantly */
-            #intro p.text-highlight {
+            #intro p.text-primary {
                 margin-top: -6rem !important;
             }
             
@@ -674,7 +685,7 @@
                     alt="SmartSentinels Logo"
                     class="logo-image w-16 h-16 mr-4"
                 >
-                <span class="text-highlight text-2xl md:text-3xl lg:text-4xl font-bold neon-glow">SmartSentinels</span>
+                <span class="text-primary text-2xl md:text-3xl lg:text-4xl font-bold neon-glow">SmartSentinels</span>
             </div>
 
             <!-- Tagline -->
@@ -683,7 +694,7 @@
             </p>
 
             <!-- Description -->
-            <div class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-highlight max-w-2xl mx-auto px-2">
+            <div class="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-primary max-w-2xl mx-auto px-2">
                 AI that works, earns, and proves it.
             </div>
         </div>
@@ -691,15 +702,15 @@
     <!-- Slide 2: The Problems -->
     <section class="slide bg-bg-dark" id="problem" data-index="1">
         <div class="slide-container">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-4 md:mb-6 lg:mb-8 text-center text-highlight">The <span class="text-text-light">Problems</span> <span class="text-highlight">We Solve</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-4 md:mb-6 lg:mb-8 text-center text-primary">The <span class="text-text-light">Problems</span> <span class="text-primary">We Solve</span></h2>
             <div class="space-y-3 md:space-y-4 lg:space-y-6">
 
                 <!-- Problem 1: Opaque AI Monopolies -->
                 <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 shadow-2xl">
                     <div class="flex items-start mb-2 md:mb-3">
-                        <i class="fas fa-brain text-xl md:text-2xl lg:text-3xl text-highlight mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
+                        <i class="fas fa-brain text-xl md:text-2xl lg:text-3xl text-primary mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-highlight mb-1 md:mb-2">Opaque AI Monopolies</h3>
+                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 md:mb-2">Opaque AI Monopolies</h3>
                             <p class="text-xs sm:text-sm md:text-base text-gray-400 leading-relaxed">
                                 Proprietary models and centralized cloud providers restrict access, inflate costs, and lack transparency.
                             </p>
@@ -710,9 +721,9 @@
                 <!-- Problem 2: Wasteful Compute Power -->
                 <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 shadow-2xl">
                     <div class="flex items-start mb-2 md:mb-3">
-                        <i class="fas fa-server text-xl md:text-2xl lg:text-3xl text-highlight mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
+                        <i class="fas fa-server text-xl md:text-2xl lg:text-3xl text-primary mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-highlight mb-1 md:mb-2">Wasteful Compute Power</h3>
+                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 md:mb-2">Wasteful Compute Power</h3>
                             <p class="text-xs sm:text-sm md:text-base text-gray-400 leading-relaxed">
                                 Billions of dollars spent annually on traditional PoW/PoC that generates zero business or social value.
                             </p>
@@ -723,9 +734,9 @@
                 <!-- Problem 3: Unsustainable Token Models -->
                 <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 shadow-2xl">
                     <div class="flex items-start mb-2 md:mb-3">
-                        <i class="fas fa-coins text-xl md:text-2xl lg:text-3xl text-highlight mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
+                        <i class="fas fa-coins text-xl md:text-2xl lg:text-3xl text-primary mr-3 md:mr-4 flex-shrink-0 mt-1"></i>
                         <div class="min-w-0 flex-1">
-                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-highlight mb-1 md:mb-2">Unsustainable Token Models</h3>
+                            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-primary mb-1 md:mb-2">Unsustainable Token Models</h3>
                             <p class="text-xs sm:text-sm md:text-base text-gray-400 leading-relaxed">
                                 Projects collapse due to inflationary models and insufficient vesting periods, leading to early token dumps.
                             </p>
@@ -745,7 +756,7 @@
     <!-- Slide 3: The Solution -->
     <section class="slide bg-bg-dark" id="solution" data-index="2">
         <div class="slide-container">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-4 md:mb-6 lg:mb-8 text-center text-highlight">The <span class="text-text-light">Solution</span>: <span class="text-highlight">PoUW</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-4 md:mb-6 lg:mb-8 text-center text-primary">The <span class="text-text-light">Solution</span>: <span class="text-primary">PoUW</span></h2>
             <p class="text-center text-gray-400 text-xs sm:text-sm md:text-base lg:text-lg mb-4 md:mb-6 lg:mb-8 max-w-3xl mx-auto px-2">
                 SmartSentinels is a decentralized AI compute network built on Proof of Useful Work (PoUW) — combining infrastructure (compute layer) with an application protocol (B2B layer) that allows companies to access AI agents for real-world, verifiable tasks.
             </p>
@@ -759,23 +770,23 @@
             <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 xl:p-8 shadow-2xl">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 text-center">
                     <div class="flex flex-col items-center p-2 md:p-4">
-                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-network-wired"></i></div>
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary mb-2 md:mb-3"><i class="fas fa-network-wired"></i></div>
                         <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold mb-1 md:mb-2">DECENTRALIZED COMPUTE</h4>
                         <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">A peer-to-peer compute layer built on BNB Chain for low latency and cost.</p>
                     </div>
                     <div class="flex flex-col items-center p-2 md:p-4">
-                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-lock"></i></div>
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary mb-2 md:mb-3"><i class="fas fa-lock"></i></div>
                         <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold mb-1 md:mb-2">VERIFIABLE VALUE</h4>
                         <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Work (e.g., audit report) is cryptographically verified on-chain before tokens are minted.</p>
                     </div>
                     <div class="flex flex-col items-center p-2 md:p-4 sm:col-span-2 lg:col-span-1">
-                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-cubes"></i></div>
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary mb-2 md:mb-3"><i class="fas fa-cubes"></i></div>
                         <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold mb-1 md:mb-2">iNFT STAKEHOLDERS</h4>
                         <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">iNFT holders own a stake in the real revenue generated by the AI agent network.</p>
                     </div>
                 </div>
                 <div class="mt-4 md:mt-6 lg:mt-8 text-center">
-                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-highlight mb-3 md:mb-4">PoUW Verification Flow (The Moat)</h3>
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-primary mb-3 md:mb-4">PoUW Verification Flow (The Moat)</h3>
                     <p class="text-gray-400 text-xs sm:text-sm md:text-base mb-3 md:mb-4 leading-relaxed">
                         <strong>Client Task</strong> → <strong>AI Agent Execution</strong> → <strong>Protocol Verification</strong> → <strong>SSTL Token Minting</strong> → <strong>Rewards Distributed</strong>
                     </p>
@@ -790,31 +801,31 @@
     <!-- Slide 4: The Product -->
     <section class="slide bg-bg-dark" id="product" data-index="3">
         <div class="slide-container">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">We Start With <span class="text-text-light">AI Smart Contract Audits</span></h2>
-            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold mb-2 md:mb-3 lg:mb-4 text-center text-highlight">Solving a High-Value Problem First</h3>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-primary">We Start With <span class="text-text-light">AI Smart Contract Audits</span></h2>
+            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold mb-2 md:mb-3 lg:mb-4 text-center text-primary">Solving a High-Value Problem First</h3>
             <p class="text-center text-gray-400 text-xs sm:text-sm md:text-base lg:text-lg mb-4 md:mb-6 lg:mb-8 max-w-3xl mx-auto px-2">
                 Initial focus is a high-demand vertical: delivering fast, verifiable, and affordable security audits for Web3 projects.
             </p>
             <div class="bg-card rounded-lg md:rounded-xl p-3 md:p-4 lg:p-6 xl:p-8 shadow-2xl">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 text-center">
                     <div class="flex flex-col items-center p-2 md:p-4">
-                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-tachometer-alt"></i></div>
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary mb-2 md:mb-3"><i class="fas fa-tachometer-alt"></i></div>
                         <h4 class="font-bold mb-1 md:mb-2 text-xs sm:text-sm md:text-base lg:text-lg">SPEED</h4>
                         <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Audits in minutes, not weeks, significantly reducing time-to-market.</p>
                     </div>
                     <div class="flex flex-col items-center p-2 md:p-4">
-                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary mb-2 md:mb-3"><i class="fas fa-dollar-sign"></i></div>
                         <h4 class="font-bold mb-1 md:mb-2 text-xs sm:text-sm md:text-base lg:text-lg">COST</h4>
                         <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Fraction of the price of manual audits ($500 vs $5,000+).</p>
                     </div>
                     <div class="flex flex-col items-center p-2 md:p-4 sm:col-span-2 lg:col-span-1">
-                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-highlight mb-2 md:mb-3"><i class="fas fa-file-pdf"></i></div>
+                        <div class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-primary mb-2 md:mb-3"><i class="fas fa-file-pdf"></i></div>
                         <h4 class="font-bold mb-1 md:mb-2 text-xs sm:text-sm md:text-base lg:text-lg">DELIVERABLE</h4>
                         <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">AI agent provides a verified, downloadable PDF vulnerability report.</p>
                     </div>
                 </div>
                 <div class="mt-4 md:mt-6 lg:mt-8">
-                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-center text-highlight mb-3 md:mb-4">Expansion Path</h3>
+                    <h3 class="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-center text-primary mb-3 md:mb-4">Expansion Path</h3>
                     <p class="text-gray-400 text-xs sm:text-sm md:text-base text-center mb-3 md:mb-4 leading-relaxed">
                         Our plan is to launch agents for these high-value verticals:
                     </p>
@@ -834,24 +845,24 @@
     <!-- Slide 5: Market Opportunity (TAM/SAM/SOM) - The Numbers Slide -->
     <section class="slide bg-bg-dark" id="market" data-index="4">
         <div class="slide-container text-center">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">The <span class="text-text-light">Massive</span> Opportunity</h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-primary">The <span class="text-text-light">Massive</span> Opportunity</h2>
             <p class="text-xs sm:text-sm md:text-base text-gray-400 mb-4 md:mb-6 lg:mb-8 px-2">AI market projected to exceed $1.8 trillion by 2030. We are targeting the DePIN and utility service sectors within this growth.</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
                 <!-- TAM -->
                 <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl border-2 border-card bg-card transform hover:scale-105 transition duration-300">
-                    <p class="text-xs font-semibold uppercase text-highlight mb-1">Total Addressable Market</p>
+                    <p class="text-xs font-semibold uppercase text-primary mb-1">Total Addressable Market</p>
                     <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-text-light">$1.8T+</h3>
                     <p class="text-gray-400 mt-1 text-xs sm:text-sm">Global AI Services (2030)</p>
                 </div>
                 <!-- SAM -->
                 <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl border-2 border-card bg-card transform hover:scale-105 transition duration-300">
-                    <p class="text-xs font-semibold uppercase text-highlight mb-1">Serviceable Market</p>
+                    <p class="text-xs font-semibold uppercase text-primary mb-1">Serviceable Market</p>
                     <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-text-light">$6.0B</h3>
                     <p class="text-gray-400 mt-1 text-xs sm:text-sm">Initial Utility Verticals (Audits, Support)</p>
                 </div>
                 <!-- SOM -->
-                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-highlight shadow-lg border-2 border-highlight transform hover:scale-105 transition duration-300 sm:col-span-2 lg:col-span-1">
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-primary shadow-lg border-2 border-primary transform hover:scale-105 transition duration-300 sm:col-span-2 lg:col-span-1">
                     <p class="text-xs font-semibold uppercase text-dark mb-1">Serviceable Obtainable Market</p>
                     <h3 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-dark">$30M</h3>
                     <p class="text-dark mt-1 font-bold text-xs sm:text-sm">3-Year Revenue Goal (Bottom-Up)</p>
@@ -864,10 +875,10 @@
     <!-- Slide 6: Competitive Advantage -->
     <section class="slide bg-bg-dark" id="competitive-advantage" data-index="5">
         <div class="slide-container text-center">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">Competitive <span class="text-text-light">Advantage</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-primary">Competitive <span class="text-text-light">Advantage</span></h2>
 
             <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mb-3 md:mb-4 lg:mb-6">
-                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Competitive Landscape: Decentralization vs. Utility</h3>
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-primary">Competitive Landscape: Decentralization vs. Utility</h3>
 
                 <!-- Quadrant Grid with Proper Axes -->
                 <div class="relative max-w-2xl mx-auto">
@@ -895,7 +906,7 @@
                         </div>
 
                         <!-- Bottom Right: High Utility, High Decentralization -->
-                        <div class="bg-highlight p-2 md:p-3 lg:p-4 rounded-lg border-2 border-white text-center">
+                        <div class="bg-primary p-2 md:p-3 lg:p-4 rounded-lg border-2 border-white text-center">
                             <h4 class="text-xs sm:text-sm font-bold text-dark mb-1 md:mb-2">High Utility<br>High Decentralization</h4>
                             <div class="text-dark font-bold text-sm md:text-lg">🎯 SmartSentinels</div>
                             <div class="text-dark font-semibold text-xs sm:text-sm">(PoUW, High Utility)</div>
@@ -905,33 +916,33 @@
             </div>
 
             <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl">
-                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Our Technical Moat (Barriers to Entry)</h3>
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-primary">Our Technical Moat (Barriers to Entry)</h3>
                 <div class="text-left max-w-4xl mx-auto space-y-2 md:space-y-3 lg:space-y-4">
                     <div class="flex items-start space-x-2 md:space-x-3">
-                        <i class="fas fa-robot text-highlight mt-1 text-sm sm:text-base"></i>
+                        <i class="fas fa-robot text-primary mt-1 text-sm sm:text-base"></i>
                         <div>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Proprietary AI Auditing Engine</h4>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm md:text-base mb-1">Proprietary AI Auditing Engine</h4>
                             <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Custom-trained AI models specifically optimized for Solidity smart contract analysis, combining static analysis techniques with advanced NLP for contextual vulnerability detection.</p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-2 md:space-x-3">
-                        <i class="fas fa-server text-highlight mt-1 text-sm sm:text-base"></i>
+                        <i class="fas fa-server text-primary mt-1 text-sm sm:text-base"></i>
                         <div>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Decentralized AI Infrastructure</h4>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm md:text-base mb-1">Decentralized AI Infrastructure</h4>
                             <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Self-hosted Ollama AI models running on distributed infrastructure, eliminating dependency on centralized AI providers and ensuring consistent, private analysis capabilities.</p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-2 md:space-x-3">
-                        <i class="fas fa-coins text-highlight mt-1 text-sm sm:text-base"></i>
+                        <i class="fas fa-coins text-primary mt-1 text-sm sm:text-base"></i>
                         <div>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Automated Reward Distribution System</h4>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm md:text-base mb-1">Automated Reward Distribution System</h4>
                             <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Smart contract-based auto-distribution system that triggers token rewards upon audit completion - complex integration of blockchain events, token economics, and business logic.</p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-2 md:space-x-3">
-                        <i class="fas fa-code text-highlight mt-1 text-sm sm:text-base"></i>
+                        <i class="fas fa-code text-primary mt-1 text-sm sm:text-base"></i>
                         <div>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm md:text-base mb-1">Blockchain-Integrated Reward System</h4>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm md:text-base mb-1">Blockchain-Integrated Reward System</h4>
                             <p class="text-gray-400 text-xs sm:text-sm leading-relaxed">Complex smart contract ecosystem that monitors audit completions and automatically distributes rewards across multiple stakeholders - requires deep blockchain development expertise and economic modeling.</p>
                         </div>
                     </div>
@@ -943,7 +954,7 @@
     <!-- Slide: Competitor Comparison -->
     <section class="slide bg-bg-dark" id="competitor-comparison" data-index="5.5">
         <div class="slide-container text-center">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">Why We're <span class="text-text-light">Different</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-primary">Why We're <span class="text-text-light">Different</span></h2>
             <p class="text-xs sm:text-sm md:text-base text-gray-300 mb-4 md:mb-6 max-w-3xl mx-auto">
                 SmartSentinels vs. Competitors — More features, better accuracy, real utility.
             </p>
@@ -954,7 +965,7 @@
                         <thead>
                             <tr class="border-b border-gray-700">
                                 <th class="text-left py-2 px-2 md:px-3 text-gray-400">Feature</th>
-                                <th class="text-center py-2 px-2 md:px-3 text-highlight">SmartSentinels</th>
+                                <th class="text-center py-2 px-2 md:px-3 text-primary">SmartSentinels</th>
                                 <th class="text-center py-2 px-2 md:px-3 text-gray-400">Wonderful AI</th>
                                 <th class="text-center py-2 px-2 md:px-3 text-gray-400">Sahara AI</th>
                             </tr>
@@ -1007,7 +1018,7 @@
                 </div>
                 
                 <div class="mt-4 md:mt-6 text-center">
-                    <p class="text-highlight font-semibold text-sm sm:text-base md:text-lg">SmartSentinels offers more features, better accuracy, and real utility — not just compute.</p>
+                    <p class="text-primary font-semibold text-sm sm:text-base md:text-lg">SmartSentinels offers more features, better accuracy, and real utility — not just compute.</p>
                 </div>
             </div>
         </div>
@@ -1016,41 +1027,41 @@
     <!-- Slide: AIDA Healthcare Agent Showcase -->
     <section class="slide bg-bg-dark" id="aida-showcase" data-index="6">
         <div class="slide-container text-center">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">AIDA: <span class="text-text-light">Healthcare AI Agent</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-primary">AIDA: <span class="text-text-light">Healthcare AI Agent</span></h2>
             <p class="text-xs sm:text-sm md:text-base text-gray-300 mb-4 md:mb-6 max-w-3xl mx-auto">
-                <strong class="text-highlight">A</strong>rtificial <strong class="text-highlight">I</strong>ntelligence for <strong class="text-highlight">D</strong>octors and <strong class="text-highlight">A</strong>ssistants — Our first vertical-specific AI agent, currently in alpha testing in Romania.
+                <strong class="text-primary">A</strong>rtificial <strong class="text-primary">I</strong>ntelligence for <strong class="text-primary">D</strong>octors and <strong class="text-primary">A</strong>ssistants — Our first vertical-specific AI agent, currently in alpha testing in Romania.
             </p>
 
             <!-- Revenue Philosophy Banner -->
-            <div class="bg-gradient-to-r from-highlight/20 to-purple-500/20 border border-highlight/50 p-3 md:p-4 rounded-lg md:rounded-xl mb-4 md:mb-6 max-w-4xl mx-auto">
+            <div class="bg-gradient-to-r from-highlight/20 to-purple-500/20 border border-primary/50 p-3 md:p-4 rounded-lg md:rounded-xl mb-4 md:mb-6 max-w-4xl mx-auto">
                 <p class="text-sm sm:text-base md:text-lg text-text-light font-medium mb-2">
-                    <i class="fas fa-quote-left text-highlight mr-2"></i>
-                    Behind every token should be a <strong class="text-highlight">legit business that generates revenue</strong>. This is why AIDA targets the Romanian market with <strong class="text-highlight">15,000+ medical offices, hospitals & clinics</strong>.
-                    <i class="fas fa-quote-right text-highlight ml-2"></i>
+                    <i class="fas fa-quote-left text-primary mr-2"></i>
+                    Behind every token should be a <strong class="text-primary">legit business that generates revenue</strong>. This is why AIDA targets the Romanian market with <strong class="text-primary">15,000+ medical offices, hospitals & clinics</strong>.
+                    <i class="fas fa-quote-right text-primary ml-2"></i>
                 </p>
                 <p class="text-xs sm:text-sm text-gray-400">
-                    <i class="fas fa-link text-highlight mr-1"></i>
-                    <strong class="text-text-light">Web2 Service → Web3 Backend:</strong> AIDA operates as a traditional SaaS for healthcare clients, while all AI compute is powered by SmartSentinels' <strong class="text-highlight">PoUW network</strong> — generating real token utility and revenue.
+                    <i class="fas fa-link text-primary mr-1"></i>
+                    <strong class="text-text-light">Web2 Service → Web3 Backend:</strong> AIDA operates as a traditional SaaS for healthcare clients, while all AI compute is powered by SmartSentinels' <strong class="text-primary">PoUW network</strong> — generating real token utility and revenue.
                 </p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
                 <!-- Features Card -->
                 <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl text-left">
-                    <h3 class="text-sm sm:text-base md:text-lg font-bold mb-3 md:mb-4 text-highlight flex items-center">
+                    <h3 class="text-sm sm:text-base md:text-lg font-bold mb-3 md:mb-4 text-primary flex items-center">
                         <i class="fas fa-stethoscope mr-2"></i> Key Features
                     </h3>
                     <ul class="space-y-2 md:space-y-3 text-gray-400 text-xs sm:text-sm">
                         <li class="flex items-start">
-                            <i class="fas fa-phone-alt text-highlight mr-2 mt-1"></i>
+                            <i class="fas fa-phone-alt text-primary mr-2 mt-1"></i>
                             <span><strong class="text-text-light">24/7 Reception</strong> — Voice & text handling for medical offices</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-calendar-check text-highlight mr-2 mt-1"></i>
+                            <i class="fas fa-calendar-check text-primary mr-2 mt-1"></i>
                             <span><strong class="text-text-light">Smart Scheduling</strong> — Automated appointment booking & management</span>
                         </li>
                         <li class="flex items-start">
-                            <i class="fas fa-bell text-highlight mr-2 mt-1"></i>
+                            <i class="fas fa-bell text-primary mr-2 mt-1"></i>
                             <span><strong class="text-text-light">Auto Reminders</strong> — Reduce no-shows with WhatsApp/SMS alerts</span>
                         </li>
                         <li class="flex items-start">
@@ -1066,17 +1077,17 @@
 
                 <!-- Impact & Status Card -->
                 <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl text-left">
-                    <h3 class="text-sm sm:text-base md:text-lg font-bold mb-3 md:mb-4 text-highlight flex items-center">
+                    <h3 class="text-sm sm:text-base md:text-lg font-bold mb-3 md:mb-4 text-primary flex items-center">
                         <i class="fas fa-chart-line mr-2"></i> Impact & Status
                     </h3>
                     
                     <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="bg-bg-dark p-3 rounded-lg text-center border border-highlight">
-                            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-highlight">80%</div>
+                        <div class="bg-bg-dark p-3 rounded-lg text-center border border-primary">
+                            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-primary">80%</div>
                             <div class="text-xs text-gray-400">Task Automation</div>
                         </div>
-                        <div class="bg-bg-dark p-3 rounded-lg text-center border border-highlight">
-                            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-highlight">24/7</div>
+                        <div class="bg-bg-dark p-3 rounded-lg text-center border border-primary">
+                            <div class="text-xl sm:text-2xl md:text-3xl font-bold text-primary">24/7</div>
                             <div class="text-xs text-gray-400">Availability</div>
                         </div>
                     </div>
@@ -1102,7 +1113,7 @@
             </div>
 
             <!-- Demo CTA -->
-            <div class="bg-highlight p-3 md:p-4 rounded-lg md:rounded-xl inline-block">
+            <div class="bg-primary p-3 md:p-4 rounded-lg md:rounded-xl inline-block">
                 <a href="https://aida-lac.vercel.app/" target="_blank" class="flex items-center gap-2 text-dark font-bold text-sm sm:text-base md:text-lg hover:opacity-80 transition">
                     <i class="fas fa-external-link-alt"></i>
                     Try Live Demo
@@ -1114,77 +1125,77 @@
     <!-- Slide 6: Traction & Roadmap (Key Milestones) -->
     <section class="slide bg-bg-dark" id="roadmap" data-index="6">
         <div class="slide-container">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">The <span class="text-text-light">Scaling</span> Roadmap & Traction</h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-primary">The <span class="text-text-light">Scaling</span> Roadmap & Traction</h2>
 
             <div class="relative max-w-4xl mx-auto">
                 <!-- Timeline Line -->
-                <div class="absolute left-1/2 -ml-0.5 w-1 h-full bg-highlight hidden md:block"></div>
+                <div class="absolute left-1/2 -ml-0.5 w-1 h-full bg-primary hidden md:block"></div>
                 
                 <!-- Milestones -->
                 <div class="space-y-3 md:space-y-4 lg:space-y-8">
                     
                     <!-- Immediate Goal (Q4 2024 Trigger) -->
                     <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
-                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-highlight md:border-r-4 md:border-l-0 text-xs sm:text-sm">
-                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight">Q4 2025: BNB Chain Launch</h4>
+                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-primary md:border-r-4 md:border-l-0 text-xs sm:text-sm">
+                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-primary">Q4 2025: BNB Chain Launch</h4>
                             <p class="text-gray-400">Project goes live on BNB Chain, deploy first audit AI agent, seed fundraising events.</p>
                         </div>
-                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-highlight border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-rocket text-xs md:text-sm ml-1"></i></div>
+                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-primary border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-rocket text-xs md:text-sm ml-1"></i></div>
                         <div class="md:col-span-1"></div>
                     </div>
 
                     <!-- Q1 2026 (Agent Integrations) -->
                     <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
                         <div class="md:col-span-1"></div>
-                        <div class="md:col-span-1 md:text-left p-2 md:p-3 lg:p-4 bg-highlight rounded-lg md:rounded-xl shadow-lg border-l-4 border-dark text-xs sm:text-sm">
+                        <div class="md:col-span-1 md:text-left p-2 md:p-3 lg:p-4 bg-primary rounded-lg md:rounded-xl shadow-lg border-l-4 border-dark text-xs sm:text-sm">
                             <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-dark">Q1 2026: AGENT INTEGRATIONS</h4>
                             <p class="text-dark font-semibold">Launch NFT collections, 10–20 edge agents activated, expand agent integrations.</p>
                         </div>
-                        <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-highlight border-4 border-bg-dark items-center justify-center text-dark"><i class="fas fa-plug text-xs md:text-sm text-dark"></i></div>
+                        <div class="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-primary border-4 border-bg-dark items-center justify-center text-dark"><i class="fas fa-plug text-xs md:text-sm text-dark"></i></div>
                     </div>
 
                     <!-- H1 2026 (Future Expansion) -->
                     <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
-                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-highlight md:border-r-4 md:border-l-0 text-xs sm:text-sm">
-                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight">Q2 2026: AGENT MARKETPLACE</h4>
+                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-primary md:border-r-4 md:border-l-0 text-xs sm:text-sm">
+                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-primary">Q2 2026: AGENT MARKETPLACE</h4>
                             <p class="text-gray-400">Launch beta marketplace, onboard 50+ devices, initiate halving phase H1.</p>
                         </div>
-                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-highlight border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-store text-xs md:text-sm ml-1"></i></div>
+                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-primary border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-store text-xs md:text-sm ml-1"></i></div>
                         <div class="md:col-span-1"></div>
                     </div>
 
                     <div class="relative md:grid md:grid-cols-2 md:gap-12 items-center">
-                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-highlight md:border-r-4 md:border-l-0 text-xs sm:text-sm">
-                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight">Q3 2026: SCALE</h4>
+                        <div class="md:col-span-1 md:text-right p-2 md:p-3 lg:p-4 bg-card rounded-lg md:rounded-xl shadow-lg border-l-4 border-primary md:border-r-4 md:border-l-0 text-xs sm:text-sm">
+                            <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-primary">Q3 2026: SCALE</h4>
                             <p class="text-gray-400">Scale to 100+ devices, onboard business clients.</p>
                         </div>
-                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-highlight border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-cogs text-xs md:text-sm ml-1"></i></div>
+                        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 w-6 md:w-8 h-6 md:h-8 rounded-full bg-primary border-4 border-bg-dark flex items-center justify-center text-dark"><i class="fas fa-cogs text-xs md:text-sm ml-1"></i></div>
                         <div class="md:col-span-1"></div>
                     </div>
                 </div>
             </div>
 
             <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mt-4 md:mt-6 lg:mt-8">
-                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Proven Progress in AI & Web3</h3>
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-primary">Proven Progress in AI & Web3</h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6 text-left">
                     <div>
-                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-highlight mb-2 md:mb-3">Key Achievements</h4>
+                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-primary mb-2 md:mb-3">Key Achievements</h4>
                         <ul class="space-y-1 md:space-y-2 text-gray-400 text-xs sm:text-sm">
-                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> Marketing campaigns live (Micro3, theMiracle)</li>
-                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> Smart contract audit agent surpassing Solidity Scan</li>
-                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> Context-aware AI (not scripts) - zero false positives</li>
-                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> Premium reports with IPFS upload & PDF download</li>
-                            <li class="flex items-center"><i class="fas fa-check-circle text-highlight mr-2"></i> AIDA healthcare agent in alpha (Romania)</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-2"></i> Marketing campaigns live (Micro3, theMiracle)</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-2"></i> Smart contract audit agent surpassing Solidity Scan</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-2"></i> Context-aware AI (not scripts) - zero false positives</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-2"></i> Premium reports with IPFS upload & PDF download</li>
+                            <li class="flex items-center"><i class="fas fa-check-circle text-primary mr-2"></i> AIDA healthcare agent in alpha (Romania)</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-highlight mb-2 md:mb-3">Upcoming Milestones</h4>
+                        <h4 class="text-xs sm:text-sm md:text-base font-bold text-primary mb-2 md:mb-3">Upcoming Milestones</h4>
                         <ul class="space-y-1 md:space-y-2 text-gray-400 text-xs sm:text-sm">
-                            <li class="flex items-center"><i class="fas fa-rocket text-highlight mr-2"></i> Q4 2025: Project goes live on BNB Chain</li>
-                            <li class="flex items-center"><i class="fas fa-users text-highlight mr-2"></i> Q1 2026: 10-20 edge agents</li>
-                            <li class="flex items-center"><i class="fas fa-globe text-highlight mr-2"></i> Q2 2026: Marketplace beta</li>
-                            <li class="flex items-center"><i class="fas fa-link text-highlight mr-2"></i> Q3 2026: Multi-chain expansion</li>
+                            <li class="flex items-center"><i class="fas fa-rocket text-primary mr-2"></i> Q4 2025: Project goes live on BNB Chain</li>
+                            <li class="flex items-center"><i class="fas fa-users text-primary mr-2"></i> Q1 2026: 10-20 edge agents</li>
+                            <li class="flex items-center"><i class="fas fa-globe text-primary mr-2"></i> Q2 2026: Marketplace beta</li>
+                            <li class="flex items-center"><i class="fas fa-link text-primary mr-2"></i> Q3 2026: Multi-chain expansion</li>
                         </ul>
                     </div>
                 </div>
@@ -1195,11 +1206,11 @@
     <!-- Slide 7: Tokenomics & Value Flywheel -->
     <section class="slide bg-bg-dark" id="tokenomics-flywheel" data-index="7">
         <div class="slide-container text-center">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">Tokenomics & <span class="text-text-light">Value Flywheel</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-primary">Tokenomics & <span class="text-text-light">Value Flywheel</span></h2>
 
             <!-- Token Distribution -->
             <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mb-3 md:mb-4 lg:mb-6">
-                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">SSTL Token Distribution</h3>
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-primary">SSTL Token Distribution</h3>
 
                 <!-- Distribution Bars -->
                 <div class="space-y-2 md:space-y-3 mb-4 md:mb-6">
@@ -1210,7 +1221,7 @@
                                 <div class="h-full bg-purple-500 rounded-full" style="width: 40%"></div>
                             </div>
                         </div>
-                        <span class="text-highlight font-bold w-10 md:w-12 text-right">40%</span>
+                        <span class="text-primary font-bold w-10 md:w-12 text-right">40%</span>
                     </div>
 
                     <div class="flex items-center justify-between text-xs sm:text-sm">
@@ -1220,7 +1231,7 @@
                                 <div class="h-full bg-green-500 rounded-full" style="width: 15%"></div>
                             </div>
                         </div>
-                        <span class="text-highlight font-bold w-10 md:w-12 text-right">15%</span>
+                        <span class="text-primary font-bold w-10 md:w-12 text-right">15%</span>
                     </div>
 
                     <div class="flex items-center justify-between text-xs sm:text-sm">
@@ -1230,7 +1241,7 @@
                                 <div class="h-full bg-yellow-400 rounded-full" style="width: 15%"></div>
                             </div>
                         </div>
-                        <span class="text-highlight font-bold w-10 md:w-12 text-right">15%</span>
+                        <span class="text-primary font-bold w-10 md:w-12 text-right">15%</span>
                     </div>
 
                     <div class="flex items-center justify-between text-xs sm:text-sm">
@@ -1240,7 +1251,7 @@
                                 <div class="h-full bg-orange-500 rounded-full" style="width: 10%"></div>
                             </div>
                         </div>
-                        <span class="text-highlight font-bold w-10 md:w-12 text-right">10%</span>
+                        <span class="text-primary font-bold w-10 md:w-12 text-right">10%</span>
                     </div>
 
                     <div class="flex items-center justify-between text-xs sm:text-sm">
@@ -1250,7 +1261,7 @@
                                 <div class="h-full bg-red-500 rounded-full" style="width: 10%"></div>
                             </div>
                         </div>
-                        <span class="text-highlight font-bold w-10 md:w-12 text-right">10%</span>
+                        <span class="text-primary font-bold w-10 md:w-12 text-right">10%</span>
                     </div>
 
                     <div class="flex items-center justify-between text-xs sm:text-sm">
@@ -1260,13 +1271,13 @@
                                 <div class="h-full bg-cyan-500 rounded-full" style="width: 10%"></div>
                             </div>
                         </div>
-                        <span class="text-highlight font-bold w-10 md:w-12 text-right">10%</span>
+                        <span class="text-primary font-bold w-10 md:w-12 text-right">10%</span>
                     </div>
                 </div>
 
                 <!-- Vesting Schedule -->
                 <div class="border-t border-gray-700 pt-3 md:pt-4">
-                    <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-highlight mb-2 md:mb-3">Vesting Schedule</h4>
+                    <h4 class="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-primary mb-2 md:mb-3">Vesting Schedule</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
                         <div class="bg-gray-800 p-2 rounded">
                             <span class="text-purple-400 font-medium">PoUW Mining:</span>
@@ -1297,19 +1308,19 @@
 
                 <!-- Token Info -->
                 <div class="text-center mt-3 md:mt-4 text-xs sm:text-sm text-gray-400">
-                    <strong class="text-highlight">SSTL Token</strong> • BEP-20 • 100M Total Supply • <strong class="text-highlight">Deflationary:</strong> 10% Burn per Emission
+                    <strong class="text-primary">SSTL Token</strong> • BEP-20 • 100M Total Supply • <strong class="text-primary">Deflationary:</strong> 10% Burn per Emission
                 </div>
             </div>
 
             <!-- Value Flywheel -->
             <div class="bg-card p-4 md:p-6 rounded-xl shadow-2xl">
-                <h3 class="text-base sm:text-lg md:text-xl font-bold mb-4 md:mb-6 text-highlight">The Reflexive Loop: Value Flywheel</h3>
+                <h3 class="text-base sm:text-lg md:text-xl font-bold mb-4 md:mb-6 text-primary">The Reflexive Loop: Value Flywheel</h3>
 
                 <div class="text-center">
-                    <div class="inline-block p-4 md:p-6 bg-highlight rounded-full mb-4">
+                    <div class="inline-block p-4 md:p-6 bg-primary rounded-full mb-4">
                         <i class="fas fa-sync-alt text-3xl md:text-4xl text-dark animate-spin" style="animation-duration: 3s;"></i>
                     </div>
-                    <h4 class="text-lg md:text-xl font-bold text-highlight mb-4">More AI Tasks → More $SSTL Demand → Higher Staking → Token Scarcity</h4>
+                    <h4 class="text-lg md:text-xl font-bold text-primary mb-4">More AI Tasks → More $SSTL Demand → Higher Staking → Token Scarcity</h4>
                     <p class="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
                         As network usage grows, demand for $SSTL increases for payments and staking, creating scarcity through burns and lockups, driving value appreciation and attracting more participants.
                     </p>
@@ -1321,13 +1332,13 @@
     <!-- Slide 8: Business Model & Financial Path -->
     <section class="slide bg-bg-dark" id="tokenomics" data-index="8">
         <div class="slide-container text-center">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-highlight">The Business <span class="text-text-light">Model</span></h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-primary">The Business <span class="text-text-light">Model</span></h2>
 
             <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mb-3 md:mb-4 lg:mb-6">
-                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 text-highlight">How We Make Money</h3>
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 text-primary">How We Make Money</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     <div class="text-left">
-                        <h4 class="font-bold text-highlight mb-1 md:mb-2 text-xs sm:text-sm md:text-base">Services Sold</h4>
+                        <h4 class="font-bold text-primary mb-1 md:mb-2 text-xs sm:text-sm md:text-base">Services Sold</h4>
                         <ul class="text-gray-400 space-y-0.5 text-xs sm:text-sm leading-relaxed">
                             <li>• NFTs & iNFTs</li>
                             <li>• Smart contract audits</li>
@@ -1337,7 +1348,7 @@
                         </ul>
                     </div>
                     <div class="text-left">
-                        <h4 class="font-bold text-highlight mb-1 md:mb-2 text-xs sm:text-sm md:text-base">Target Clients & Pricing</h4>
+                        <h4 class="font-bold text-primary mb-1 md:mb-2 text-xs sm:text-sm md:text-base">Target Clients & Pricing</h4>
                         <ul class="text-gray-400 space-y-0.5 text-xs sm:text-sm leading-relaxed">
                             <li>• B2B: Web3 & enterprises</li>
                             <li>• NFTs/iNFTs: $50-200 each</li>
@@ -1349,7 +1360,7 @@
                 </div>
             </div>
 
-            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-highlight">Projected Revenue: <span class="text-text-light">$30M by Year 3</span></h3>
+            <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 lg:mb-6 text-primary">Projected Revenue: <span class="text-text-light">$30M by Year 3</span></h3>
 
             <div class="bar-chart-container mt-4 md:mt-6 lg:mt-8">
                 <!-- Bar 1 -->
@@ -1386,12 +1397,12 @@
     <!-- Slide 9: The Ask & Use of Funds -->
     <section class="slide bg-bg-dark" id="financials" data-index="9">
         <div class="slide-container">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">The <span class="text-text-light">Ask</span> & Capital Deployment</h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-primary">The <span class="text-text-light">Ask</span> & Capital Deployment</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
                 <!-- The Ask -->
-                <div class="p-3 md:p-4 lg:p-6 bg-card rounded-lg md:rounded-xl shadow-2xl border-l-4 border-highlight">
-                    <p class="text-xs sm:text-sm font-semibold uppercase text-highlight mb-1 md:mb-2">Raising $7.5M Seed (Equity/Token hybrid) at $100M FDV with 2.5-year vesting</p>
+                <div class="p-3 md:p-4 lg:p-6 bg-card rounded-lg md:rounded-xl shadow-2xl border-l-4 border-primary">
+                    <p class="text-xs sm:text-sm font-semibold uppercase text-primary mb-1 md:mb-2">Raising $7.5M Seed (Equity/Token hybrid) at $100M FDV with 2.5-year vesting</p>
                     <h3 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-text-light mb-2 md:mb-3">$7.5M USD</h3>
                     <p class="text-xs sm:text-sm md:text-base text-gray-400 mb-2">
                         To scale operations and capture early market share over the next 12-18 months.
@@ -1402,24 +1413,24 @@
                 </div>
                 
                 <!-- Use of Funds -->
-                <div class="p-3 md:p-4 lg:p-6 bg-card rounded-lg md:rounded-xl shadow-2xl border-l-4 border-highlight">
-                    <p class="text-xs sm:text-sm font-semibold uppercase text-highlight mb-2 md:mb-3">Capital Deployment</p>
+                <div class="p-3 md:p-4 lg:p-6 bg-card rounded-lg md:rounded-xl shadow-2xl border-l-4 border-primary">
+                    <p class="text-xs sm:text-sm font-semibold uppercase text-primary mb-2 md:mb-3">Capital Deployment</p>
                     <ul class="space-y-1 md:space-y-2 lg:space-y-3 text-gray-400">
                         <li class="flex justify-between items-center text-xs sm:text-sm">
-                            <span class="font-bold"><i class="fas fa-server mr-1 sm:mr-2 text-highlight"></i> Hardware Expansion</span>
-                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">40%</span>
+                            <span class="font-bold"><i class="fas fa-server mr-1 sm:mr-2 text-primary"></i> Hardware Expansion</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-primary">40%</span>
                         </li>
                         <li class="flex justify-between items-center text-xs sm:text-sm">
-                            <span class="font-bold"><i class="fas fa-code mr-1 sm:mr-2 text-highlight"></i> Platform Development</span>
-                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">30%</span>
+                            <span class="font-bold"><i class="fas fa-code mr-1 sm:mr-2 text-primary"></i> Platform Development</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-primary">30%</span>
                         </li>
                         <li class="flex justify-between items-center text-xs sm:text-sm">
-                            <span class="font-bold"><i class="fas fa-chart-line mr-1 sm:mr-2 text-highlight"></i> Token Listings</span>
-                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">15%</span>
+                            <span class="font-bold"><i class="fas fa-chart-line mr-1 sm:mr-2 text-primary"></i> Token Listings</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-primary">15%</span>
                         </li>
                         <li class="flex justify-between items-center text-xs sm:text-sm">
-                            <span class="font-bold"><i class="fas fa-bullhorn mr-1 sm:mr-2 text-highlight"></i> Marketing</span>
-                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-highlight">15%</span>
+                            <span class="font-bold"><i class="fas fa-bullhorn mr-1 sm:mr-2 text-primary"></i> Marketing</span>
+                            <span class="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black text-primary">15%</span>
                         </li>
                     </ul>
                 </div>
@@ -1430,99 +1441,99 @@
     <!-- Slide 10: The Ask & Use of Funds -->
     <section class="slide bg-bg-dark" id="ask" data-index="10">
         <div class="slide-container text-center">
-            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-highlight">The <span class="text-text-light">Super</span> Team</h2>
+            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold mb-3 md:mb-4 lg:mb-6 text-center text-primary">The <span class="text-text-light">Super</span> Team</h2>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
                 <!-- Andrei Galea -->
-                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-highlight">
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-primary">
                     <img src="/assets/founder-1-1.png" alt="Andrei Galea" class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full mx-auto mb-2 md:mb-3 object-cover">
                     <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-text-light">Andrei Galea</h3>
-                    <p class="text-highlight font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Founder & Full-Stack Web3 Visionary</p>
+                    <p class="text-primary font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Founder & Full-Stack Web3 Visionary</p>
                     <p class="text-gray-400 text-xs leading-relaxed">4 years in software development, 4 years in blockchain & AI.</p>
                     <div class="mt-2 flex justify-center space-x-2">
-                        <a href="https://github.com/C00K1E-dev" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-github"></i></a>
-                        <a href="https://www.linkedin.com/in/andrei-galea" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
-                        <a href="https://x.com/Andrei___G" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-twitter"></i></a>
+                        <a href="https://github.com/C00K1E-dev" target="_blank" class="text-primary hover:text-white text-xs"><i class="fab fa-github"></i></a>
+                        <a href="https://www.linkedin.com/in/andrei-galea" target="_blank" class="text-primary hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://x.com/Andrei___G" target="_blank" class="text-primary hover:text-white text-xs"><i class="fab fa-twitter"></i></a>
                     </div>
                 </div>
                 <!-- Darius Galea -->
-                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-highlight">
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-primary">
                     <img src="/assets/founder-1-2.png" alt="Darius Galea" class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full mx-auto mb-2 md:mb-3 object-cover">
                     <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-text-light">Darius Galea</h3>
-                    <p class="text-highlight font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Co-founder & Logistics Operations</p>
+                    <p class="text-primary font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Co-founder & Logistics Operations</p>
                     <p class="text-gray-400 text-xs leading-relaxed">5 years in operations and logistics. Expertise in hardware procurement and supply chain scaling for DePIN.</p>
                     <div class="mt-2 flex justify-center space-x-2">
-                        <a href="https://www.linkedin.com/in/darius-galea" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://www.linkedin.com/in/darius-galea" target="_blank" class="text-primary hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
                     </div>
                 </div>
                 <!-- David Nagy Elek -->
-                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-highlight sm:col-span-2 lg:col-span-1">
+                <div class="p-3 sm:p-4 md:p-5 lg:p-6 rounded-lg md:rounded-xl bg-card border-t-4 border-primary sm:col-span-2 lg:col-span-1">
                     <img src="/assets/cmo.png" alt="David Nagy Elek" class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full mx-auto mb-2 md:mb-3 object-cover">
                     <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-text-light">David Nagy Elek</h3>
-                    <p class="text-highlight font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Business Development & Strategy</p>
+                    <p class="text-primary font-semibold mb-1 md:mb-2 text-xs sm:text-sm">Business Development & Strategy</p>
                     <p class="text-gray-400 text-xs leading-relaxed">7 years in B2B development. Strong network in Web3 and enterprise partnerships.</p>
                     <div class="mt-2 flex justify-center space-x-2">
-                        <a href="https://www.linkedin.com/in/david-nagy-elek" target="_blank" class="text-highlight hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
+                        <a href="https://www.linkedin.com/in/david-nagy-elek" target="_blank" class="text-primary hover:text-white text-xs"><i class="fab fa-linkedin"></i></a>
                     </div>
                 </div>
             </div>
 
             <div class="bg-card p-3 md:p-4 lg:p-6 rounded-lg md:rounded-xl shadow-2xl mt-3 md:mt-4 lg:mt-6">
-                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 text-highlight">Partnerships</h3>
+                <h3 class="text-sm sm:text-base md:text-lg lg:text-xl font-bold mb-3 md:mb-4 text-primary">Partnerships</h3>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 lg:gap-4">
-                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-primary">
                         <div class="flex items-center justify-center mb-1">
-                            <i class="fas fa-magic text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm">theMiracle</h4>
+                            <i class="fas fa-magic text-sm sm:text-base md:text-lg text-primary mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm">theMiracle</h4>
                         </div>
                         <p class="text-gray-400 text-xs">Marketing Campaign Partner</p>
                     </div>
                     
-                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-primary">
                         <div class="flex items-center justify-center mb-1">
-                            <i class="fas fa-cubes text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm">Micro3</h4>
+                            <i class="fas fa-cubes text-sm sm:text-base md:text-lg text-primary mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm">Micro3</h4>
                         </div>
                         <p class="text-gray-400 text-xs">Airdrop & Quest Campaign</p>
                     </div>
                     
-                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-primary">
                         <div class="flex items-center justify-center mb-1">
-                            <i class="fas fa-cube text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm">Studio Blockchain</h4>
+                            <i class="fas fa-cube text-sm sm:text-base md:text-lg text-primary mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm">Studio Blockchain</h4>
                         </div>
                         <p class="text-gray-400 text-xs">AI Agent Integration</p>
                     </div>
 
-                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-primary">
                         <div class="flex items-center justify-center mb-1">
-                            <i class="fab fa-bitcoin text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm">Binance Square</h4>
+                            <i class="fab fa-bitcoin text-sm sm:text-base md:text-lg text-primary mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm">Binance Square</h4>
                         </div>
                         <p class="text-gray-400 text-xs mb-1">500+ supporters in 3 weeks</p>
                     </div>
                     
-                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-primary">
                         <div class="flex items-center justify-center mb-1">
-                            <i class="fas fa-bullhorn text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm">BNB Chain</h4>
+                            <i class="fas fa-bullhorn text-sm sm:text-base md:text-lg text-primary mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm">BNB Chain</h4>
                         </div>
                         <p class="text-gray-400 text-xs">Marketing Support upon MAINNET</p>
                     </div>
                     
-                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-primary">
                         <div class="flex items-center justify-center mb-1">
-                            <i class="fas fa-server text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm">Ratio1.ai</h4>
+                            <i class="fas fa-server text-sm sm:text-base md:text-lg text-primary mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm">Ratio1.ai</h4>
                         </div>
                         <p class="text-gray-400 text-xs">Computing Power</p>
                     </div>
 
-                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-highlight">
+                    <div class="bg-bg-dark p-2 sm:p-3 rounded-lg border border-primary">
                         <div class="flex items-center justify-center mb-1">
-                            <i class="fas fa-user-astronaut text-sm sm:text-base md:text-lg text-highlight mr-1 md:mr-2"></i>
-                            <h4 class="font-bold text-highlight text-xs sm:text-sm">BNB Martians</h4>
+                            <i class="fas fa-user-astronaut text-sm sm:text-base md:text-lg text-primary mr-1 md:mr-2"></i>
+                            <h4 class="font-bold text-primary text-xs sm:text-sm">BNB Martians</h4>
                         </div>
                         <p class="text-gray-400 text-xs">Founder Member</p>
                     </div>
@@ -1533,9 +1544,9 @@
 
     <!-- Slide 11: The Team -->
     <section class="slide bg-bg-dark" id="team" data-index="11">
-        <div class="slide-container text-center p-4 sm:p-6 md:p-12 rounded-xl shadow-2xl bg-card border-t-8 border-highlight">
+        <div class="slide-container text-center p-4 sm:p-6 md:p-12 rounded-xl shadow-2xl bg-card border-t-8 border-primary">
             <h2 class="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black mb-3 md:mb-4 leading-tight text-text-light">
-                INVEST IN <span class="text-highlight">UTILITY.</span> INVEST IN <span class="text-highlight">VALUE.</span>
+                INVEST IN <span class="text-primary">UTILITY.</span> INVEST IN <span class="text-primary">VALUE.</span>
             </h2>
             <p class="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 mb-3 md:mb-4 lg:mb-6 xl:mb-8 font-light px-2">
                 The next era of Web3 is driven by real-world value. SmartSentinels is ready to lead.
@@ -1543,7 +1554,7 @@
             <p class="text-xs sm:text-sm md:text-lg text-gray-300 mb-4 md:mb-8 font-light px-2">
                 The Seed round is live. Join SmartSentinels in building the world’s first deflationary AI mining economy.
             </p>
-            <a href="mailto:office@smartsentinels.net" onclick="event.stopPropagation();" class="inline-block px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 text-xs sm:text-sm md:text-base font-bold text-dark bg-highlight rounded-full hover:bg-white transition duration-300 transform hover:scale-105 shadow-xl">
+            <a href="mailto:office@smartsentinels.net" onclick="event.stopPropagation();" class="inline-block px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 text-xs sm:text-sm md:text-base font-bold text-dark bg-primary rounded-full hover:bg-white transition duration-300 transform hover:scale-105 shadow-xl">
                 SCHEDULE FOLLOW-UP & LIVE DEMO
             </a>
 
@@ -1551,13 +1562,13 @@
                 <p class="text-xs sm:text-sm md:text-base font-semibold">www.smartsentinels.net</p>
                 <p class="text-xs">andrei@smartsentinels.net | office@smartsentinels.net</p>
                 <div class="space-x-2 sm:space-x-3 mt-2 text-text-light">
-                    <a href="https://x.com/SmartSentinels_" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-highlight transition">
+                    <a href="https://x.com/SmartSentinels_" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-primary transition">
                         <i class="fab fa-x-twitter text-sm sm:text-base md:text-lg"></i>
                     </a>
-                    <a href="https://t.me/D3y0o" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-highlight transition">
+                    <a href="https://t.me/D3y0o" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-primary transition">
                         <i class="fab fa-telegram-plane text-sm sm:text-base md:text-lg"></i>
                     </a>
-                    <a href="https://www.linkedin.com/in/andrei-galea" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-highlight transition">
+                    <a href="https://www.linkedin.com/in/andrei-galea" target="_blank" rel="noopener noreferrer" class="inline-block hover:text-primary transition">
                         <i class="fab fa-linkedin-in text-sm sm:text-base md:text-lg"></i>
                     </a>
                 </div>

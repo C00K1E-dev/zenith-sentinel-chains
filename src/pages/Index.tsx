@@ -152,50 +152,59 @@ const Index = () => {
               {/* Hero Content */}
               <div className="space-y-8 order-2 lg:order-1">
                 <div className="space-y-6">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-medium text-primary">Powered by ERC-7857 Intelligent NFTs</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      <span className="text-sm font-medium text-primary">Powered by ERC-7857 Intelligent NFTs</span>
+                    </div>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 backdrop-blur-sm">
+                      <Network className="w-4 h-4 text-accent" />
+                      <span className="text-sm font-medium text-accent">x402 Protocol</span>
+                    </div>
                   </div>
                   
                   <h1 className="text-5xl md:text-6xl xl:text-7xl font-display font-bold leading-tight">
-                    <span className="block text-foreground">Decentralized</span>
+                    <span className="block text-foreground">SmartSentinels</span>
                     <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                      AI Workforce
+                      Decentralized AI Agents Powered by Proof of Useful Work
                     </span>
                   </h1>
                   
                   <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl">
-                    Transform idle computing power into valuable AI services. Earn rewards through Proof of Useful Work.
+                    AI Agents. Real Work. Real Rewards.
+                  </p>
+                  
+                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl">
+                    Join the revolution where AI agents perform real work, devices earn rewards, and you hold the key to the future of decentralized intelligence.
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Link to="/hub">
                     <Button size="lg" className="group h-14 px-8 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-primary/25 transition-all duration-300">
-                      Get Started
+                      Join the Network
                       <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-                  <Link to="/documents">
-                    <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-primary/30 hover:bg-primary/5 transition-all duration-300">
-                      View Documentation
                     </Button>
                   </Link>
                 </div>
 
                 {/* Key Stats */}
-                <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border/50">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8 border-t border-border/50">
                   <div className="space-y-1">
                     <div className="text-3xl font-display font-bold text-primary">100M</div>
                     <div className="text-sm text-muted-foreground">SSTL Supply</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-3xl font-display font-bold text-secondary">40%</div>
+                    <div className="text-3xl font-display font-bold text-indigo-400">40%</div>
                     <div className="text-sm text-muted-foreground">PoUW Rewards</div>
                   </div>
                   <div className="space-y-1">
-                    <div className="text-3xl font-display font-bold text-accent">ERC-7857</div>
+                    <div className="text-3xl font-display font-bold text-secondary">ERC-7857</div>
                     <div className="text-sm text-muted-foreground">iNFT Standard</div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-3xl font-display font-bold text-accent">x402</div>
+                    <div className="text-sm text-muted-foreground">Protocol</div>
                   </div>
                 </div>
               </div>
@@ -223,15 +232,15 @@ const Index = () => {
             <div className="text-center mb-16 space-y-4">
               <h2 className="text-4xl md:text-5xl font-display font-bold">
                 <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                  Revolutionary AI Platform
+                  A New Class of Digital Ownership
                 </span>
               </h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                A new paradigm where AI services generate real value and participants earn fair rewards
+                SmartSentinels delivers verifiable, low-cost AI services for businesses—from smart contract audits to intelligent assistants—while rewarding contributors with SSTL tokens. Edge-native, deflationary, and built for real impact.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
               {/* Feature Card 1 */}
               <div className="glass-card-hover p-8 space-y-4 group">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -276,13 +285,49 @@ const Index = () => {
                 </p>
               </div>
             </div>
+
+            {/* New Enhanced Section */}
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Why It Matters */}
+              <div className="glass-card-hover p-8 space-y-4 group">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Zap className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-xl font-display font-semibold">Why It Matters</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Instead of wasting energy like traditional mining, SmartSentinels puts computation to work. Investors back real-world utility, and contributors can stake hardware or mint NFTs to share in the generated rewards.
+                </p>
+              </div>
+
+              {/* A New Model */}
+              <div className="glass-card-hover p-8 space-y-4 group">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Layers className="w-7 h-7 text-secondary" />
+                </div>
+                <h3 className="text-xl font-display font-semibold">A New Model</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Our ecosystem ties together AI, blockchain, and hardware ownership into one seamless experience—where every second of useful work by a Sentinel brings measurable value back to the community.
+                </p>
+              </div>
+
+              {/* Our Mission & Vision */}
+              <div className="glass-card-hover p-8 space-y-4 group">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Target className="w-7 h-7 text-accent" />
+                </div>
+                <h3 className="text-xl font-display font-semibold">Our Mission & Vision</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  To unlock the real-world value of AI by turning devices into autonomous workers. We empower contributors to earn through purpose-driven mining and give businesses access to decentralized, on-demand intelligence.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 
         {/* ERC-7857 Showcase Section */}
         <section className="relative z-10 py-20 lg:py-32">
           <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16">
-            <div className="glass-card p-10 lg:p-16 border-primary/20 relative overflow-hidden">
+            <div className="glass-card-hover p-10 lg:p-16 border-primary/20 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl" />
               
               <div className="relative grid lg:grid-cols-2 gap-12 items-center">
@@ -370,7 +415,7 @@ const Index = () => {
         {/* Token Information - Modern Card Design */}
         <section className="relative z-10 py-20 lg:py-32">
           <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16">
-            <div className="glass-card p-10 lg:p-16">
+            <div className="glass-card-hover p-10 lg:p-16">
               <div className="grid lg:grid-cols-2 gap-12 items-center mb-12">
                 <div className="space-y-6">
                   <h2 className="text-4xl lg:text-5xl font-display font-bold">
@@ -590,21 +635,19 @@ const Index = () => {
         {/* Final CTA */}
         <section className="relative z-10 py-20 lg:py-32">
           <div className="w-full max-w-[1600px] mx-auto px-6 lg:px-12 xl:px-16">
-            <div className="glass-card p-12 lg:p-20 text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10" />
-              <div className="relative space-y-8">
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold">
-                  <span className="block mb-2">Ready to Join the</span>
+            <div className="glass-card-hover p-12 lg:p-20 text-center relative overflow-hidden">
+              <div className="relative">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-8">
                   <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                    AI Revolution?
+                    Join the Decentralized Workforce Revolution
                   </span>
                 </h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                  Start earning rewards today by contributing to the decentralized AI workforce
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
+                  Where AI works, devices earn, and you hold the key.
                 </p>
                 <Link to="/hub">
-                  <Button size="lg" className="h-16 px-12 text-lg bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-2xl hover:shadow-primary/25 transition-all duration-300 group">
-                    Launch App
+                  <Button size="lg" className="h-16 px-12 text-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-2xl hover:shadow-primary/25 transition-all duration-300 group">
+                    Get Started Now
                     <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
                   </Button>
                 </Link>

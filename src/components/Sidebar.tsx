@@ -159,7 +159,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
               alt="SmartSentinels Logo"
               className="w-8 h-8"
             />
-            <h2 className="font-display font-bold text-lg bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent whitespace-nowrap">SmartSentinels</h2>
+            <h2 className="font-display font-bold text-lg text-white whitespace-nowrap">SmartSentinels</h2>
           </div>
         )}
         {collapsed && (

@@ -26,7 +26,7 @@
     --danger: 0 72% 51%;
     
     --muted: 220 20% 14%;
-    --muted-foreground: 220 10% 65%;
+    --muted-foreground: 220 10% 75%;
     
     --card: 220 23% 9%;
     --card-foreground: 220 10% 97%;
@@ -73,7 +73,7 @@
     --accent: 170 70% 50%;
     --accent-foreground: 220 25% 6%;
     --muted: 220 20% 14%;
-    --muted-foreground: 220 10% 65%;
+    --muted-foreground: 220 10% 75%;
     --card: 220 23% 9%;
     --card-foreground: 220 10% 97%;
     --popover: 220 23% 9%;
@@ -256,6 +256,100 @@
   @keyframes gradient-shift-reverse {
     0%, 100% { opacity: 0.3; transform: scale(1) rotate(0deg); }
     50% { opacity: 0.5; transform: scale(1.05) rotate(-180deg); }
+  }
+
+  /* Grid Dot Animations - Moving along grid lines */
+  @keyframes grid-move-horizontal {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(100vw - 100%)); }
+  }
+
+  @keyframes grid-move-vertical {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(calc(100vh - 100%)); }
+  }
+
+  @keyframes grid-move-horizontal-reverse {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-100vw + 100%)); }
+  }
+
+  @keyframes grid-move-vertical-reverse {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(calc(-100vh + 100%)); }
+  }
+
+  .animate-grid-horizontal {
+    animation: grid-move-horizontal 20s linear infinite;
+  }
+
+  .animate-grid-horizontal-slow {
+    animation: grid-move-horizontal 30s linear infinite;
+  }
+
+  .animate-grid-horizontal-reverse {
+    animation: grid-move-horizontal-reverse 25s linear infinite;
+  }
+
+  .animate-grid-vertical {
+    animation: grid-move-vertical 18s linear infinite;
+  }
+
+  .animate-grid-vertical-slow {
+    animation: grid-move-vertical 28s linear infinite;
+  }
+
+  .animate-grid-vertical-reverse {
+    animation: grid-move-vertical-reverse 22s linear infinite;
+  }
+
+  /* Grid dot trail effect - smooth fading lines */
+  .grid-dot-trail::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(to left, currentColor, transparent);
+    opacity: 0.6;
+  }
+
+  .grid-dot-trail-vertical::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 80px;
+    background: linear-gradient(to top, currentColor, transparent);
+    opacity: 0.6;
+  }
+
+  .grid-dot-trail-horizontal-reverse::before {
+    content: '';
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(to right, currentColor, transparent);
+    opacity: 0.6;
+  }
+
+  .grid-dot-trail-vertical-reverse::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 80px;
+    background: linear-gradient(to bottom, currentColor, transparent);
+    opacity: 0.6;
   }
   
   /* NFT Collections Styles */

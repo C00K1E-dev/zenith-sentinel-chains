@@ -1371,7 +1371,7 @@ const SidebarAirdrop = memo(() => {
             </div>
 
             {/* How It Works - Informative Card - Moved under tasks */}
-            <Card className={styles.infoCard} style={{ borderColor: 'rgba(248, 244, 66, 0.3)', backgroundColor: 'rgba(248, 244, 66, 0.05)', marginTop: '1.5rem' }}>
+            <Card className={styles.infoCard} style={{ borderColor: 'hsl(220, 90%, 56%, 0.3)', backgroundColor: 'hsl(220, 90%, 56%, 0.05)', marginTop: '1.5rem' }}>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
                   <Award className="text-primary" size={24} />
@@ -1382,7 +1382,7 @@ const SidebarAirdrop = memo(() => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {/* Step 1 */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'hsl(220, 90%, 56%, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'hsl(220, 90%, 56%)' }}>
                       1
                     </div>
                     <div style={{ flex: 1 }}>
@@ -1395,7 +1395,7 @@ const SidebarAirdrop = memo(() => {
 
                   {/* Step 2 */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'hsl(280, 60%, 60%, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'hsl(280, 60%, 60%)' }}>
                       2
                     </div>
                     <div style={{ flex: 1 }}>
@@ -1408,7 +1408,7 @@ const SidebarAirdrop = memo(() => {
 
                   {/* Step 3 */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'hsl(170, 70%, 50%, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'hsl(170, 70%, 50%)' }}>
                       3
                     </div>
                     <div style={{ flex: 1 }}>
@@ -1421,7 +1421,7 @@ const SidebarAirdrop = memo(() => {
 
                   {/* Step 4 */}
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'rgba(248, 244, 66, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--primary)' }}>
+                    <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'hsl(220, 90%, 56%, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'hsl(220, 90%, 56%)' }}>
                       4
                     </div>
                     <div style={{ flex: 1 }}>
@@ -1433,7 +1433,7 @@ const SidebarAirdrop = memo(() => {
                   </div>
 
                   {/* Important Notes */}
-                  <div style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'rgba(248, 244, 66, 0.1)', borderRadius: '8px', borderLeft: '3px solid var(--primary)' }}>
+                  <div style={{ marginTop: '0.5rem', padding: '0.75rem', backgroundColor: 'hsl(220, 90%, 56%, 0.1)', borderRadius: '8px', borderLeft: '3px solid hsl(220, 90%, 56%)' }}>
                     <p style={{ fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--foreground)' }}>
                       📌 Important Notes:
                     </p>

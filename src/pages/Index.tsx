@@ -95,45 +95,46 @@ const Index = () => {
             
             {/* 4K resolution coverage - Extended right side (up to 3840px) */}
             <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-secondary" style={{ left: '2040px', top: '0', animationDelay: '4s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical opacity-55 grid-dot-trail-vertical text-primary" style={{ left: '2160px', top: '0', animationDelay: '6s' }} />
             <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-accent" style={{ left: '2280px', top: '0', animationDelay: '10s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical opacity-55 grid-dot-trail-vertical text-secondary" style={{ left: '2400px', top: '0', animationDelay: '14s' }} />
             <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-primary" style={{ left: '2520px', top: '0', animationDelay: '7s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-vertical opacity-55 grid-dot-trail-vertical text-accent" style={{ left: '2640px', top: '0', animationDelay: '11s' }} />
             <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-secondary" style={{ left: '2760px', top: '0', animationDelay: '16s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical opacity-55 grid-dot-trail-vertical text-primary" style={{ left: '2880px', top: '0', animationDelay: '5s' }} />
             <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-accent" style={{ left: '3000px', top: '0', animationDelay: '13s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical opacity-55 grid-dot-trail-vertical text-secondary" style={{ left: '3120px', top: '0', animationDelay: '9s' }} />
             <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-primary" style={{ left: '3240px', top: '0', animationDelay: '18s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-vertical opacity-55 grid-dot-trail-vertical text-accent" style={{ left: '3360px', top: '0', animationDelay: '15s' }} />
             <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-secondary" style={{ left: '3480px', top: '0', animationDelay: '21s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical opacity-55 grid-dot-trail-vertical text-primary" style={{ left: '3600px', top: '0', animationDelay: '17s' }} />
             <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-vertical opacity-50 grid-dot-trail-vertical text-accent" style={{ left: '3720px', top: '0', animationDelay: '20s' }} />
             
             {/* 4K - Bottom to top animations */}
             <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical-reverse opacity-55 grid-dot-trail-vertical-reverse text-secondary" style={{ left: '2100px', bottom: '0', animationDelay: '22s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical-reverse opacity-50 grid-dot-trail-vertical-reverse text-primary" style={{ left: '2220px', bottom: '0', animationDelay: '24s' }} />
             <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-vertical-reverse opacity-55 grid-dot-trail-vertical-reverse text-accent" style={{ left: '2460px', bottom: '0', animationDelay: '26s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical-reverse opacity-50 grid-dot-trail-vertical-reverse text-secondary" style={{ left: '2700px', bottom: '0', animationDelay: '28s' }} />
             <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical-reverse opacity-55 grid-dot-trail-vertical-reverse text-primary" style={{ left: '2940px', bottom: '0', animationDelay: '23s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-vertical-reverse opacity-50 grid-dot-trail-vertical-reverse text-accent" style={{ left: '3180px', bottom: '0', animationDelay: '25s' }} />
             <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-vertical-reverse opacity-55 grid-dot-trail-vertical-reverse text-secondary" style={{ left: '3420px', bottom: '0', animationDelay: '27s' }} />
             <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-vertical-reverse opacity-50 grid-dot-trail-vertical-reverse text-primary" style={{ left: '3660px', bottom: '0', animationDelay: '29s' }} />
             
             {/* 4K - Horizontal dots (left to right and right to left) */}
             <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-accent" style={{ left: '0', top: '600px', animationDelay: '30s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal opacity-50 grid-dot-trail-horizontal text-secondary" style={{ left: '0', top: '660px', animationDelay: '32s' }} />
             <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-primary" style={{ left: '0', top: '900px', animationDelay: '34s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal opacity-50 grid-dot-trail-horizontal text-accent" style={{ left: '0', top: '960px', animationDelay: '36s' }} />
             <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-secondary" style={{ left: '0', top: '1020px', animationDelay: '38s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal opacity-50 grid-dot-trail-horizontal text-primary" style={{ left: '0', top: '1080px', animationDelay: '40s' }} />
+            
+            {/* Lower half horizontal dots - left to right (1200px+) */}
+            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-accent" style={{ left: '0', top: '1140px', animationDelay: '42s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-primary" style={{ left: '0', top: '1320px', animationDelay: '48s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-secondary" style={{ left: '0', top: '1500px', animationDelay: '54s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal opacity-50 grid-dot-trail-horizontal text-accent" style={{ left: '0', top: '1680px', animationDelay: '60s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-primary" style={{ left: '0', top: '1860px', animationDelay: '66s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal opacity-55 grid-dot-trail-horizontal text-secondary" style={{ left: '0', top: '2040px', animationDelay: '72s' }} />
             
             <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal-reverse opacity-55 grid-dot-trail-horizontal-reverse text-primary" style={{ top: '540px', right: '0', animationDelay: '31s' }} />
             <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal-reverse opacity-50 grid-dot-trail-horizontal-reverse text-accent" style={{ top: '840px', right: '0', animationDelay: '33s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal-reverse opacity-55 grid-dot-trail-horizontal-reverse text-secondary" style={{ top: '900px', right: '0', animationDelay: '35s' }} />
             <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal-reverse opacity-50 grid-dot-trail-horizontal-reverse text-primary" style={{ top: '960px', right: '0', animationDelay: '37s' }} />
-            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal-reverse opacity-55 grid-dot-trail-horizontal-reverse text-accent" style={{ top: '1020px', right: '0', animationDelay: '39s' }} />
             <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal-reverse opacity-50 grid-dot-trail-horizontal-reverse text-secondary" style={{ top: '1080px', right: '0', animationDelay: '41s' }} />
+            
+            {/* Lower half horizontal dots - right to left (1200px+) */}
+            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal-reverse opacity-50 grid-dot-trail-horizontal-reverse text-accent" style={{ top: '1200px', right: '0', animationDelay: '45s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal-reverse opacity-50 grid-dot-trail-horizontal-reverse text-primary" style={{ top: '1380px', right: '0', animationDelay: '51s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal-reverse opacity-50 grid-dot-trail-horizontal-reverse text-secondary" style={{ top: '1560px', right: '0', animationDelay: '57s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-primary rounded-full animate-grid-horizontal-reverse opacity-50 grid-dot-trail-horizontal-reverse text-primary" style={{ top: '1740px', right: '0', animationDelay: '63s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-accent rounded-full animate-grid-horizontal-reverse opacity-55 grid-dot-trail-horizontal-reverse text-accent" style={{ top: '1920px', right: '0', animationDelay: '69s' }} />
+            <div className="absolute w-1.5 h-1.5 bg-secondary rounded-full animate-grid-horizontal-reverse opacity-55 grid-dot-trail-horizontal-reverse text-secondary" style={{ top: '2100px', right: '0', animationDelay: '75s' }} />
           </div>
 
           {/* Floating Orbs */}

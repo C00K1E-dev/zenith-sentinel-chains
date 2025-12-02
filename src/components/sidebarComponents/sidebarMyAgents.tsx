@@ -21,13 +21,15 @@ const AgentCard = ({ name, type, status, performance, earnings, icon: Icon }: Ag
   const StatusIcon = config.icon;
 
   return (
-    <div className="glass-card p-4 cursor-not-allowed opacity-75">
+    <div className="glass-card p-4 cursor-not-allowed">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <Icon size={24} className="text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+            <Icon size={24} className="text-secondary" />
+          </div>
           <div>
             <h3 className="font-orbitron font-semibold text-sm">{name}</h3>
-            <p className="text-xs text-muted-foreground">{type}</p>
+            <p className="text-xs text-foreground">{type}</p>
           </div>
         </div>
         <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${config.bgColor}`}>
@@ -37,14 +39,14 @@ const AgentCard = ({ name, type, status, performance, earnings, icon: Icon }: Ag
       </div>
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div>
-          <span className="text-xs text-muted-foreground">Performance</span>
+          <span className="text-xs text-foreground">Performance</span>
           <div className="flex items-center gap-1">
             <TrendingUp size={12} className="text-green-400" />
             <span className="text-sm font-orbitron font-bold text-green-400">{performance}</span>
           </div>
         </div>
         <div>
-          <span className="text-xs text-muted-foreground">Earnings (24h)</span>
+          <span className="text-xs text-foreground">Earnings (24h)</span>
           <span className="text-sm font-orbitron font-bold text-primary">{earnings}</span>
         </div>
       </div>
@@ -105,40 +107,49 @@ const SidebarMyAgents = () => {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
-          My Agents
-        </h2>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+            <Bot size={24} className="text-primary" />
+          </div>
+          <h2 className="text-2xl font-orbitron font-bold">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">My Agents</span>
+          </h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Active Agents"
               value="4"
               icon={Bot}
               description="Running agents"
+              iconColor="primary"
             />
           </div>
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Total Earnings"
               value="190 SSTL"
               icon={Sparkles}
               description="Last 24 hours"
+              iconColor="primary"
             />
           </div>
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Avg. Performance"
               value="93.3%"
               icon={TrendingUp}
               description="Success rate"
+              iconColor="secondary"
             />
           </div>
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Tasks Completed"
               value="1,247"
               icon={Zap}
               description="This month"
+              iconColor="secondary"
             />
           </div>
         </div>
@@ -146,7 +157,7 @@ const SidebarMyAgents = () => {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-orbitron font-semibold text-primary">
+          <h3 className="text-lg font-orbitron font-semibold text-foreground">
             Agent Management
           </h3>
           <button
@@ -164,28 +175,38 @@ const SidebarMyAgents = () => {
           ))}
         </div>
 
-        <div className="glass-card p-6 text-center cursor-not-allowed opacity-75">
-          <h3 className="font-orbitron font-bold text-lg mb-2">AI Agent Creation</h3>
-          <p className="text-muted-foreground text-sm mb-4">
+        <div className="glass-card p-6 text-center cursor-not-allowed">
+          <h3 className="font-orbitron font-bold text-lg mb-2 text-foreground">
+            AI Agent Creation
+          </h3>
+          <p className="text-foreground text-sm mb-4">
             Create and customize your own AI agents to monitor smart contracts, analyze market data, detect threats, and protect your assets through intelligent automation.
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
-            <span className="benefit-tag coming-soon">
-              <Bot className="benefit-icon" />
-              <span>Custom AI Agents</span>
-            </span>
-            <span className="benefit-tag coming-soon">
-              <Sparkles className="benefit-icon" />
-              <span>Automated Tasks</span>
-            </span>
-            <span className="benefit-tag coming-soon">
-              <Shield className="benefit-icon" />
-              <span>Smart Contract Monitoring</span>
-            </span>
-            <span className="benefit-tag coming-soon">
-              <Sparkles className="benefit-icon" />
-              <span>Coming Q4 2025</span>
-            </span>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Bot size={16} className="text-primary" />
+              </div>
+              <span className="text-sm text-foreground">Custom AI Agents</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Sparkles size={16} className="text-primary" />
+              </div>
+              <span className="text-sm text-foreground">Automated Tasks</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Shield size={16} className="text-primary" />
+              </div>
+              <span className="text-sm text-foreground">Smart Contract Monitoring</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Sparkles size={16} className="text-primary" />
+              </div>
+              <span className="text-sm text-foreground">Coming Q4 2025</span>
+            </div>
           </div>
         </div>
       </div>

@@ -479,9 +479,13 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
   return (
     <div className="rewards-section">
       <div className="rewards-header">
-        <Gift size={32} className="rewards-icon" />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+          <Gift size={32} className="text-primary" />
+        </div>
         <div>
-          <h3>My Rewards Dashboard</h3>
+          <h3>
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-semibold">My Rewards Dashboard</span>
+          </h3>
           <p className="rewards-subtitle">
             {holdsNFT 
               ? "You're eligible for PoUW rewards from completed audits" 
@@ -702,7 +706,9 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
           {/* How Rewards Work */}
           <div className="rewards-info-box">
-            <h4>How PoUW Rewards Work</h4>
+            <h4>
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-semibold">How PoUW Rewards Work</span>
+            </h4>
             <ul>
               <li>When any user completes an AI audit, 67 SSTL tokens are minted via Proof of Useful Work</li>
               <li>60% (40.2 SSTL) distributed equally to all AI Audit NFT holders</li>
@@ -714,7 +720,9 @@ export default function SidebarMyRewards({ refreshTrigger = 0 }: RewardsSectionP
 
           {/* Global Stats */}
           <div className="global-stats">
-            <h4>Global PoUW Statistics</h4>
+            <h4>
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent font-semibold">Global PoUW Statistics</span>
+            </h4>
             <p className="text-xs text-muted-foreground mb-2">These statistics are on BSC Mainnet</p>
             <div className="global-stat-item">
               <span className="global-stat-label">Total Audits Completed:</span>

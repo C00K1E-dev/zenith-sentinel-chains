@@ -23,14 +23,14 @@ const DeviceCard = ({ name, type, status, earnings, icon: Icon }: DeviceCardProp
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="glass-card p-4 cursor-not-allowed opacity-75"
+      className="glass-card p-4 cursor-not-allowed"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <Icon size={24} className="text-primary" />
           <div>
             <h3 className="font-orbitron font-semibold text-sm">{name}</h3>
-            <p className="text-xs text-muted-foreground">{type}</p>
+            <p className="text-xs text-foreground">{type}</p>
           </div>
         </div>
         <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${config.bgColor}`}>
@@ -39,7 +39,7 @@ const DeviceCard = ({ name, type, status, earnings, icon: Icon }: DeviceCardProp
         </div>
       </div>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-muted-foreground">Earnings (24h)</span>
+        <span className="text-xs text-foreground">Earnings (24h)</span>
         <span className="text-sm font-orbitron font-bold text-primary">{earnings}</span>
       </div>
       <div className="flex gap-2">
@@ -93,43 +93,52 @@ const SidebarMyDevices = () => {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
-          My Devices
-        </h2>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+            <HardDrive size={24} className="text-secondary" />
+          </div>
+          <h2 className="text-2xl font-orbitron font-bold">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">My Devices</span>
+          </h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Registered Devices"
               value="3"
               icon={HardDrive}
               description="Active devices"
+              iconColor="secondary"
               delay={0.1}
             />
           </div>
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Total Earnings"
               value="146 SSTL"
               icon={Sparkles}
               description="Last 24 hours"
+              iconColor="primary"
               delay={0.2}
             />
           </div>
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Active Now"
               value="2"
               icon={Play}
               description="Running devices"
+              iconColor="primary"
               delay={0.3}
             />
           </div>
-          <div className="opacity-75">
+          <div>
             <StatCard
               title="Avg. Uptime"
               value="94%"
               icon={Cpu}
               description="This month"
+              iconColor="accent"
               delay={0.4}
             />
           </div>
@@ -143,7 +152,7 @@ const SidebarMyDevices = () => {
         className="space-y-4"
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-orbitron font-semibold text-primary">
+          <h3 className="text-lg font-orbitron font-semibold text-foreground">
             Device Management
           </h3>
           <button
@@ -172,25 +181,33 @@ const SidebarMyDevices = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="glass-card p-6 text-center cursor-not-allowed opacity-75"
+          className="glass-card p-6 text-center cursor-not-allowed"
         >
-          <h3 className="font-orbitron font-bold text-lg mb-2">Device Registration</h3>
-          <p className="text-muted-foreground text-sm mb-4">
+          <h3 className="font-orbitron font-bold text-lg mb-2 text-foreground">
+            Device Registration
+          </h3>
+          <p className="text-foreground text-sm mb-4">
             Register and manage your devices to run AI agents, earn rewards through Proof of Useful Work (PoUW), and contribute to network security.
           </p>
           <div className="flex flex-wrap gap-2 justify-center">
-            <span className="benefit-tag coming-soon">
-              <HardDrive className="benefit-icon" />
-              <span>Device Mining</span>
-            </span>
-            <span className="benefit-tag coming-soon">
-              <Sparkles className="benefit-icon" />
-              <span>PoUW Rewards</span>
-            </span>
-            <span className="benefit-tag coming-soon">
-              <Sparkles className="benefit-icon" />
-              <span>Coming Q4 2025</span>
-            </span>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-secondary/5 border border-secondary/10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+                <HardDrive size={16} className="text-secondary" />
+              </div>
+              <span className="text-sm text-foreground">Device Mining</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Sparkles size={16} className="text-primary" />
+              </div>
+              <span className="text-sm text-foreground">PoUW Rewards</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <Sparkles size={16} className="text-primary" />
+              </div>
+              <span className="text-sm text-foreground">Coming Q4 2025</span>
+            </div>
           </div>
         </motion.div>
       </motion.div>

@@ -23,14 +23,14 @@ const DeviceCard = ({ name, type, status, icon: Icon, info }: DeviceCardProps) =
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
-      className="glass-card p-4 cursor-not-allowed opacity-75"
+      className="glass-card p-4 cursor-not-allowed"
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <Icon size={24} className="text-primary" />
           <div>
-            <h3 className="font-orbitron font-semibold text-sm">{name}</h3>
-            <p className="text-xs text-muted-foreground">{type}</p>
+            <h3 className="font-orbitron font-semibold text-sm text-foreground">{name}</h3>
+            <p className="text-xs text-foreground">{type}</p>
           </div>
         </div>
         <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${config.bgColor}`}>
@@ -39,7 +39,7 @@ const DeviceCard = ({ name, type, status, icon: Icon, info }: DeviceCardProps) =
         </div>
       </div>
       {info && (
-        <div className="text-xs text-muted-foreground bg-primary/10 p-2 rounded border border-primary/20">
+        <div className="text-xs text-foreground bg-primary/10 p-2 rounded border border-primary/20">
           {info}
         </div>
       )}
@@ -84,15 +84,23 @@ const SidebarDeviceMonitoring = () => {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
-          Device Monitoring
-        </h2>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+            <Monitor size={24} className="text-secondary" />
+          </div>
+          <h2 className="text-2xl font-orbitron font-bold">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Device Monitoring
+            </span>
+          </h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <StatCard
               title="Total Devices"
               value="4"
               icon={HardDrive}
+              iconColor="secondary"
             />
           </div>
           <div>
@@ -100,6 +108,7 @@ const SidebarDeviceMonitoring = () => {
               title="Active Devices"
               value="1"
               icon={Play}
+              iconColor="primary"
             />
           </div>
         </div>
@@ -111,7 +120,7 @@ const SidebarDeviceMonitoring = () => {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="space-y-4"
       >
-        <h3 className="text-lg font-orbitron font-semibold mb-4 text-primary">
+        <h3 className="text-lg font-orbitron font-semibold mb-4 text-foreground">
           Device Fleet
         </h3>
         <div className="grid gap-4">

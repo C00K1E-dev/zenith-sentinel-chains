@@ -1035,12 +1035,16 @@ const SidebarAirdrop = memo(() => {
         style={{ opacity: 0.5 }}
       >
         <div className={styles.headerContent}>
-          <div className={styles.headerIcon}>
-            <Gift className={styles.giftIcon} size={32} />
+          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+            <Gift className="text-primary" size={32} />
           </div>
           <div>
-            <h1 className={styles.title}>SSTL Airdrop Campaign</h1>
-            <p className={styles.subtitle}>Complete tasks to earn points and claim SSTL tokens</p>
+            <h1 className="text-2xl font-orbitron font-bold">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                SSTL Airdrop Campaign
+              </span>
+            </h1>
+            <p className="text-xs text-foreground">Complete tasks to earn points and claim SSTL tokens</p>
           </div>
         </div>
       </motion.div>

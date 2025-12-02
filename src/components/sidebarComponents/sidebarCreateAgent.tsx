@@ -28,7 +28,11 @@ const AIModelCard = ({
       onClick={onSelect}
     >
       <div className="flex items-start space-x-4">
-        <div className={`p-3 rounded-lg ${isSelected ? 'bg-primary/20' : 'bg-muted'}`}>
+        <div className={`p-3 rounded-lg ${
+          isSelected 
+            ? 'bg-gradient-to-br from-primary/20 to-primary/10' 
+            : 'bg-gradient-to-br from-muted/20 to-muted/10'
+        }`}>
           <Icon size={24} className={isSelected ? 'text-primary' : 'text-muted-foreground'} />
         </div>
         <div className="flex-1">
@@ -125,9 +129,16 @@ PARAMETER custom_instructions """
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
-          Create Agent
-        </h2>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+            <Bot size={24} className="text-primary" />
+          </div>
+          <h2 className="text-2xl font-orbitron font-bold">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              Create Agent
+            </span>
+          </h2>
+        </div>
       </motion.div>
 
       <motion.div
@@ -137,8 +148,10 @@ PARAMETER custom_instructions """
         className="space-y-6"
       >
         <div className="glass-card p-6">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Settings size={20} />
+          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+              <Settings size={20} className="text-secondary" />
+            </div>
             Choose AI Model
           </h3>
           <p className="text-muted-foreground mb-6">
@@ -171,7 +184,9 @@ PARAMETER custom_instructions """
                 onClick={() => setShowModelFile(!showModelFile)}
                 className="flex items-center gap-2 w-full p-4 glass-card hover:border-primary/50 transition-colors"
               >
-                <FileText size={18} />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+                  <FileText size={18} className="text-accent" />
+                </div>
                 <span className="font-medium">Customize Model File</span>
                 {showModelFile ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </button>
@@ -201,7 +216,9 @@ PARAMETER custom_instructions """
               className="flex items-center gap-2 px-8 py-3 bg-muted text-muted-foreground cursor-not-allowed rounded-lg font-medium"
               disabled
             >
-              <Rocket size={18} />
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-muted/30 to-muted/20 flex items-center justify-center">
+                <Rocket size={18} className="text-secondary" />
+              </div>
               Deploy Agent (Coming Soon)
             </button>
           </div>
@@ -213,7 +230,9 @@ PARAMETER custom_instructions """
             animate={{ opacity: 1, scale: 1 }}
             className="glass-card p-6 border-primary/50"
           >
-            <h4 className="text-lg font-semibold mb-2">Selected Model</h4>
+            <h4 className="text-lg font-semibold mb-2">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Selected Model</span>
+            </h4>
             <p className="text-muted-foreground">
               {aiModels.find(m => m.id === selectedModel)?.name} - Ready for deployment
             </p>

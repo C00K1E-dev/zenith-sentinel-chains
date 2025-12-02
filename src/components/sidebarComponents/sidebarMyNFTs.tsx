@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useActiveAccount, useReadContract } from 'thirdweb/react';
 import { getContract, readContract } from 'thirdweb';
-import { Loader } from 'lucide-react';
+import { Loader, Image as ImageIcon } from 'lucide-react';
 import { bsc, bscTestnet } from 'thirdweb/chains';
 import { createThirdwebClient } from 'thirdweb';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -240,9 +240,14 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
-        My NFTs {totalNFTs > 0 && `(${totalNFTs})`}
-      </h2>
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+          <ImageIcon size={24} className="text-accent" />
+        </div>
+        <h2 className="text-2xl font-orbitron font-bold">
+          <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">My NFTs</span> {totalNFTs > 0 && `(${totalNFTs})`}
+        </h2>
+      </div>
       
       <div className="nft-collections-container">
         {!isConnected && (

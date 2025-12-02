@@ -475,21 +475,11 @@ const Index = () => {
                     
                     {/* Central Token Design */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="relative w-48 h-48 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-1 animate-float-slow">
-                        <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-                          <div className="text-center space-y-2">
-                            <div className="text-5xl font-display font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                              SSTL
-                            </div>
-                            <div className="text-xs text-muted-foreground font-medium">Token</div>
-                            <div className="flex items-center justify-center gap-2 mt-3">
-                              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" style={{ animationDelay: '0.2s' }} />
-                              <div className="w-2 h-2 rounded-full bg-accent animate-pulse" style={{ animationDelay: '0.4s' }} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <img 
+                        src="/assets/token.svg" 
+                        alt="SSTL Token" 
+                        className="w-48 h-48 object-contain animate-float-slow"
+                      />
                     </div>
                     
                     {/* Orbiting Elements */}

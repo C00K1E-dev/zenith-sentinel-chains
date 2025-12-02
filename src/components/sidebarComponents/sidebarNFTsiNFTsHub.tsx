@@ -62,12 +62,14 @@ const SidebarNFTsiNFTsHub = () => {
         className="mb-8 md:mb-12"
       >
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-6">
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 backdrop-blur-sm">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 backdrop-blur-sm flex items-center justify-center">
             <ImageIcon size={32} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-orbitron font-bold text-foreground mb-2">
-              NFTs & iNFTs Hub
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-orbitron font-bold mb-2">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                NFTs & iNFTs Hub
+              </span>
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               Explore and mint exclusive SmartSentinels collections
@@ -85,7 +87,9 @@ const SidebarNFTsiNFTsHub = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-10"></div>
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4">
-              <Sparkles className="text-primary" size={24} />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                <Sparkles className="text-primary" size={24} />
+              </div>
               <h3 className="text-xl md:text-2xl font-orbitron font-bold text-foreground">
                 About SmartSentinels NFTs
               </h3>
@@ -94,20 +98,28 @@ const SidebarNFTsiNFTsHub = () => {
               More than digital art - your gateway to AI-powered ownership with real utility and benefits.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
-                <Bot size={20} className="text-primary flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10 group hover:border-primary/30 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Bot size={20} className="text-primary flex-shrink-0" />
+                </div>
                 <span className="text-sm font-medium">AI Access</span>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
-                <TrendingUp size={20} className="text-primary flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10 group hover:border-primary/30 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <TrendingUp size={20} className="text-secondary flex-shrink-0" />
+                </div>
                 <span className="text-sm font-medium">Rewards</span>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
-                <Award size={20} className="text-primary flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-accent/10 group hover:border-accent/30 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Award size={20} className="text-accent flex-shrink-0" />
+                </div>
                 <span className="text-sm font-medium">Exclusive Benefits</span>
               </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10">
-                <Shield size={20} className="text-primary flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-background/50 backdrop-blur-sm border border-primary/10 group hover:border-primary/30 transition-colors">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Shield size={20} className="text-primary flex-shrink-0" />
+                </div>
                 <span className="text-sm font-medium">Verified</span>
               </div>
             </div>
@@ -158,29 +170,37 @@ const SidebarNFTsiNFTsHub = () => {
                     Exclusive Benefits
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors">
-                      <DollarSign size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors group">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <DollarSign size={16} className="text-accent" />
+                      </div>
                       <div className="min-w-0">
                         <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">Revenue Share</div>
                         <div className="text-xs text-muted-foreground leading-tight">10% from sales of future NFT Collections</div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors">
-                      <Zap size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors group">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <Zap size={16} className="text-secondary" />
+                      </div>
                       <div className="min-w-0">
                         <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">Staking Boost</div>
                         <div className="text-xs text-muted-foreground leading-tight">100% yield boost on upcoming staking</div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors">
-                      <Rocket size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors group">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <Rocket size={16} className="text-secondary" />
+                      </div>
                       <div className="min-w-0">
                         <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">Priority Access</div>
                         <div className="text-xs text-muted-foreground leading-tight">Early feature releases</div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors">
-                      <Crown size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 border border-primary/10 hover:border-primary/20 transition-colors group">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <Crown size={16} className="text-primary" />
+                      </div>
                       <div className="min-w-0">
                         <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">Lifetime Rewards</div>
                         <div className="text-xs text-muted-foreground leading-tight">Perpetual revenue sharing</div>
@@ -260,7 +280,7 @@ const SidebarNFTsiNFTsHub = () => {
                 <div>
                   <h3 className="text-2xl sm:text-3xl lg:text-4xl font-orbitron font-bold text-foreground mb-2 flex items-center gap-2">
                     AI Audit Collection
-                    <Bot size={24} className="text-accent" />
+                    <Bot size={24} className="text-primary" />
                   </h3>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     Own an NFT and generate passive income. Share in the revenue generated from AI-powered smart contract audits on the network.
@@ -270,12 +290,14 @@ const SidebarNFTsiNFTsHub = () => {
                 {/* Benefits Grid */}
                 <div>
                   <h4 className="text-xs sm:text-sm font-semibold text-foreground mb-2 uppercase tracking-wide flex items-center gap-2">
-                    <Sparkles size={16} className="text-accent" />
+                    <Sparkles size={16} className="text-primary" />
                     Exclusive Benefits
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors">
-                      <Zap size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-2 p-2 rounded-lg bg-accent/5 border border-accent/10 hover:border-accent/20 transition-colors group">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                        <Zap size={16} className="text-secondary" />
+                      </div>
                       <div className="min-w-0">
                         <div className="text-xs sm:text-sm font-semibold text-foreground mb-0.5">PoUW Rewards</div>
                         <div className="text-xs text-muted-foreground leading-tight">Share 40.2 SSTL per audit</div>
@@ -343,7 +365,7 @@ const SidebarNFTsiNFTsHub = () => {
                   />
                   {/* Coming Soon Badge */}
                   <div className="absolute top-4 left-4 px-4 py-2 rounded-full bg-background/90 backdrop-blur-md border border-muted/30 flex items-center gap-2">
-                    <Rocket size={16} className="text-muted-foreground" />
+                    <Rocket size={16} className="text-secondary" />
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Coming Soon</span>
                   </div>
                 </div>
@@ -356,7 +378,7 @@ const SidebarNFTsiNFTsHub = () => {
                   <div className="mb-6">
                     <h3 className="text-2xl sm:text-3xl font-orbitron font-bold text-foreground mb-3 flex items-center gap-3">
                       AIDA Collection
-                      <Sparkles size={24} className="text-muted-foreground" />
+                      <Sparkles size={24} className="text-primary" />
                     </h3>
                     <p className="text-sm text-muted-foreground/80 mb-2 italic">
                       Artificial Intelligence for Doctors and Assistants
@@ -369,33 +391,33 @@ const SidebarNFTsiNFTsHub = () => {
                   {/* Future Benefits */}
                   <div className="mb-6">
                     <h4 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
-                      <Rocket size={16} className="text-muted-foreground" />
+                      <Rocket size={16} className="text-secondary" />
                       Key Features
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
-                        <Shield size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <Shield size={18} className="text-primary mt-0.5 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-semibold text-foreground mb-1">Medical AI</div>
                           <div className="text-xs text-muted-foreground">Healthcare assistance in Romania</div>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
-                        <Zap size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <Zap size={18} className="text-secondary mt-0.5 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-semibold text-foreground mb-1">PoUW Rewards</div>
                           <div className="text-xs text-muted-foreground">Earn from real-world AI work</div>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
-                        <Target size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <Target size={18} className="text-accent mt-0.5 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-semibold text-foreground mb-1">SmartSentinels Backend</div>
                           <div className="text-xs text-muted-foreground">Integrated with SS ecosystem</div>
                         </div>
                       </div>
                       <div className="flex items-start gap-3 p-3 rounded-xl bg-muted/5 border border-muted/10">
-                        <Bot size={18} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <Bot size={18} className="text-primary mt-0.5 flex-shrink-0" />
                         <div>
                           <div className="text-sm font-semibold text-foreground mb-1">AI Medical Assistants</div>
                           <div className="text-xs text-muted-foreground">Deployed in Romanian clinics</div>
@@ -407,7 +429,7 @@ const SidebarNFTsiNFTsHub = () => {
                   {/* Footer */}
                   <div className="mt-auto pt-6 border-t border-muted/10">
                     <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/5 border border-muted/10">
-                      <Rocket size={20} className="text-muted-foreground flex-shrink-0" />
+                      <Rocket size={20} className="text-secondary flex-shrink-0" />
                       <div>
                         <div className="text-sm font-semibold text-foreground mb-0.5">In Development</div>
                         <div className="text-xs text-muted-foreground">Join our community for updates on the AIDA release and real-world medical AI implementation</div>

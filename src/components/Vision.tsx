@@ -117,8 +117,8 @@ const Vision = () => {
             transition={{ duration: 0.6 }}
             className="flex justify-center relative"
           >
-            <div className="w-full max-w-full h-96 sm:h-[480px] md:h-[500px] lg:h-[550px]">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-secondary/15 to-accent/15 rounded-2xl blur-2xl z-0" />
+            <div className="w-full max-w-full h-96 sm:h-[480px] md:h-[500px] lg:h-[550px] relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 rounded-full blur-3xl z-0" />
               <img
                 src="/assets/pouwGlobe.png"
                 alt="Global Vision"

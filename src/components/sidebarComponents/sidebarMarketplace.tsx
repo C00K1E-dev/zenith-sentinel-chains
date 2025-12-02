@@ -31,7 +31,7 @@ const AgentCard = ({
       )}
 
       <div className="flex items-start gap-4 mb-4">
-        <div className="p-3 bg-primary/10 rounded-lg">
+        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
           <Icon size={24} className="text-primary" />
         </div>
         <div className="flex-1">
@@ -129,9 +129,16 @@ const SidebarMarketplace = () => {
         transition={{ duration: 0.5 }}
         className="mb-8"
       >
-        <h2 className="text-2xl font-orbitron font-bold mb-4 text-foreground">
-          AI Agent Marketplace
-        </h2>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+            <ShoppingCart size={24} className="text-primary" />
+          </div>
+          <h2 className="text-2xl font-orbitron font-bold">
+            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              AI Agent Marketplace
+            </span>
+          </h2>
+        </div>
       </motion.div>
 
       <motion.div
@@ -143,22 +150,30 @@ const SidebarMarketplace = () => {
         {/* Marketplace Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="glass-card p-4 text-center">
-            <Bot className="text-primary mx-auto mb-2" size={20} />
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-2">
+              <Bot className="text-primary" size={20} />
+            </div>
             <div className="text-2xl font-bold">{marketplaceStats.totalAgents}</div>
             <div className="text-xs text-muted-foreground">Available Agents</div>
           </div>
           <div className="glass-card p-4 text-center">
-            <ShoppingCart className="text-primary mx-auto mb-2" size={20} />
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center mx-auto mb-2">
+              <ShoppingCart className="text-secondary" size={20} />
+            </div>
             <div className="text-2xl font-bold">{marketplaceStats.activeRentals}</div>
             <div className="text-xs text-muted-foreground">Active Rentals</div>
           </div>
           <div className="glass-card p-4 text-center">
-            <DollarSign className="text-primary mx-auto mb-2" size={20} />
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mx-auto mb-2">
+              <DollarSign className="text-accent" size={20} />
+            </div>
             <div className="text-2xl font-bold">${marketplaceStats.totalRevenue.toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">Monthly Revenue</div>
           </div>
           <div className="glass-card p-4 text-center">
-            <Star className="text-primary mx-auto mb-2" size={20} />
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/10 flex items-center justify-center mx-auto mb-2">
+              <Star className="text-primary" size={20} />
+            </div>
             <div className="text-2xl font-bold">{marketplaceStats.avgRating}</div>
             <div className="text-xs text-muted-foreground">Avg Rating</div>
           </div>
@@ -166,8 +181,10 @@ const SidebarMarketplace = () => {
 
         {/* Available Agents */}
         <div className="glass-card p-6">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Bot size={20} />
+          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+              <Bot size={20} className="text-primary" />
+            </div>
             Available Agents
           </h3>
           <p className="text-muted-foreground mb-6">
@@ -192,8 +209,10 @@ const SidebarMarketplace = () => {
 
         {/* Custom Request Section */}
         <div className="glass-card p-6">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <MessageSquare size={20} />
+          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+              <MessageSquare size={20} className="text-secondary" />
+            </div>
             Custom Agent Requests
           </h3>
           <p className="text-muted-foreground mb-6">
@@ -219,24 +238,32 @@ const SidebarMarketplace = () => {
 
         {/* Marketplace Benefits */}
         <div className="glass-card p-6">
-          <h3 className="text-xl font-semibold mb-4">Why Choose Our Marketplace?</h3>
+          <h3 className="text-xl font-semibold mb-4 text-foreground">
+            Why Choose Our Marketplace?
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <Shield className="text-primary mx-auto mb-2" size={24} />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Shield size={24} className="text-primary" />
+              </div>
               <h4 className="font-medium mb-1">Vetted Agents</h4>
               <p className="text-sm text-muted-foreground">
                 All agents are thoroughly tested and security-audited
               </p>
             </div>
             <div className="text-center">
-              <Clock className="text-primary mx-auto mb-2" size={24} />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center mx-auto mb-3">
+                <Clock size={24} className="text-secondary" />
+              </div>
               <h4 className="font-medium mb-1">Pay Per Use</h4>
               <p className="text-sm text-muted-foreground">
                 Only pay for the time you actually use the agents
               </p>
             </div>
             <div className="text-center">
-              <Star className="text-primary mx-auto mb-2" size={24} />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center mx-auto mb-3">
+                <Star size={24} className="text-accent" />
+              </div>
               <h4 className="font-medium mb-1">High Quality</h4>
               <p className="text-sm text-muted-foreground">
                 Average 4.7-star rating from satisfied customers

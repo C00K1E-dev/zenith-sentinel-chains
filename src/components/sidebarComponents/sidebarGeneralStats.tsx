@@ -92,15 +92,21 @@ const SidebarGeneralStats = () => {
 
   return (
     <div className="mb-6 sm:mb-8">
-      <h2 className="text-xl sm:text-2xl font-orbitron font-bold mb-3 sm:mb-4 text-foreground">
-        General Stats
-      </h2>
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+          <Activity size={24} className="text-primary" />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-orbitron font-bold">
+          <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">General Stats</span>
+        </h2>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           title="NFT Collections"
           value="2"
           icon={ImageIcon}
           description="Active collections"
+          iconColor="primary"
           delay={0}
         />
         <StatCard
@@ -108,6 +114,7 @@ const SidebarGeneralStats = () => {
           value="1"
           icon={Bot}
           description="AI agents deployed"
+          iconColor="primary"
           delay={0}
         />
         <StatCard
@@ -115,6 +122,7 @@ const SidebarGeneralStats = () => {
           value="1"
           icon={HardDrive}
           description="Hardware devices"
+          iconColor="secondary"
           delay={0}
         />
       </div>
@@ -131,6 +139,7 @@ const SidebarGeneralStats = () => {
             value={stats.totalAuditsCompleted.toString()}
             icon={Activity}
             description="AI audits processed"
+            iconColor="primary"
             delay={0}
           />
           <StatCard
@@ -138,6 +147,7 @@ const SidebarGeneralStats = () => {
             value={`${stats.totalMintedTokens.toFixed(2)} SSTL`}
             icon={Coins}
             description="Tokens created via PoUW"
+            iconColor="accent"
             delay={0}
           />
           <StatCard
@@ -145,6 +155,7 @@ const SidebarGeneralStats = () => {
             value={`${stats.totalDistributed.toFixed(2)} SSTL`}
             icon={Zap}
             description="Rewards distributed to NFT holders"
+            iconColor="secondary"
             delay={0}
           />
           <StatCard
@@ -152,6 +163,7 @@ const SidebarGeneralStats = () => {
             value={`${stats.totalTreasury.toFixed(2)} SSTL`}
             icon={Vault}
             description="Reserved for ecosystem growth"
+            iconColor="accent"
             delay={0}
           />
           <StatCard
@@ -159,6 +171,7 @@ const SidebarGeneralStats = () => {
             value={`${stats.totalBurned.toFixed(2)} SSTL`}
             icon={Flame}
             description="Tokens permanently removed"
+            iconColor="secondary"
             delay={0}
           />
           <StatCard
@@ -166,6 +179,7 @@ const SidebarGeneralStats = () => {
             value={`${stats.totalGenesisRevenue.toFixed(4)} BNB`}
             icon={DollarSign}
             description="Revenue shared with Genesis holders"
+            iconColor="accent"
             delay={0}
           />
         </div>

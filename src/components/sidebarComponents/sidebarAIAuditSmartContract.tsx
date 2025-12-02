@@ -1215,7 +1215,11 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
   return (
     <div className="glass-card p-4 sm:p-6">
-      <h1 className="text-2xl sm:text-3xl font-orbitron font-bold mb-4 sm:mb-6 neon-glow">AI Audit - Smart Contract Analysis</h1>
+      <h1 className="text-2xl sm:text-3xl font-orbitron font-bold mb-4 sm:mb-6">
+        <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          AI Audit - Smart Contract Analysis
+        </span>
+      </h1>
       <div className="space-y-4 sm:space-y-6">
         {/* AI Training Information */}
         <div className="audit-training-info bg-[#1f1f1f] border border-yellow-300/30 rounded-lg p-4 sm:p-6 md:p-8 mb-6 text-center shadow-lg shadow-yellow-500/10">

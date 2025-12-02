@@ -128,7 +128,8 @@ const LOGO_URL = "/ss-icon.svg";
 const BSC_MAINNET_CHAIN_ID = 56;
 const SSTL_CONTRACT = SSTL_TOKEN_ADDRESS as `0x${string}`;
 const PAYMENT_RECIPIENT = '0x46e451d555ebCB4ccE5087555a07F6e69D017b05' as `0x${string}`; // Your Wallet (AI Agent Creator)
-const AUDIT_COST = '1000'; // 1000 SSTL tokens (matches deployed contract)
+const AUDIT_COST_BNB = '0.45'; // 0.45 BNB (default)
+const AUDIT_COST_SSTL = '1000'; // 1000 SSTL tokens (fallback)
 const SERVICE_OWNER = '0x46e451d555ebCB4ccE5087555a07F6e69D017b05'; // AI Audit service owner address
 
 // --- 1. JSON SCHEMA DEFINITION (Deterministic Output) ---
@@ -668,8 +669,8 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         isConnected
     });
 
-    // Determine which payment method to use (prefer BNB if both enabled)
-    const useNativePayment = acceptBNB && !acceptToken ? true : acceptBNB ? true : false;
+    // Determine which payment method to use - FORCE BNB PAYMENT
+    const useNativePayment = true; // Always use BNB payment (0.45 BNB)
     
     // Transaction hooks - using mutateAsync for proper value handling
     const { mutateAsync: sendTransactionAsync, data: txResult, isPending: isSendPending, error: sendError } = useSendTransaction();
@@ -859,7 +860,9 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
 
             if (useNativePayment) {
                 // Pay with BNB
-                const currentPrice = servicePriceBNB ? BigInt(servicePriceBNB.toString()) : parseUnits('0.1', 18);
+                const currentPrice = servicePriceBNB && BigInt(servicePriceBNB.toString()) > 0n 
+                    ? BigInt(servicePriceBNB.toString()) 
+                    : parseUnits(AUDIT_COST_BNB, 18); // Default to 0.45 BNB
                 const priceInBNB = Number(formatUnits(currentPrice, 18));
 
                 console.log('💰 Paying for audit with BNB:', {
@@ -1264,55 +1267,27 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         {/* Payment Method Display */}
         <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
           <p className="text-sm text-gray-300 font-orbitron mb-2">
-            💳 Payment Method: <span className="text-neon font-bold">{useNativePayment ? 'BNB' : 'SSTL Tokens'}</span>
+            💳 Payment Method: <span className="text-neon font-bold">BNB (Native)</span>
           </p>
           <p className="text-xs text-gray-400">
-            {useNativePayment 
-              ? `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.45'} BNB to run the audit`
-              : `Pay ${servicePriceSSTL ? Number(formatUnits(BigInt(servicePriceSSTL.toString()), Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL to run the audit`
-            }
-          </p>
-          <p className="text-xs text-gray-500 mt-2">
-            Debug: acceptBNB={String(acceptBNB)} | acceptToken={String(acceptToken)} | useNative={String(useNativePayment)}
+            Pay {servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB to run the audit
           </p>
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          {/* Show SSTL approval button only when using SSTL payments and allowance is insufficient */}
-          {!useNativePayment && !approvalTxHash && allowance !== undefined && servicePriceSSTL && tokenDecimals ? (() => {
-            const requiredAmount = BigInt(servicePriceSSTL.toString());
-            const allowanceValue = BigInt(allowance.toString());
-            const hasAllowance = allowanceValue >= requiredAmount;
-            return !hasAllowance ? (
-              <Button 
-                variant="hero" 
-                className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
-                onClick={handleApproveSSTL} 
-                disabled={isProcessing || !code.trim()}
-              >
-                {isProcessing && currentTransactionType === 'approve' ? 'Approving...' : `Approve ${Number(formatUnits(BigInt(servicePriceSSTL.toString()), Number(tokenDecimals))).toFixed(0)} SSTL`}
-              </Button>
-            ) : null;
-          })() : null}
-          
+          {/* Always show BNB payment button */}
           <Button 
             variant="hero" 
             className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
             onClick={handlePayAndRunAudit} 
-            disabled={isProcessing || !code.trim() || (!useNativePayment && allowance !== undefined && servicePriceSSTL && tokenDecimals && BigInt(allowance.toString()) < BigInt(servicePriceSSTL.toString()))}
+            disabled={isProcessing || !code.trim()}
           >
             {isProcessing && currentTransactionType === 'payAndRunAudit' ? 'Processing Payment...' : 
-              useNativePayment ? 
-                `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.45'} BNB & Start Audit` :
-                `Pay ${servicePriceSSTL ? Number(formatUnits(BigInt(servicePriceSSTL.toString()), Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL & Start Audit`
+              `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB & Start Audit`
             }
           </Button>
-          {/* )} */}
           <p className="text-sm text-gray-400 text-center">
-            {useNativePayment ? 
-              `Payment of ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : '0.45'} BNB is required to run the AI Audit.` :
-              `Payment of ${servicePriceSSTL ? Number(formatUnits(BigInt(servicePriceSSTL.toString()), Number(tokenDecimals || 18))).toFixed(0) : '1000'} SSTL tokens is required to run the AI Audit.`
-            }
+            Payment of {servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB is required to run the AI Audit.
             <br />
             67 SSTL tokens will be minted to the PoUW pool upon successful payment.
           </p>

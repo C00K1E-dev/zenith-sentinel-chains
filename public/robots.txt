@@ -1,8 +1,36 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /home
+Disallow: /index
+Disallow: /index.html
+Disallow: /whitepaper
+Disallow: /dashboard
+Disallow: /app
+Disallow: /docs
+Disallow: /pitchdeck
+Disallow: /pitch-deck
+Disallow: /mint
+Disallow: /nft
+Disallow: /nfts
+Disallow: /token
+Disallow: /about
 
 User-agent: Bingbot
 Allow: /
+Disallow: /home
+Disallow: /index
+Disallow: /index.html
+Disallow: /whitepaper
+Disallow: /dashboard
+Disallow: /app
+Disallow: /docs
+Disallow: /pitchdeck
+Disallow: /pitch-deck
+Disallow: /mint
+Disallow: /nft
+Disallow: /nfts
+Disallow: /token
+Disallow: /about
 
 User-agent: Twitterbot
 Allow: /

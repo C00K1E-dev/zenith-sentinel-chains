@@ -127,26 +127,24 @@ const Documents = () => {
 
 			<Navbar />
 
-			<div className="relative z-10 min-h-screen flex flex-col">
-				<div className="flex-1 flex items-center justify-center px-4 py-16 sm:py-20">
-					<div className="max-w-4xl mx-auto w-full">
-						{/* Header */}
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.6 }}
-							className="text-center mb-10 sm:mb-12 md:mb-16"
-						>
-							<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4 neon-glow">
-								Project Documents
-							</h1>
-							<p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-								Access our comprehensive documentation, whitepapers, and project
-								materials
-							</p>
-						</motion.div>
-
-						{/* Documents Grid */}
+		<div className="relative z-10 min-h-screen flex flex-col">
+			<div className="flex-1 flex items-start justify-center px-3 sm:px-4 pt-24 sm:pt-32 md:pt-48 pb-10 sm:pb-16">
+				<div className="max-w-4xl mx-auto w-full">
+					{/* Header */}
+					<motion.div
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.6 }}
+						className="text-center mb-8 sm:mb-10 md:mb-12"
+					>
+						<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4 neon-glow">
+							Project Documents
+						</h1>
+						<p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-2 sm:px-4">
+							Access our comprehensive documentation, whitepapers, and project
+							materials
+						</p>
+					</motion.div>						{/* Documents Grid */}
 						<motion.div
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}

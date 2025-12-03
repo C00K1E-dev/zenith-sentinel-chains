@@ -21,6 +21,7 @@
             --card-bg: rgba(255, 255, 255, 0.05); /* Glass effect */
             --border-color: rgba(248, 244, 66, 0.2); /* Border with opacity */
             --divider: rgba(230, 230, 230, 0.1); /* Divider */
+            --highlight: hsl(220, 90%, 56%); /* Blue bars */
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -320,12 +321,13 @@
             height: 100%;
         }
         .bar {
-            width: 80%;
+            width: 100%;
             border-radius: 0.5rem 0.5rem 0 0;
             transition: height 1s ease-out;
             position: relative;
-            background-color: var(--highlight); 
-            box-shadow: 0 4px 10px rgba(248, 244, 66, 0.4); 
+            background-color: hsl(220, 90%, 56%) !important;
+            border: none !important;
+            box-shadow: 0 4px 10px rgba(99, 179, 237, 0.4) !important; 
         }
         .bar-label {
             position: absolute;

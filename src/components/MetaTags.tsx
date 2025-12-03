@@ -12,7 +12,7 @@ interface MetaTagsProps {
 const BASE_URL = 'https://smartsentinels.net';
 const DEFAULT_TITLE = 'SmartSentinels | AI';
 const DEFAULT_DESCRIPTION = 'SmartSentinels delivers verifiable, low-cost AI services for businesses—from smart contract audits to intelligent assistants—while rewarding contributors with SSTL tokens. Edge-native, deflationary, and built for real impact.';
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.png?v=${Date.now()}`;
 
 export const MetaTags = memo(({
   title = DEFAULT_TITLE,

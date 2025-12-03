@@ -27,7 +27,7 @@ const Index = () => {
   return (
     <>
       <MetaTags 
-        title="SmartSentinels | AI-Powered Audits & Verifiable Compute"
+        title="SmartSentinels | Decentralized AI Agents Network"
         description="SmartSentinels delivers verifiable, low-cost AI services for businesses—from smart contract audits to intelligent assistants—while rewarding contributors with SSTL tokens. Edge-native, deflationary, and built for real impact."
         path="/"
       />

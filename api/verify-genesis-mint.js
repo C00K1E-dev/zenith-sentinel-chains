@@ -118,6 +118,20 @@ export default async function handler(req, res) {
 
     const result = await verifyGenesisMint(walletAddress);
     
+    // Check if there was an error in verification
+    if (result.error && !result.verified) {
+      return res.status(400).json({
+        success: false,
+        error: result.error,
+        data: {
+          verified: false,
+          eligible: false,
+          walletAddress: result.walletAddress,
+          nftBalance: '0'
+        }
+      });
+    }
+    
     // Return Micro3-compatible format
     return res.status(200).json({
       success: true,

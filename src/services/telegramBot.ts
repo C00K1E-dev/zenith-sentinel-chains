@@ -307,7 +307,6 @@ export class TelegramBotService {
       // Check if bot is mentioned or it's a private chat
       const isPrivateChat = message.chat.type === 'private';
       const isMentioned = text.includes(`@${this.botUsername}`);
-      const isReplyToBot = false; // TODO: Implement reply detection
 
       // Respond if mentioned, private chat, or specific triggers
       if (isPrivateChat || isMentioned || this.shouldRespond(text)) {
@@ -417,8 +416,9 @@ export const createTelegramBot = (botToken: string, geminiApiKey: string) => {
 
 // Helper to create bot from environment variables
 export const createTelegramBotFromEnv = () => {
-  const botToken = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-  const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  // Support both Vite (import.meta.env) and Node.js (process.env)
+  const botToken = (import.meta as any).env?.VITE_TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN;
+  const geminiApiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
   
   if (!botToken || !geminiApiKey) {
     throw new Error('Missing VITE_TELEGRAM_BOT_TOKEN or VITE_GEMINI_API_KEY environment variables');

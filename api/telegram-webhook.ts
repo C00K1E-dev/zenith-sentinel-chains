@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createTelegramBot } from '../src/services/telegramBot';
+import { createTelegramBot } from '../src/services/telegramBot.js';
 
 // Vercel serverless function to handle Telegram webhooks
 export default async function handler(req: VercelRequest, res: VercelResponse) {

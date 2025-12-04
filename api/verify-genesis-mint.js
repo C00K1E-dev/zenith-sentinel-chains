@@ -1,42 +1,18 @@
-import { ethers } from 'ethers';
-
 const GENESIS_CONTRACT_ADDRESS = '0x6427f3C265E47BABCde870bcC4F71d1c4A12779b';
 const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org:443';
 
-// Minimal ABI - just need balanceOf function
-const GENESIS_ABI = [
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-];
-
 // Helper to validate Ethereum address
 function isValidAddress(address) {
-  return ethers.isAddress(address);
+  if (typeof address !== 'string') return false;
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
 // Helper to normalize address
 function normalizeAddress(address) {
-  return ethers.getAddress(address);
+  return '0x' + address.slice(2).toLowerCase();
 }
 
-// Main verification function
+// Main verification function using JSON-RPC calls
 async function verifyGenesisMint(walletAddress) {
   try {
     // Validate address format
@@ -52,20 +28,45 @@ async function verifyGenesisMint(walletAddress) {
     // Normalize the address
     const normalizedAddress = normalizeAddress(walletAddress);
 
-    // Create provider connected to BSC RPC
-    const provider = new ethers.JsonRpcProvider(BSC_RPC_URL);
+    // Create JSON-RPC payload for eth_call to balanceOf
+    // balanceOf(address) selector is 0x70a08231
+    const functionSelector = '0x70a08231';
+    const paddedAddress = normalizedAddress.slice(2).padStart(64, '0');
+    const data = functionSelector + paddedAddress;
 
-    // Create contract instance (read-only, no signer needed)
-    const genesisContract = new ethers.Contract(
-      GENESIS_CONTRACT_ADDRESS,
-      GENESIS_ABI,
-      provider
-    );
+    // Make JSON-RPC call to BSC
+    const response = await fetch(BSC_RPC_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_call',
+        params: [
+          {
+            to: GENESIS_CONTRACT_ADDRESS,
+            data: data,
+          },
+          'latest',
+        ],
+        id: 1,
+      }),
+    });
 
-    // Query balanceOf to check if wallet owns any Genesis NFTs
-    const balance = await genesisContract.balanceOf(normalizedAddress);
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
 
-    // Convert to string for cleaner response
+    const result = await response.json();
+
+    if (result.error) {
+      throw new Error(`RPC Error: ${result.error.message}`);
+    }
+
+    // Parse the result
+    const balanceHex = result.result || '0x0';
+    const balance = BigInt(balanceHex);
     const balanceString = balance.toString();
     const verified = balance > 0n;
 

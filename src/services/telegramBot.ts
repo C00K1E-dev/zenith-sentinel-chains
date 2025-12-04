@@ -206,9 +206,9 @@ class GeminiService {
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
-    // Using Gemini 2.0 Flash-Lite - Best free tier: 30 RPM, 1M TPM, 200 RPD
+    // Using Gemini 2.5 Flash-Lite - Perfect for chatbot: 15 RPM, 250K TPM, 1000 RPD
     this.model = this.genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-lite',
+      model: 'gemini-2.5-flash-lite',
       systemInstruction: PERSONALITY_PROMPT
     });
     this.conversationHistory = new Map();

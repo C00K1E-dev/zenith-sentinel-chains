@@ -3,11 +3,16 @@ const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org:443';
 
 function isValidAddress(address) {
   if (typeof address !== 'string') return false;
-  return /^0x[a-fA-F0-9]{40}$/.test(address);
+  // Accept both full addresses (42 chars) and addresses missing checksum
+  const trimmed = address.trim();
+  return /^0x[a-fA-F0-9]{40,42}$/.test(trimmed);
 }
 
 function normalizeAddress(address) {
-  return '0x' + address.slice(2).toLowerCase();
+  const trimmed = address.trim();
+  // Ensure it starts with 0x and normalize to lowercase
+  const cleaned = trimmed.startsWith('0x') ? trimmed : '0x' + trimmed;
+  return cleaned.toLowerCase();
 }
 
 async function verifyGenesisMint(walletAddress) {
@@ -92,31 +97,51 @@ export default async function handler(req, res) {
     let walletAddress;
 
     if (req.method === 'GET') {
-      walletAddress = req.query.walletAddress;
+      walletAddress = req.query.walletAddress || req.query.wallet || req.query.address;
     } else if (req.method === 'POST') {
-      walletAddress = req.body?.walletAddress;
+      walletAddress = req.body?.walletAddress || req.body?.wallet || req.body?.address;
     } else {
       return res.status(405).json({
-        verified: false,
+        success: false,
         error: 'Method not allowed. Use GET or POST.',
+        data: null
       });
     }
 
     if (!walletAddress || typeof walletAddress !== 'string') {
       return res.status(400).json({
-        verified: false,
+        success: false,
         error: 'Missing or invalid walletAddress parameter',
+        data: null
       });
     }
 
     const result = await verifyGenesisMint(walletAddress);
-    return res.status(200).json(result);
+    
+    // Return Micro3-compatible format
+    return res.status(200).json({
+      success: true,
+      data: {
+        verified: result.verified,
+        eligible: result.verified,
+        walletAddress: result.walletAddress,
+        nftBalance: result.balance,
+        details: {
+          contractAddress: result.contractAddress,
+          message: result.message,
+          timestamp: result.timestamp,
+          network: 'BSC',
+          chainId: 56
+        }
+      }
+    });
   } catch (error) {
     console.error('API Error:', error);
     return res.status(500).json({
-      verified: false,
+      success: false,
       error: 'Internal server error',
       message: error.message,
+      data: null
     });
   }
 }

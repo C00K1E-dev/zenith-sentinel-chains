@@ -206,7 +206,11 @@ class GeminiService {
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+    // Using Gemini 2.0 Flash-Lite - Best free tier: 30 RPM, 1M TPM, 200 RPD
+    this.model = this.genAI.getGenerativeModel({ 
+      model: 'gemini-2.0-flash-lite',
+      systemInstruction: PERSONALITY_PROMPT
+    });
     this.conversationHistory = new Map();
   }
 
@@ -228,17 +232,14 @@ class GeminiService {
       const chat = this.model.startChat({
         history: history,
         generationConfig: {
-          maxOutputTokens: 500,
-          temperature: 0.9, // Higher for more creative/funny responses
+          maxOutputTokens: 800,
+          temperature: 1.0, // Higher for more creative/funny responses
           topP: 0.95,
-          topK: 40,
         },
       });
 
-      // Add system context to user message
-      const contextualMessage = `${PERSONALITY_PROMPT}\n\nUser ${userName} says: ${userMessage}`;
-      
-      const result = await chat.sendMessage(contextualMessage);
+      // Simple user message (personality is in systemInstruction now)
+      const result = await chat.sendMessage(`User ${userName} says: ${userMessage}`);
       const response = result.response.text();
 
       // Update history

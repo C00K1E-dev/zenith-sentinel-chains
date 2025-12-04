@@ -94,6 +94,8 @@ async function verifyGenesisMint(walletAddress) {
 
 // Vercel Serverless Function Handler
 export default async function handler(req, res) {
+  console.log('API called:', { method: req.method, query: req.query, body: req.body });
+  
   // Set CORS headers for cross-origin requests
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -132,17 +134,23 @@ export default async function handler(req, res) {
       });
     }
 
+    console.log('Processing wallet:', walletAddress);
+    
     // Perform verification
     const result = await verifyGenesisMint(walletAddress);
+    
+    console.log('Verification result:', result);
 
     // Return 200 even if verification fails (it's a valid API response)
     return res.status(200).json(result);
   } catch (error) {
     console.error('API Error:', error);
+    console.error('Error stack:', error.stack);
     return res.status(500).json({
       verified: false,
       error: 'Internal server error',
       message: error.message,
+      stack: error.stack,
     });
   }
 }

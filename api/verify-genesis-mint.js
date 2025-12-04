@@ -50,15 +50,16 @@ async function verifyGenesisMint(walletAddress) {
     }
 
     const balanceHex = result.result || '0x0';
-    const balance = BigInt(balanceHex);
-    const verified = balance > 0n;
+    // Parse hex to number string without BigInt
+    const balanceNum = parseInt(balanceHex, 16);
+    const verified = balanceNum > 0;
 
     return {
       verified,
       walletAddress: normalizedAddress,
-      balance: balance.toString(),
+      balance: balanceNum.toString(),
       message: verified
-        ? `User owns ${balance.toString()} Genesis NFT${balance > 1n ? 's' : ''}`
+        ? `User owns ${balanceNum} Genesis NFT${balanceNum > 1 ? 's' : ''}`
         : 'User does not own any Genesis NFTs',
       contractAddress: GENESIS_CONTRACT_ADDRESS,
       timestamp: new Date().toISOString(),

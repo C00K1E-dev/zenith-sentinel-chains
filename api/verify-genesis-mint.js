@@ -1,5 +1,14 @@
 import { ethers } from 'ethers';
-import GENESIS_ABI from '../src/contracts/SmartSentinelsGenesis.json' assert { type: 'json' };
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load Genesis ABI
+const abiPath = path.join(__dirname, '../src/contracts/SmartSentinelsGenesis.json');
+const GENESIS_ABI = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
 
 const GENESIS_CONTRACT_ADDRESS = '0x6427f3C265E47BABCde870bcC4F71d1c4A12779b';
 const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org:443';

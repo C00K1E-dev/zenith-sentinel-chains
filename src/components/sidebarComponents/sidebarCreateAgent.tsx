@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Cpu, Zap, Brain, Rocket, Settings, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bot, Cpu, Zap, Brain, Rocket, Settings, FileText, ChevronDown, ChevronUp, MessageCircle, Clock, Users, TrendingUp, Check } from 'lucide-react';
 import StatCard from '@/components/StatCard';
+import { useNavigate } from 'react-router-dom';
+import CreateAITelegramAgent from './createAITelegramAgent';
 
 const AIModelCard = ({ 
   name, 
@@ -52,8 +54,10 @@ const AIModelCard = ({
 };
 
 const SidebarCreateAgent = () => {
+  const navigate = useNavigate();
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [showModelFile, setShowModelFile] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const [modelFileContent, setModelFileContent] = useState(`# Modelfile for AI Agent
 FROM gpt-4
 
@@ -90,6 +94,26 @@ PARAMETER custom_instructions """
     }
   }, [selectedModel]);
 
+  // Agent types available
+  const agentTypes = [
+    {
+      id: 'telegram',
+      name: 'Telegram AI Agent',
+      icon: MessageCircle,
+      description: 'Intelligent Telegram agent powered by Google Gemini and SmartSentinels for managing community, answering questions, and engaging members',
+      status: 'coming-soon',
+      pricing: 'From $99/month',
+      setupTime: '5-10 minutes',
+      features: [
+        'AI-powered responses',
+        'Community management',
+        'Member engagement',
+        'Analytics & insights'
+      ],
+      component: null // Will be rendered separately
+    }
+  ];
+
   const aiModels = [
     {
       id: 'gpt-4',
@@ -123,122 +147,275 @@ PARAMETER custom_instructions """
 
   return (
     <div>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
-      >
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
-            <Bot size={24} className="text-primary" />
-          </div>
-          <h2 className="text-2xl font-orbitron font-bold">
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Create Agent
-            </span>
-          </h2>
-        </div>
-      </motion.div>
+      {/* Show Telegram Agent Form if Selected */}
+      {selectedAgent === 'telegram' && (
+        <>
+          <button
+            onClick={() => setSelectedAgent(null)}
+            className="mb-8 text-primary hover:text-primary/80 transition flex items-center gap-2 text-sm font-medium"
+          >
+            <span>←</span>
+            <span>Back to Agent Selection</span>
+          </button>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <CreateAITelegramAgent />
+          </motion.div>
+        </>
+      )}
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="space-y-6"
-      >
-        <div className="glass-card p-6">
-          <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
-              <Settings size={20} className="text-secondary" />
+      {/* Agent Selection View */}
+      {!selectedAgent && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+                <Bot size={24} className="text-primary" />
+              </div>
+              <h2 className="text-2xl font-orbitron font-bold">
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  Create Agent
+                </span>
+              </h2>
             </div>
-            Choose AI Model
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            Select the AI model that best fits your agent's requirements. Each model has unique capabilities and performance characteristics.
-          </p>
+          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {aiModels.map((model) => (
-              <AIModelCard
-                key={model.id}
-                name={model.name}
-                description={model.description}
-                icon={model.icon}
-                capabilities={model.capabilities}
-                isSelected={selectedModel === model.id}
-                onSelect={() => setSelectedModel(model.id)}
-              />
-            ))}
-          </div>
-
-          {/* Model File Editor */}
-          {selectedModel && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6"
-            >
-              <button
-                onClick={() => setShowModelFile(!showModelFile)}
-                className="flex items-center gap-2 w-full p-4 glass-card hover:border-primary/50 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
-                  <FileText size={18} className="text-accent" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="space-y-6"
+          >
+            {/* New Agent Types Section */}
+            <div className="glass-card p-6">
+              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center">
+                  <MessageCircle size={20} className="text-blue-500" />
                 </div>
-                <span className="font-medium">Customize Model File</span>
-                {showModelFile ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
+                Deploy Your Telegram AI Agent
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Launch a powerful Telegram AI agent powered by Google Gemini, trained on your project data. Available now with flexible pricing and enterprise-grade features.
+              </p>
 
-              {showModelFile && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4"
-                >
-                  <textarea
-                    value={modelFileContent}
-                    onChange={(e) => setModelFileContent(e.target.value)}
-                    className="w-full h-64 p-4 glass-card resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                    placeholder="Enter your model file configuration..."
+              <div className="w-full">
+                {agentTypes.map((agent) => {
+                  const IconComponent = agent.icon;
+                  return (
+                    <motion.div
+                      key={agent.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`w-full rounded-lg border-2 overflow-hidden relative ${
+                        agent.status === 'available'
+                          ? 'border-blue-500/30 bg-blue-500/5'
+                          : 'border-muted/50 bg-muted/5'
+                      }`}
+                    >
+                      {/* Coming Soon Banner */}
+                      {agent.status === 'coming-soon' && (
+                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 px-4 text-center text-sm font-bold z-10 flex items-center justify-center gap-2">
+                          <Rocket size={18} />
+                          <span>Coming Soon</span>
+                          <Rocket size={18} />
+                        </div>
+                      )}
+
+                      <div className={`grid grid-cols-1 lg:grid-cols-5 gap-0 ${agent.status === 'coming-soon' ? 'pt-12' : ''}`}>
+                        {/* Left Column - Content (3/5 width) */}
+                        <div className="lg:col-span-3 p-6 lg:p-8">
+                          {/* Header */}
+                          <div className="flex items-start justify-between gap-4 mb-4">
+                            <div className="flex items-start gap-3">
+                              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                <IconComponent size={24} className="text-blue-500" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-xl text-foreground mb-1">{agent.name}</h4>
+                                {agent.status === 'available' && (
+                                  <span className="text-xs bg-green-500/20 text-green-600 px-2.5 py-1 rounded-full font-semibold">
+                                    Available Now
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                            {agent.description}
+                          </p>
+
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-blue-500/20">
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Pricing</p>
+                              <p className="font-bold text-primary text-lg">{agent.pricing}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">Setup Time</p>
+                              <p className="font-bold text-foreground text-lg">{agent.setupTime}</p>
+                            </div>
+                          </div>
+
+                          {/* Features */}
+                          <div className="mb-6">
+                            <p className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wider">Key Features</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {agent.features.map((feature, idx) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                  <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                    <Check size={12} className="text-green-500" />
+                                  </div>
+                                  <span className="text-sm text-foreground">{feature}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* CTA Button */}
+                          <motion.button
+                            disabled={agent.status === 'coming-soon'}
+                            onClick={() => agent.status === 'available' && setSelectedAgent(agent.id)}
+                            className={`w-full sm:w-auto px-8 py-3 rounded-lg transition font-bold shadow-lg flex items-center justify-center gap-2 ${
+                              agent.status === 'coming-soon'
+                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                                : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-xl'
+                            }`}
+                          >
+                            <Rocket size={18} />
+                            {agent.status === 'coming-soon' ? 'Coming Soon' : 'Deploy Agent Now'}
+                          </motion.button>
+                        </div>
+
+                        {/* Right Column - Image (2/5 width) */}
+                        <div className="hidden lg:flex lg:col-span-2 items-center justify-center p-6 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent">
+                          <img
+                            src="/assets/telegramSentinel.svg"
+                            alt="Telegram Sentinel AI Agent"
+                            className="w-full h-auto object-contain max-h-[400px] opacity-90 hover:opacity-100 transition-opacity duration-300"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Mobile Image Section */}
+                      <div className="lg:hidden px-6 pb-6 pt-0">
+                        <div className="rounded-lg overflow-hidden bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent p-6">
+                          <img
+                            src="/assets/telegramSentinel.svg"
+                            alt="Telegram Sentinel AI Agent"
+                            className="w-full max-h-64 object-contain opacity-90"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Traditional AI Models Section */}
+            <div className="glass-card p-6">
+              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+                  <Settings size={20} className="text-secondary" />
+                </div>
+                Custom AI Models
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                Select the AI model that best fits your agent's requirements. Each model has unique capabilities and performance characteristics.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {aiModels.map((model) => (
+                  <AIModelCard
+                    key={model.id}
+                    name={model.name}
+                    description={model.description}
+                    icon={model.icon}
+                    capabilities={model.capabilities}
+                    isSelected={selectedModel === model.id}
+                    onSelect={() => setSelectedModel(model.id)}
                   />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Modify the model file to customize your AI agent's behavior, parameters, and capabilities.
-                  </p>
+                ))}
+              </div>
+
+              {/* Model File Editor */}
+              {selectedModel && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-6"
+                >
+                  <button
+                    onClick={() => setShowModelFile(!showModelFile)}
+                    className="flex items-center gap-2 w-full p-4 glass-card hover:border-primary/50 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">
+                      <FileText size={18} className="text-accent" />
+                    </div>
+                    <span className="font-medium">Customize Model File</span>
+                    {showModelFile ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </button>
+
+                  {showModelFile && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4"
+                    >
+                      <textarea
+                        value={modelFileContent}
+                        onChange={(e) => setModelFileContent(e.target.value)}
+                        className="w-full h-64 p-4 glass-card resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder="Enter your model file configuration..."
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Modify the model file to customize your AI agent's behavior, parameters, and capabilities.
+                      </p>
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
-            </motion.div>
-          )}
 
-          <div className="flex justify-center">
-            <button
-              className="flex items-center gap-2 px-8 py-3 bg-muted text-muted-foreground cursor-not-allowed rounded-lg font-medium"
-              disabled
-            >
-              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-muted/30 to-muted/20 flex items-center justify-center">
-                <Rocket size={18} className="text-secondary" />
+              <div className="flex justify-center">
+                <button
+                  className="flex items-center gap-2 px-8 py-3 bg-muted text-muted-foreground cursor-not-allowed rounded-lg font-medium"
+                  disabled
+                >
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-muted/30 to-muted/20 flex items-center justify-center">
+                    <Rocket size={18} className="text-secondary" />
+                  </div>
+                  Deploy Agent (Coming Soon)
+                </button>
               </div>
-              Deploy Agent (Coming Soon)
-            </button>
-          </div>
-        </div>
+            </div>
 
-        {selectedModel && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="glass-card p-6 border-primary/50"
-          >
-            <h4 className="text-lg font-semibold mb-2">
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Selected Model</span>
-            </h4>
-            <p className="text-muted-foreground">
-              {aiModels.find(m => m.id === selectedModel)?.name} - Ready for deployment
-            </p>
+            {selectedModel && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-card p-6 border-primary/50"
+              >
+                <h4 className="text-lg font-semibold mb-2">
+                  <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">Selected Model</span>
+                </h4>
+                <p className="text-muted-foreground">
+                  {aiModels.find(m => m.id === selectedModel)?.name} - Ready for deployment
+                </p>
+              </motion.div>
+            )}
           </motion.div>
-        )}
-      </motion.div>
+        </>
+      )}
     </div>
   );
 };

@@ -1,17 +1,30 @@
 import { ethers } from 'ethers';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load Genesis ABI
-const abiPath = path.join(__dirname, '../src/contracts/SmartSentinelsGenesis.json');
-const GENESIS_ABI = JSON.parse(fs.readFileSync(abiPath, 'utf8'));
 
 const GENESIS_CONTRACT_ADDRESS = '0x6427f3C265E47BABCde870bcC4F71d1c4A12779b';
 const BSC_RPC_URL = 'https://bsc-dataseed1.binance.org:443';
+
+// Minimal ABI - just need balanceOf function
+const GENESIS_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+];
 
 // Helper to validate Ethereum address
 function isValidAddress(address) {

@@ -101,7 +101,7 @@ PARAMETER custom_instructions """
       name: 'Telegram AI Agent',
       icon: MessageCircle,
       description: 'Intelligent Telegram agent powered by Google Gemini and SmartSentinels for managing community, answering questions, and engaging members',
-      status: 'coming-soon',
+      status: 'available',
       pricing: 'From $99/month',
       setupTime: '5-10 minutes',
       features: [
@@ -220,16 +220,7 @@ PARAMETER custom_instructions """
                           : 'border-muted/50 bg-muted/5'
                       }`}
                     >
-                      {/* Coming Soon Banner */}
-                      {agent.status === 'coming-soon' && (
-                        <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 px-4 text-center text-sm font-bold z-10 flex items-center justify-center gap-2">
-                          <Rocket size={18} />
-                          <span>Coming Soon</span>
-                          <Rocket size={18} />
-                        </div>
-                      )}
-
-                      <div className={`grid grid-cols-1 lg:grid-cols-5 gap-0 ${agent.status === 'coming-soon' ? 'pt-12' : ''}`}>
+                      <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
                         {/* Left Column - Content (3/5 width) */}
                         <div className="lg:col-span-3 p-6 lg:p-8">
                           {/* Header */}
@@ -282,16 +273,11 @@ PARAMETER custom_instructions """
 
                           {/* CTA Button */}
                           <motion.button
-                            disabled={agent.status === 'coming-soon'}
-                            onClick={() => agent.status === 'available' && setSelectedAgent(agent.id)}
-                            className={`w-full sm:w-auto px-8 py-3 rounded-lg transition font-bold shadow-lg flex items-center justify-center gap-2 ${
-                              agent.status === 'coming-soon'
-                                ? 'bg-muted text-muted-foreground cursor-not-allowed'
-                                : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-xl'
-                            }`}
+                            onClick={() => setSelectedAgent(agent.id)}
+                            className="w-full sm:w-auto px-8 py-3 rounded-lg transition font-bold shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-xl"
                           >
                             <Rocket size={18} />
-                            {agent.status === 'coming-soon' ? 'Coming Soon' : 'Deploy Agent Now'}
+                            Deploy Agent Now
                           </motion.button>
                         </div>
 

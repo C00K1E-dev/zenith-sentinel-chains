@@ -182,8 +182,8 @@ Be helpful, accurate, and match the personality style.`;
       });
       
       // Retry logic with exponential backoff
-      let retries = 2;
-      let delay = 1000;
+      let retries = 4; // Increased retries for API overload
+      let delay = 500; // Start with 500ms
       
       for (let attempt = 1; attempt <= retries; attempt++) {
         try {
@@ -198,12 +198,12 @@ Be helpful, accurate, and match the personality style.`;
           break; // Success, exit retry loop
           
         } catch (error: any) {
-          console.error(`[AGENT-WEBHOOK] ${modelName} error (attempt ${attempt}):`, error.message);
+          console.error(`[AGENT-WEBHOOK] ${modelName} error (attempt ${attempt}/${retries}):`, error.message);
           
           if (attempt < retries && (error.message?.includes('503') || error.message?.includes('429') || error.message?.includes('overloaded'))) {
             console.log(`[AGENT-WEBHOOK] Retrying in ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2;
+            delay *= 2; // Exponential backoff: 500ms, 1s, 2s, 4s
           } else if (attempt === retries) {
             console.log(`[AGENT-WEBHOOK] All retries failed for ${modelName}, trying next model...`);
             break; // Try next model

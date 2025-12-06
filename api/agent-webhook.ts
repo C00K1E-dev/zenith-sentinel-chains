@@ -92,6 +92,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Triggers are optional - if set, they act as hints but don't block responses
     console.log('[AGENT-WEBHOOK] Responding to message');
 
+    // Save the incoming message FIRST so we can check conversation history
+    const messageTimestamp = new Date().toISOString();
+    await supabase.from('agent_messages').insert({
+      agent_id: agentId,
+      user_id: userId,
+      message: userMessage,
+      response: '', // Will update after generation
+      created_at: messageTimestamp
+    });
+
     // Check if we should greet this user (once per day)
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     
@@ -101,15 +111,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .eq('agent_id', agentId)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(2); // Get last 2 to check if this is first message today
     
-    const lastMessage = messages && messages.length > 0 ? messages[0] : null;
+    // Check if there's a message from today BEFORE this one
+    const shouldGreet = !messages || messages.length < 2 || 
+      new Date(messages[1].created_at).toISOString().split('T')[0] !== today;
     
-    // Only greet if there's no previous message OR the last message was on a different day
-    const shouldGreet = !lastMessage || 
-      new Date(lastMessage.created_at).toISOString().split('T')[0] !== today;
-    
-    console.log('[AGENT-WEBHOOK] Last message:', lastMessage?.created_at, 'Should greet:', shouldGreet);
+    console.log('[AGENT-WEBHOOK] Messages count:', messages?.length, 'Should greet:', shouldGreet);
 
     // Generate response using Gemini with fallback models
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);
@@ -223,14 +231,13 @@ Be helpful, accurate, and match the personality style.`;
     // Send response via Telegram
     await sendTelegramMessage(agent.bot_token, chatId, response);
 
-    // Save message to analytics
-    await supabase.from('agent_messages').insert({
-      agent_id: agentId,
-      user_id: message.from?.id?.toString(),
-      message: userMessage,
-      response: response,
-      created_at: new Date().toISOString()
-    });
+    // Update the message with the response
+    await supabase
+      .from('agent_messages')
+      .update({ response: response })
+      .eq('agent_id', agentId)
+      .eq('user_id', userId)
+      .eq('created_at', messageTimestamp);
 
     // Update message count
     await supabase

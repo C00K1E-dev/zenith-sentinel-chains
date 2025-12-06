@@ -136,7 +136,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     const greetingInstruction = shouldGreet 
       ? `This is the first interaction with ${userName} today. Start with a friendly greeting using their name, then answer their question.`
-      : `${userName} has already been greeted today. Don't greet them again - just answer their question naturally. You can use their name in the response, but don't say hello/hi/hey again.`;
+      : `IMPORTANT: ${userName} has already been greeted in this conversation. DO NOT greet them again. DO NOT say "hey", "hi", "hello", or any greeting words. Just answer their question directly and naturally.`;
     
     const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     

@@ -92,32 +92,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Triggers are optional - if set, they act as hints but don't block responses
     console.log('[AGENT-WEBHOOK] Responding to message');
 
-    // Save the incoming message FIRST so we can check conversation history
-    const messageTimestamp = new Date().toISOString();
-    await supabase.from('agent_messages').insert({
-      agent_id: agentId,
-      user_id: userId,
-      message: userMessage,
-      response: '', // Will update after generation
-      created_at: messageTimestamp
-    });
+    // Simple greeting check: Only greet if this is the first message in the conversation
+    // Telegram doesn't reset chat_id, so we track per-session using a simple in-memory approach
+    // For serverless, we'll check if the user has an existing greeting today via agent stats
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Check last interaction time from agent stats
+    const { data: recentMessages } = await supabase
+      .from('telegram_agents')
+      .select('last_interaction')
+      .eq('id', agentId)
+      .single();
+    
+    const lastInteractionDate = recentMessages?.last_interaction 
+      ? new Date(recentMessages.last_interaction).toISOString().split('T')[0] 
+      : null;
+    
+    const shouldGreet = !lastInteractionDate || lastInteractionDate !== today;
+    
+    console.log('[AGENT-WEBHOOK] Should greet:', shouldGreet, 'Last interaction:', lastInteractionDate, 'Today:', today);
 
-    // Check if we should greet this user (once per day)
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    
-    const { data: messages } = await supabase
-      .from('agent_messages')
-      .select('created_at')
-      .eq('agent_id', agentId)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(2); // Get last 2 to check if this is first message today
-    
-    // If we have less than 2 messages total, or if the previous message (messages[1]) was on a different day, then greet
-    const shouldGreet = !messages || messages.length < 2 || 
-      (messages[1] && new Date(messages[1].created_at).toISOString().split('T')[0] !== today);
-    
-    console.log('[AGENT-WEBHOOK] Messages count:', messages?.length, 'Should greet:', shouldGreet, 'Today:', today, 'Last msg:', messages?.[1]?.created_at);
+    // Update last interaction time
+    await supabase
+      .from('telegram_agents')
+      .update({ last_interaction: new Date().toISOString() })
+      .eq('id', agentId);
 
     // Generate response using Gemini with fallback models
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);
@@ -233,15 +232,7 @@ Be helpful, accurate, and match the personality style.`;
     // Send response via Telegram
     await sendTelegramMessage(agent.bot_token, chatId, response);
 
-    // Update the message with the response
-    await supabase
-      .from('agent_messages')
-      .update({ response: response })
-      .eq('agent_id', agentId)
-      .eq('user_id', userId)
-      .eq('created_at', messageTimestamp);
-
-    // Update message count
+    // Update message count (last_interaction already updated above)
     await supabase
       .from('telegram_agents')
       .update({ 

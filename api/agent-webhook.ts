@@ -94,19 +94,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Check if we should greet this user (once per day)
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const { data: lastMessage } = await supabase
+    
+    const { data: messages } = await supabase
       .from('agent_messages')
       .select('created_at')
       .eq('agent_id', agentId)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
     
+    const lastMessage = messages && messages.length > 0 ? messages[0] : null;
+    
+    // Only greet if there's no previous message OR the last message was on a different day
     const shouldGreet = !lastMessage || 
       new Date(lastMessage.created_at).toISOString().split('T')[0] !== today;
     
-    console.log('[AGENT-WEBHOOK] Should greet:', shouldGreet);
+    console.log('[AGENT-WEBHOOK] Last message:', lastMessage?.created_at, 'Should greet:', shouldGreet);
 
     // Generate response using Gemini with fallback models
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);

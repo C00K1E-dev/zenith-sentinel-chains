@@ -341,38 +341,6 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                   Format: Start each question with "Q:" and each answer with "A:", separated by blank lines
                 </p>
               </div>
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <p className="font-semibold text-sm">{faq.question}</p>
-                        <button
-                          onClick={() => removeFaq(index)}
-                          className="text-red-500 hover:text-red-400 transition"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{faq.answer}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Google API Key (Optional) */}
-              <div>
-                <label className="text-sm font-semibold mb-2 block">
-                  Google API Key (Optional)
-                  <span className="text-muted-foreground font-normal ml-2">
-                    (For custom AI model access)
-                  </span>
-                </label>
-                <input
-                  type="password"
-                  value={settings.google_api_key || ''}
-                  onChange={(e) => setSettings({ ...settings, google_api_key: e.target.value || null })}
-                  placeholder="Leave empty to use default"
-                  className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
             </div>
 
             {/* Actions */}

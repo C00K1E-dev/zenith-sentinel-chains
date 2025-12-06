@@ -113,11 +113,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .order('created_at', { ascending: false })
       .limit(2); // Get last 2 to check if this is first message today
     
-    // Check if there's a message from today BEFORE this one
+    // If we have less than 2 messages total, or if the previous message (messages[1]) was on a different day, then greet
     const shouldGreet = !messages || messages.length < 2 || 
-      new Date(messages[1].created_at).toISOString().split('T')[0] !== today;
+      (messages[1] && new Date(messages[1].created_at).toISOString().split('T')[0] !== today);
     
-    console.log('[AGENT-WEBHOOK] Messages count:', messages?.length, 'Should greet:', shouldGreet);
+    console.log('[AGENT-WEBHOOK] Messages count:', messages?.length, 'Should greet:', shouldGreet, 'Today:', today, 'Last msg:', messages?.[1]?.created_at);
 
     // Generate response using Gemini with fallback models
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);

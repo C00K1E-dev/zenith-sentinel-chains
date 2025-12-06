@@ -175,7 +175,7 @@ Be helpful, accurate, and match the personality style.`;
     
     // Try multiple models - using Gemma 3 models
     const models = [
-      'gemma-3-27b',      // Primary - larger model
+      'gemma-3-27b',      // Primary - larger model, 30 RPM, 15K TPM, 14.4K RPD
       'gemma-3-12b'       // Fallback - smaller but still capable
     ];
     

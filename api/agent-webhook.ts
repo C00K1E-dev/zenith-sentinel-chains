@@ -173,11 +173,10 @@ Be helpful, accurate, and match the personality style.`;
 
     let response: string = '';
     
-    // Using Gemini 2.5 Flash (paid) as primary - best quality and reliability
-    // Falls back to free Gemini 1.5 Flash if rate limited
+    // Using models from your actual Google AI Studio list
     const models = [
-      'gemini-1.5-flash',      // Free tier with decent limits
-      'gemini-1.5-flash-8b'    // Smaller, faster fallback
+      'gemini-2.5-flash',      // 5 RPM, 250K TPM, 20 RPD - free tier
+      'gemini-2.5-flash-lite'  // 10 RPM, 250K TPM, 20 RPD - backup
     ];
     
     for (const modelName of models) {

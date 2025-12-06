@@ -92,25 +92,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Triggers are optional - if set, they act as hints but don't block responses
     console.log('[AGENT-WEBHOOK] Responding to message');
 
-    // Simple greeting check: Only greet if this is the first message in the conversation
-    // Telegram doesn't reset chat_id, so we track per-session using a simple in-memory approach
-    // For serverless, we'll check if the user has an existing greeting today via agent stats
-    const today = new Date().toISOString().split('T')[0];
+    // Smart greeting logic: Only greet if it's a new conversation
+    // 1. Check if message is a greeting ("hi", "hello", "hey", etc.)
+    // 2. OR check if last interaction was more than 6 hours ago
+    const greetingWords = ['hi', 'hello', 'hey', 'sup', 'yo', 'greetings', 'good morning', 'good afternoon', 'good evening'];
+    const isGreeting = greetingWords.some(word => userMessage.toLowerCase().trim().startsWith(word));
     
-    // Check last interaction time from agent stats
-    const { data: recentMessages } = await supabase
+    // Check last interaction time
+    const { data: agentData } = await supabase
       .from('telegram_agents')
       .select('last_interaction')
       .eq('id', agentId)
       .single();
     
-    const lastInteractionDate = recentMessages?.last_interaction 
-      ? new Date(recentMessages.last_interaction).toISOString().split('T')[0] 
-      : null;
+    const lastInteraction = agentData?.last_interaction ? new Date(agentData.last_interaction) : null;
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6 hours in milliseconds
+    const isNewSession = !lastInteraction || lastInteraction < sixHoursAgo;
     
-    const shouldGreet = !lastInteractionDate || lastInteractionDate !== today;
+    const shouldGreet = isGreeting || isNewSession;
     
-    console.log('[AGENT-WEBHOOK] Should greet:', shouldGreet, 'Last interaction:', lastInteractionDate, 'Today:', today);
+    console.log('[AGENT-WEBHOOK] Should greet:', shouldGreet, 'Is greeting:', isGreeting, 'New session:', isNewSession);
 
     // Update last interaction time
     await supabase

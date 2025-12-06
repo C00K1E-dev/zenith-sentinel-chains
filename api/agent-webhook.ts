@@ -33,10 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const userName = message.from?.first_name || message.from?.username || 'there';
     const userId = message.from?.id?.toString() || 'unknown';
     
-    console.log('[AGENT-WEBHOOK] Received message:', { chatId, userMessage, userName });
-
-    // For now, we need to get the agent by bot_token
-    // Since Telegram doesn't send the bot token in updates, we'll use a query parameter
+    // Get agent ID from query parameter
     const agentId = req.query.agentId as string;
     
     if (!agentId) {
@@ -44,12 +41,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Agent ID required' });
     }
 
-    // Load agent configuration from Supabase
+    // Load agent configuration
     const { data: agent, error: agentError } = await supabase
       .from('telegram_agents')
       .select('*')
       .eq('id', agentId)
       .single();
+
+    if (agentError || !agent) {
+      console.error('[AGENT-WEBHOOK] Agent not found:', agentError);
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    // Handle new members joining the group
+    if (message.new_chat_members && message.new_chat_members.length > 0) {
+      console.log('[AGENT-WEBHOOK] New members joined:', message.new_chat_members.length);
+      
+      for (const newMember of message.new_chat_members) {
+        // Don't greet the bot itself
+        if (newMember.is_bot) continue;
+        
+        const memberName = newMember.first_name || newMember.username || 'there';
+        const welcomeMessage = `Welcome to ${agent.project_name}, ${memberName}! 🎉\n\nI'm the AI assistant here to help answer your questions. Feel free to ask me anything about the project!`;
+        
+        await sendTelegramMessage(agent.bot_token, chatId, welcomeMessage);
+        console.log('[AGENT-WEBHOOK] Sent welcome message to:', memberName);
+      }
+      
+      return res.status(200).json({ ok: true });
+    }
+    
+    console.log('[AGENT-WEBHOOK] Received message:', { chatId, userMessage, userName });
 
     if (agentError || !agent) {
       console.error('[AGENT-WEBHOOK] Agent not found:', agentError);

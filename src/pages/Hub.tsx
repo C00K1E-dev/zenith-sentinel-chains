@@ -9,7 +9,7 @@ const SidebarNFTsiNFTsHub = lazy(() => import('@/components/sidebarComponents/si
 const SidebarCreateAgent = lazy(() => import('@/components/sidebarComponents/sidebarCreateAgent'));
 const SidebarDeviceMonitoring = lazy(() => import('@/components/sidebarComponents/sidebarDeviceMonitoring'));
 const SidebarMyNFTs = lazy(() => import('@/components/sidebarComponents/sidebarMyNFTs'));
-const SidebarMyAgents = lazy(() => import('@/components/sidebarComponents/sidebarMyAgents'));
+const SidebarMyAgents = lazy(() => import('@/components/sidebarComponents/sidebarMyAgentsEnhanced')); // Use Supabase version
 const SidebarMyDevices = lazy(() => import('@/components/sidebarComponents/sidebarMyDevices'));
 const SidebarMyRewards = lazy(() => import('@/components/sidebarComponents/sidebarMyRewards'));
 const SidebarGeneralStats = lazy(() => import('@/components/sidebarComponents/sidebarGeneralStats'));

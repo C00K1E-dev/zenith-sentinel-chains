@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Cpu, Zap, Brain, Rocket, Settings, FileText, ChevronDown, ChevronUp, MessageCircle, Clock, Users, TrendingUp, Check } from 'lucide-react';
+import { Bot, Cpu, Zap, Brain, Rocket, Settings, FileText, ChevronDown, ChevronUp, MessageCircle, Clock, Users, TrendingUp, Check, Wallet } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { useNavigate } from 'react-router-dom';
+import { useAccount } from 'wagmi';
 import CreateAITelegramAgent from './createAITelegramAgent';
 
 const AIModelCard = ({ 
@@ -55,9 +56,11 @@ const AIModelCard = ({
 
 const SidebarCreateAgent = () => {
   const navigate = useNavigate();
+  const { address, isConnected } = useAccount();
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [showModelFile, setShowModelFile] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
+  const [showWalletWarning, setShowWalletWarning] = useState(false);
   const [modelFileContent, setModelFileContent] = useState(`# Modelfile for AI Agent
 FROM gpt-4
 
@@ -273,12 +276,37 @@ PARAMETER custom_instructions """
 
                           {/* CTA Button */}
                           <motion.button
-                            onClick={() => setSelectedAgent(agent.id)}
+                            onClick={() => {
+                              if (!isConnected) {
+                                setShowWalletWarning(true);
+                                setTimeout(() => setShowWalletWarning(false), 5000);
+                              } else {
+                                setSelectedAgent(agent.id);
+                              }
+                            }}
                             className="w-full sm:w-auto px-8 py-3 rounded-lg transition font-bold shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-xl"
                           >
-                            <Rocket size={18} />
-                            Deploy Agent Now
+                            {!isConnected ? <Wallet size={18} /> : <Rocket size={18} />}
+                            {!isConnected ? 'Connect Wallet First' : 'Deploy Agent Now'}
                           </motion.button>
+                          
+                          {/* Wallet Warning */}
+                          {showWalletWarning && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0 }}
+                              className="mt-4 p-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg flex items-start gap-3"
+                            >
+                              <Wallet size={18} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-yellow-600 text-sm font-semibold mb-1">Wallet Connection Required</p>
+                                <p className="text-yellow-600/90 text-xs">
+                                  Please connect your wallet using the button in the top-right corner to deploy your AI agent. Payment is required to activate your agent.
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
                         </div>
 
                         {/* Right Column - Image (2/5 width) */}

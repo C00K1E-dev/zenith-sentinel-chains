@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Download, RefreshCw, Check, X, ExternalLink, Copy } from 'lucide-react';
+import { Loader2, Download, RefreshCw, Check, X, ExternalLink, Copy, Bot } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import TelegramAgentsDashboard from '@/components/TelegramAgentsDashboard';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
@@ -34,7 +35,7 @@ export default function AdminDashboard() {
   const [tagVerifications, setTagVerifications] = useState<PendingVerification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, uniqueTelegrams: 0, uniqueXHandles: 0 });
-  const [activeTab, setActiveTab] = useState<'registrations' | 'verifications' | 'telegram' | 'likes' | 'tags'>('registrations');
+  const [activeTab, setActiveTab] = useState<'registrations' | 'verifications' | 'telegram' | 'likes' | 'tags' | 'telegram-agents'>('registrations');
   const [resetWallet, setResetWallet] = useState('');
   const [nftHolders, setNftHolders] = useState<any[]>([]);
   const [manualCheckWallet, setManualCheckWallet] = useState('');
@@ -581,6 +582,13 @@ export default function AdminDashboard() {
           className={`px-4 py-2 ${activeTab === 'tags' ? 'border-b-2 border-blue-500 font-bold' : 'text-gray-600'}`}
         >
           Tag Friends Verifications ({tagVerifications.filter(v => v.status === 'pending').length})
+        </button>
+        <button
+          onClick={() => setActiveTab('telegram-agents')}
+          className={`px-4 py-2 flex items-center gap-2 ${activeTab === 'telegram-agents' ? 'border-b-2 border-blue-500 font-bold' : 'text-gray-600'}`}
+        >
+          <Bot size={18} />
+          Telegram AI Agents
         </button>
       </div>
 
@@ -1214,6 +1222,11 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
         </>
+      )}
+
+      {/* Telegram AI Agents Tab */}
+      {activeTab === 'telegram-agents' && (
+        <TelegramAgentsDashboard />
       )}
     </div>
   );

@@ -1,6 +1,25 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, Upload, AlertCircle, Check, Loader, ChevronRight, Copy, Rocket, FileText, Palette, DollarSign, Eye } from 'lucide-react';
+import { MessageCircle, Upload, AlertCircle, Check, Loader, ChevronRight, Copy, Rocket, FileText, Palette, DollarSign, Eye, Wallet, ExternalLink } from 'lucide-react';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { parseUnits } from 'viem';
+import { bsc } from 'wagmi/chains';
+import {
+  USDT_CONTRACT_ADDRESS,
+  TREASURY_WALLET,
+  ERC20_ABI,
+  getPaymentAmount,
+  PaymentStep,
+  getPaymentStepMessage,
+  getBSCScanLink
+} from '@/lib/blockchain';
+import {
+  getOrCreateUser,
+  createAgent,
+  createSubscription,
+  supabase
+} from '@/lib/supabase';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface AgentConfig {
   projectName: string;
@@ -25,7 +44,83 @@ interface PricingOption {
   color: string;
 }
 
+/**
+ * Build knowledge base by fetching and parsing website content
+ */
+async function buildKnowledgeBase(
+  websiteUrl: string,
+  projectName: string,
+  customFaqs: string,
+  additionalInfo?: string
+): Promise<Record<string, any>> {
+  try {
+    // Fetch website HTML
+    const response = await fetch(websiteUrl);
+    const html = await response.text();
+    
+    // Extract text content (remove HTML tags)
+    const textContent = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 5000); // Limit to 5000 chars
+
+    // Use Gemini to extract structured information
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+
+    const prompt = `Extract key information from this website about ${projectName} and format as JSON:
+
+Website Content:
+${textContent}
+
+Custom FAQs:
+${customFaqs}
+
+Additional Info:
+${additionalInfo || 'None'}
+
+Extract and return ONLY a JSON object with these fields:
+{
+  "description": "brief project description",
+  "features": ["feature1", "feature2"],
+  "tokenomics": {"supply": "...", "distribution": "..."},
+  "roadmap": ["milestone1", "milestone2"],
+  "team": "team info",
+  "socialLinks": {"twitter": "...", "discord": "..."},
+  "faqs": [{"q": "question", "a": "answer"}]
+}`;
+
+    const result = await model.generateContent(prompt);
+    const jsonText = result.response.text()
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    
+    const knowledgeBase = JSON.parse(jsonText);
+    
+    return {
+      ...knowledgeBase,
+      websiteUrl,
+      lastUpdated: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error building knowledge base:', error);
+    // Return basic structure
+    return {
+      description: `AI assistant for ${projectName}`,
+      websiteUrl,
+      customFaqs,
+      additionalInfo,
+      lastUpdated: new Date().toISOString()
+    };
+  }
+}
+
 const CreateAITelegramAgent = () => {
+  const { address, isConnected } = useAccount();
   const [step, setStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
   const [previewStep, setPreviewStep] = useState(1);
@@ -44,12 +139,25 @@ const CreateAITelegramAgent = () => {
   const [loading, setLoading] = useState(false);
   const [deployedBotToken, setDeployedBotToken] = useState<string | null>(null);
   const [triggerInput, setTriggerInput] = useState('');
+  
+  // Payment states
+  const [paymentStep, setPaymentStep] = useState<PaymentStep>(PaymentStep.IDLE);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [agentId, setAgentId] = useState<string | null>(null);
+
+  // Wagmi hooks for payment
+  const { writeContract, data: hash, isPending: isTransferring } = useWriteContract();
+  const { isSuccess: isTransferConfirmed, isLoading: isConfirming } = useWaitForTransactionReceipt({
+    hash: hash as `0x${string}` | undefined,
+    chainId: bsc.id,
+  });
 
   const pricingOptions: PricingOption[] = [
     {
       id: 'starter',
       name: 'Starter',
-      price: '$99/month',
+      price: '$1/month (TEST)',
       rpm: '15 RPM',
       rpd: '1,000 RPD',
       features: ['1 bot', 'Basic personality', '500 interactions/day', 'Email support'],
@@ -58,7 +166,7 @@ const CreateAITelegramAgent = () => {
     {
       id: 'pro',
       name: 'Pro',
-      price: '$249/month',
+      price: '$1/month (TEST)',
       rpm: '15 RPM',
       rpd: '1,000 RPD',
       features: ['3 bots', 'Custom personality', '2,000 interactions/day', '24h support'],
@@ -67,7 +175,7 @@ const CreateAITelegramAgent = () => {
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: '$599/month',
+      price: '$1/month (TEST)',
       rpm: '15 RPM',
       rpd: '1,000 RPD',
       features: ['Unlimited bots', 'White-label', 'Unlimited interactions', 'Same-day support'],
@@ -100,45 +208,226 @@ const CreateAITelegramAgent = () => {
     });
   };
 
-  const handleCreateBot = async () => {
+  /**
+   * Reset payment state for retry
+   */
+  const resetPaymentState = () => {
+    setPaymentStep(PaymentStep.IDLE);
+    setPaymentError(null);
+    setTxHash(null);
+  };
+
+  /**
+   * Handle USDT payment - THE GATEKEEPER
+   * This is the critical payment flow that gates agent deployment
+   */
+  const handlePayment = async () => {
+    if (!isConnected || !address) {
+      setPaymentError('Please connect your wallet first');
+      return;
+    }
+
+    try {
+      setPaymentError(null);
+      setTxHash(null); // Clear old transaction
+      setPaymentStep(PaymentStep.TRANSFERRING);
+
+      // Get payment amount for selected tier
+      const amountUSDT = getPaymentAmount(config.pricingTier);
+      const amountWei = parseUnits(amountUSDT, 18);
+
+      console.log('[PAYMENT] Initiating transfer:', { amountUSDT, amountWei: amountWei.toString(), treasury: TREASURY_WALLET });
+
+      // Initiate USDT transfer to treasury
+      writeContract({
+        address: USDT_CONTRACT_ADDRESS,
+        abi: ERC20_ABI,
+        functionName: 'transfer',
+        args: [TREASURY_WALLET, amountWei],
+        chainId: bsc.id,
+      });
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      setPaymentError(error.message || 'Payment failed. Please try again.');
+      setPaymentStep(PaymentStep.ERROR);
+    }
+  };
+
+  /**
+   * Listen for payment confirmation and create agent + subscription
+   */
+  React.useEffect(() => {
+    console.log('[PAYMENT] Confirmation check:', { 
+      isTransferConfirmed, 
+      isConfirming,
+      hash: hash ? hash.substring(0, 10) + '...' : null,
+      address: address ? address.substring(0, 10) + '...' : null,
+      paymentStep 
+    });
+    
+    if (isTransferConfirmed && hash && address && paymentStep !== PaymentStep.TRANSFER_CONFIRMED) {
+      console.log('[PAYMENT] Payment confirmed! Hash:', hash);
+      handlePaymentConfirmed(hash);
+    }
+  }, [isTransferConfirmed, hash, address, paymentStep]);
+
+  /**
+   * After payment confirmed, create agent and subscription
+   */
+  const handlePaymentConfirmed = async (transactionHash: `0x${string}`) => {
+    try {
+      setPaymentStep(PaymentStep.TRANSFER_CONFIRMED);
+      setTxHash(transactionHash);
+
+      // 1. Get or create user in Supabase
+      let user;
+      try {
+        user = await getOrCreateUser(address!);
+        if (!user) {
+          throw new Error('Failed to create user account - RLS policy may be blocking. Check Supabase dashboard.');
+        }
+      } catch (error: any) {
+        if (error.message?.includes('row-level security')) {
+          throw new Error('Database permission error: Row-Level Security is blocking user creation. Please disable RLS on the users table or add proper policies.');
+        }
+        throw error;
+      }
+
+      // 2. Create telegram agent record (draft status)
+      let agent;
+      try {
+        // Generate a unique bot_handle from bot token or use a timestamp-based fallback
+        const botTokenPrefix = config.botToken.split(':')[0]; // Extract bot ID from token
+        const uniqueHandle = `bot_${botTokenPrefix}_${Date.now()}`; // Ensure uniqueness
+        
+        console.log('[AGENT] Creating agent with handle:', uniqueHandle);
+        
+        agent = await createAgent({
+          user_id: user.id,
+          project_name: config.projectName,
+          bot_handle: uniqueHandle, // Use unique identifier instead of empty string
+          bot_token: config.botToken,
+          website_url: config.websiteUrl,
+          whitepaper_url: config.whitepaper ? 'pending_upload' : undefined,
+          personality: config.personality,
+          custom_personality: config.customPersonality,
+          trigger_keywords: config.triggers,
+          custom_faqs: config.customFaqs,
+          additional_info: config.additionalInfo,
+          pricing_tier: config.pricingTier,
+          deployment_status: 'draft'
+        });
+
+        if (!agent) {
+          throw new Error('Failed to create agent record - no data returned');
+        }
+      } catch (error: any) {
+        console.error('[AGENT] Agent creation error:', error);
+        
+        // If duplicate key error, the agent might already exist from a previous payment
+        if (error.message?.includes('duplicate key')) {
+          throw new Error('This bot token is already registered. Each bot can only be used once.');
+        }
+        
+        throw new Error(`Agent creation failed: ${error.message || 'Unknown error'}`);
+      }
+
+      setAgentId(agent.id);
+
+      // 3. Create subscription record - USE TEST PRICING (1 USDT)
+      const subscriptionCost = 1; // Test pricing: 1 USDT for all tiers
+      
+      let subscription;
+      try {
+        subscription = await createSubscription({
+          user_id: user.id,
+          agent_id: agent.id,
+          subscription_tier: config.pricingTier,
+          subscription_cost_usd: subscriptionCost,
+          payment_status: 'confirmed',
+          transaction_hash: transactionHash,
+          transaction_date: new Date().toISOString()
+        });
+
+        if (!subscription) {
+          throw new Error('Failed to create subscription record - no data returned');
+        }
+      } catch (error: any) {
+        console.error('[SUBSCRIPTION] Subscription creation error:', error);
+        throw new Error(`Subscription creation failed: ${error.message || 'Unknown error'}`);
+      }
+
+      // 4. Build knowledge base from website
+      console.log('[KNOWLEDGE] Fetching website content...');
+      try {
+        const knowledgeBase = await buildKnowledgeBase(
+          config.websiteUrl,
+          config.projectName,
+          config.customFaqs,
+          config.additionalInfo
+        );
+        
+        // Update agent with knowledge base
+        await supabase
+          .from('telegram_agents')
+          .update({ 
+            knowledge_base: knowledgeBase,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', agent.id);
+          
+        console.log('[KNOWLEDGE] Knowledge base built successfully');
+      } catch (error) {
+        console.error('[KNOWLEDGE] Failed to build knowledge base:', error);
+        // Continue anyway - agent can still work without full knowledge base
+      }
+
+      // 5. Move to Step 4 (deployment)
+      setStep(4);
+      
+      // 6. Call API to deploy bot
+      await deployBot(agent.id);
+
+    } catch (error: any) {
+      console.error('Post-payment error:', error);
+      setPaymentError(error.message || 'Failed to process payment confirmation');
+      setPaymentStep(PaymentStep.ERROR);
+    }
+  };
+
+  /**
+   * Deploy bot to Vercel after payment confirmed
+   */
+  const deployBot = async (agentId: string) => {
     setLoading(true);
     try {
-      // Call your backend API to create the bot
       const response = await fetch('/api/create-telegram-agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
+        body: JSON.stringify({
+          ...config,
+          agentId,
+          walletAddress: address
+        })
       });
 
       if (response.ok) {
         const data = await response.json();
         setDeployedBotToken(data.botInfo.username);
-
-        // Save agent to localStorage
-        const existingAgents = JSON.parse(localStorage.getItem('telegramAgents') || '[]');
-        const newAgent = {
-          projectName: config.projectName,
-          botHandle: data.botInfo.username,
-          website: config.websiteUrl,
-          personality: config.personality,
-          triggers: config.triggers,
-          pricingTier: config.pricingTier,
-          createdAt: new Date().toISOString(),
-          status: 'active'
-        };
-        existingAgents.push(newAgent);
-        localStorage.setItem('telegramAgents', JSON.stringify(existingAgents));
-
-        setStep(4); // Success step
       } else {
-        alert('Failed to create bot. Please try again.');
+        throw new Error('Deployment failed');
       }
-    } catch (error) {
-      console.error('Error creating bot:', error);
-      alert('Error creating bot: ' + error);
+    } catch (error: any) {
+      console.error('Deployment error:', error);
+      alert('Error deploying bot: ' + error.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCreateBot = async () => {
+    // This is now just a wrapper - actual deployment happens after payment
+    await handlePayment();
   };
 
   // Step 1: Project Information
@@ -298,7 +587,7 @@ const CreateAITelegramAgent = () => {
     </motion.div>
   );
 
-  // Step 3: Pricing Selection
+  // Step 3: Pricing Selection + PAYMENT
   const renderStep3 = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
@@ -309,11 +598,12 @@ const CreateAITelegramAgent = () => {
           <button
             key={option.id}
             onClick={() => setConfig({ ...config, pricingTier: option.id })}
+            disabled={isTransferring || isConfirming}
             className={`p-6 rounded-lg border-2 transition text-left h-full ${
               config.pricingTier === option.id
                 ? 'border-primary bg-primary/10 shadow-lg lg:scale-105'
                 : 'border-muted hover:border-primary/50 hover:bg-muted/30'
-            }`}
+            } ${(isTransferring || isConfirming) ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <div className={`bg-gradient-to-r ${option.color} text-white p-2.5 rounded w-fit mb-4`}>
               <p className="font-bold text-sm">{option.name}</p>
@@ -334,6 +624,112 @@ const CreateAITelegramAgent = () => {
             </ul>
           </button>
         ))}
+      </div>
+
+      {/* Payment Section */}
+      <div className="mt-8 p-6 glass-card border-2 border-primary/30 rounded-lg">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-foreground mb-1">Complete Payment</h3>
+            <p className="text-sm text-muted-foreground">
+              {pricingOptions.find(p => p.id === config.pricingTier)?.price} in USDT on BSC
+            </p>
+          </div>
+          {isConnected && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Wallet size={14} />
+              <span className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Payment Status Messages */}
+        {paymentStep !== PaymentStep.IDLE && (
+          <div className={`mb-4 p-4 rounded-lg flex items-start gap-3 ${
+            paymentStep === PaymentStep.ERROR
+              ? 'bg-red-500/20 border border-red-500/50'
+              : paymentStep === PaymentStep.TRANSFER_CONFIRMED
+              ? 'bg-green-500/20 border border-green-500/50'
+              : 'bg-blue-500/20 border border-blue-500/50'
+          }`}>
+            {isTransferring || isConfirming ? (
+              <Loader size={18} className="animate-spin text-blue-500 flex-shrink-0 mt-0.5" />
+            ) : paymentStep === PaymentStep.TRANSFER_CONFIRMED ? (
+              <Check size={18} className="text-green-500 flex-shrink-0 mt-0.5" />
+            ) : paymentStep === PaymentStep.ERROR ? (
+              <AlertCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
+            ) : null}
+            <div className="flex-1">
+              <p className={`text-sm font-semibold mb-1 ${
+                paymentStep === PaymentStep.ERROR ? 'text-red-600' :
+                paymentStep === PaymentStep.TRANSFER_CONFIRMED ? 'text-green-600' :
+                'text-blue-600'
+              }`}>
+                {getPaymentStepMessage(paymentStep)}
+              </p>
+              {txHash && (
+                <a
+                  href={getBSCScanLink(txHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-500 hover:underline flex items-center gap-1 mt-1"
+                >
+                  View transaction <ExternalLink size={12} />
+                </a>
+              )}
+              {paymentError && (
+                <p className="text-xs text-red-600 mt-1">{paymentError}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Payment Button */}
+        <button
+          onClick={paymentStep === PaymentStep.ERROR ? resetPaymentState : handlePayment}
+          disabled={!isConnected || isTransferring || isConfirming || paymentStep === PaymentStep.TRANSFER_CONFIRMED}
+          className="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+        >
+          {isTransferring || isConfirming ? (
+            <>
+              <Loader size={18} className="animate-spin" />
+              {isTransferring ? 'Confirm in Wallet...' : 'Confirming Payment...'}
+            </>
+          ) : paymentStep === PaymentStep.TRANSFER_CONFIRMED ? (
+            <>
+              <Check size={18} />
+              Payment Confirmed ✅
+            </>
+          ) : paymentStep === PaymentStep.ERROR ? (
+            <>
+              <AlertCircle size={18} />
+              Retry Payment
+            </>
+          ) : (
+            <>
+              <Wallet size={18} />
+              Pay with USDT
+            </>
+          )}
+        </button>
+
+        {/* Manual Verification Button - Show if stuck in "Confirming" for too long OR if transaction hash exists but not confirmed */}
+        {(isConfirming && hash) && (
+          <button
+            onClick={() => {
+              console.log('[PAYMENT] Manual confirmation triggered for hash:', hash);
+              handlePaymentConfirmed(hash);
+            }}
+            className="w-full px-6 py-3 border-2 border-yellow-500 text-yellow-600 rounded-lg hover:bg-yellow-500/10 transition font-semibold mt-2 flex items-center justify-center gap-2"
+          >
+            <AlertCircle size={18} />
+            Payment stuck? Click here if transaction succeeded on BSCScan
+          </button>
+        )}
+
+        <p className="text-xs text-center text-muted-foreground mt-3">
+          Secure payment on BSC. No refunds after agent deployment.
+        </p>
       </div>
     </motion.div>
   );
@@ -539,37 +935,25 @@ const CreateAITelegramAgent = () => {
               {step > 1 && (
                 <button
                   onClick={() => setStep(step - 1)}
-                  className="flex-1 px-6 py-3 border border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition font-semibold text-foreground"
+                  disabled={isTransferring || isConfirming}
+                  className="flex-1 px-6 py-3 border border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition font-semibold text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ← Back
                 </button>
               )}
-              <button
-                onClick={step === 3 ? handleCreateBot : () => setStep(step + 1)}
-                disabled={
-                  loading ||
-                  (step === 1 && (!config.projectName || !config.websiteUrl || !config.botToken)) ||
-                  (step === 2 && config.personality === 'custom' && !config.customPersonality)
-                }
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
-              >
-                {loading ? (
-                  <>
-                    <Loader size={18} className="animate-spin" />
-                    Deploying...
-                  </>
-                ) : step === 3 ? (
-                  <>
-                    <Rocket size={18} />
-                    Deploy Agent
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight size={18} />
-                  </>
-                )}
-              </button>
+              {step < 3 && (
+                <button
+                  onClick={() => setStep(step + 1)}
+                  disabled={
+                    (step === 1 && (!config.projectName || !config.websiteUrl || !config.botToken)) ||
+                    (step === 2 && config.personality === 'custom' && !config.customPersonality)
+                  }
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                >
+                  Next
+                  <ChevronRight size={18} />
+                </button>
+              )}
             </motion.div>
           )}
         </>

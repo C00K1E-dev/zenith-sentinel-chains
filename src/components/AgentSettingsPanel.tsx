@@ -14,6 +14,7 @@ interface AgentSettings {
   project_name: string;
   bot_handle: string;
   personality_prompt: string;
+  temperature: number;
   triggers: string[];
   default_response: string;
   pricing_tier: string;
@@ -51,6 +52,7 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
         project_name: data.project_name,
         bot_handle: data.bot_handle,
         personality_prompt: data.personality_prompt || '',
+        temperature: data.temperature || 0.3,
         triggers: data.triggers || [],
         default_response: data.default_response || '',
         pricing_tier: data.pricing_tier,
@@ -79,6 +81,7 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
         .from('telegram_agents')
         .update({
           personality_prompt: settings.personality_prompt,
+          temperature: settings.temperature,
           triggers: settings.triggers,
           default_response: settings.default_response,
           faqs: settings.faqs,
@@ -233,6 +236,68 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                   className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   placeholder="You are a helpful assistant that..."
                 />
+              </div>
+
+              {/* Temperature Control */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  Response Accuracy Control
+                  <span className="text-muted-foreground font-normal ml-2">
+                    (Lower = More Factual, prevents hallucinations)
+                  </span>
+                </label>
+                <div className="p-4 bg-secondary/20 border border-border rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-muted-foreground">More Creative</span>
+                    <span className="text-sm font-bold text-primary">{settings.temperature.toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground">More Factual</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={settings.temperature}
+                    onChange={(e) => setSettings({ ...settings, temperature: parseFloat(e.target.value) })}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {settings.temperature <= 0.3 && "🎯 Highly factual - Minimizes hallucinations (Recommended)"}
+                    {settings.temperature > 0.3 && settings.temperature <= 0.6 && "⚖️ Balanced - Mix of creativity and accuracy"}
+                    {settings.temperature > 0.6 && "✨ Creative - More expressive but may add details"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Temperature Control */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  Response Accuracy Control
+                  <span className="text-muted-foreground font-normal ml-2">
+                    (Lower = More Factual, prevents hallucinations)
+                  </span>
+                </label>
+                <div className="p-4 bg-secondary/10 border border-border rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs text-muted-foreground">More Creative</span>
+                    <span className="text-sm font-bold text-primary">{settings.temperature.toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground">More Factual</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={settings.temperature}
+                    onChange={(e) => setSettings({ ...settings, temperature: parseFloat(e.target.value) })}
+                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {settings.temperature <= 0.3 && "🎯 Highly factual - Minimizes hallucinations (Recommended)"}
+                    {settings.temperature > 0.3 && settings.temperature <= 0.6 && "⚖️ Balanced - Mix of creativity and accuracy"}
+                    {settings.temperature > 0.6 && "✨ Creative - More expressive but may add details"}
+                  </p>
+                </div>
               </div>
 
               {/* Default Response */}

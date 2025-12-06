@@ -136,12 +136,17 @@ ${agent.custom_faqs || 'None'}
 ADDITIONAL INFO:
 ${agent.additional_info || 'None'}
 
-CRITICAL RULES:
-- ONLY use information from PROJECT INFORMATION above
-- DO NOT make up dates, events, or details not in the data
-- If a date is AFTER the CURRENT DATE, say it's "upcoming" or "coming soon" - NOT that it already happened
-- Be precise about timing: "starts on Dec 25" not "kicked off on Dec 25" if it hasn't happened yet
-- If you don't know something, say "I don't have that information" instead of guessing
+CRITICAL ANTI-HALLUCINATION RULES:
+- ONLY use facts explicitly stated in PROJECT INFORMATION above
+- DO NOT infer, assume, or extrapolate information not directly provided
+- DO NOT make up dates, events, numbers, or details
+- If a date is AFTER the CURRENT DATE (${currentDate}), use FUTURE tense: "will start", "is coming", "launches on"
+- If a date is BEFORE the CURRENT DATE, use PAST tense: "started", "launched", "happened"
+- If you don't have specific information, say: "I don't have that information right now. Check ${agent.website_url}"
+- DO NOT combine multiple facts to create new information
+- DO NOT add context or background not in the data
+- When mentioning dates, ALWAYS verify against CURRENT DATE first
+- If uncertain about ANY detail, acknowledge uncertainty instead of guessing
 
 IMPORTANT FORMATTING RULES:
 - NO markdown formatting (no *, **, ___, etc.)
@@ -163,7 +168,15 @@ Be helpful, accurate, and match the personality style.`;
     for (const modelName of models) {
       console.log(`[AGENT-WEBHOOK] Trying model: ${modelName}`);
       
-      const model = genAI.getGenerativeModel({ model: modelName });
+      const model = genAI.getGenerativeModel({ 
+        model: modelName,
+        generationConfig: {
+          temperature: agent.temperature || 0.3, // Use agent's temperature or default
+          topP: 0.8,               // Nucleus sampling - focus on most likely tokens
+          topK: 40,                // Limit vocabulary to top 40 most likely tokens
+          maxOutputTokens: 500,    // Prevent overly long responses
+        }
+      });
       
       // Retry logic with exponential backoff
       let retries = 2;

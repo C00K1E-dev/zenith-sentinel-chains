@@ -3,6 +3,7 @@ import { Bot, Users, DollarSign, TrendingUp, Search, ExternalLink, Calendar, Mes
 import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import AgentSettingsPanel from '@/components/AgentSettingsPanel';
 
 interface TelegramAgent {
   id: string;
@@ -63,6 +64,7 @@ export default function TelegramAgentsDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'expired'>('all');
   const [selectedTab, setSelectedTab] = useState<'agents' | 'analytics'>('agents');
+  const [editingAgentId, setEditingAgentId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -365,6 +367,13 @@ export default function TelegramAgentsDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setEditingAgentId(agent.id)}
+                            className="p-2 text-amber-500 hover:bg-amber-500/10 rounded transition"
+                            title="Edit Agent Settings"
+                          >
+                            <Settings size={16} />
+                          </button>
                           {agent.vercel_deployment_url && (
                             <a
                               href={agent.vercel_deployment_url}
@@ -507,6 +516,18 @@ export default function TelegramAgentsDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Agent Settings Panel (Admin Edit) */}
+      {editingAgentId && (
+        <AgentSettingsPanel
+          agentId={editingAgentId}
+          onClose={() => setEditingAgentId(null)}
+          onSaved={() => {
+            setEditingAgentId(null);
+            loadData(); // Reload data after saving
+          }}
+        />
       )}
     </div>
   );

@@ -29,6 +29,7 @@ interface AgentConfig {
   additionalInfo?: string;
   personality: 'funny' | 'professional' | 'technical' | 'casual' | 'custom';
   customPersonality?: string;
+  temperature: number; // 0.0-1.0, lower = more factual
   customFaqs: string;
   triggers: string[];
   pricingTier: 'starter' | 'pro' | 'enterprise';
@@ -131,6 +132,7 @@ const CreateAITelegramAgent = () => {
     botToken: '',
     additionalInfo: '',
     personality: 'funny',
+    temperature: 0.3, // Default: more factual, less hallucination
     customFaqs: 'Q: What is your project?\nA: We are building innovative solutions for blockchain',
     triggers: ['hello', 'help', 'features'],
     pricingTier: 'starter',
@@ -311,6 +313,7 @@ const CreateAITelegramAgent = () => {
           whitepaper_url: config.whitepaper ? 'pending_upload' : undefined,
           personality: config.personality,
           custom_personality: config.customPersonality,
+          temperature: config.temperature,
           trigger_keywords: config.triggers,
           custom_faqs: config.customFaqs,
           additional_info: config.additionalInfo,
@@ -537,6 +540,35 @@ const CreateAITelegramAgent = () => {
           <p className="text-xs text-muted-foreground mt-1.5">Provide specific instructions for how the agent should interact with your community</p>
         </motion.div>
       )}
+
+      {/* Temperature Control for Hallucination Prevention */}
+      <div>
+        <label className="block text-sm font-semibold mb-2.5 text-foreground">
+          Response Accuracy Control
+          <span className="ml-2 text-xs font-normal text-muted-foreground">(Lower = More Factual)</span>
+        </label>
+        <div className="p-4 glass-card border border-muted rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-muted-foreground">More Creative</span>
+            <span className="text-sm font-bold text-primary">{config.temperature.toFixed(1)}</span>
+            <span className="text-xs text-muted-foreground">More Factual</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={config.temperature}
+            onChange={(e) => setConfig({ ...config, temperature: parseFloat(e.target.value) })}
+            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            {config.temperature <= 0.3 && "🎯 Highly factual - Minimizes hallucinations (Recommended)"}
+            {config.temperature > 0.3 && config.temperature <= 0.6 && "⚖️ Balanced - Mix of creativity and accuracy"}
+            {config.temperature > 0.6 && "✨ Creative - More expressive but may add details"}
+          </p>
+        </div>
+      </div>
 
       <div>
         <label className="block text-sm font-semibold mb-2.5 text-foreground">Custom FAQs (Optional)</label>

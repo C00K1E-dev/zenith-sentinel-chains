@@ -47,6 +47,7 @@ export interface TelegramAgent {
   whitepaper_url?: string;
   personality: PersonalityType;
   custom_personality?: string;
+  temperature?: number; // 0.0-1.0, controls response creativity vs factuality
   trigger_keywords?: string[];
   custom_faqs?: string;
   additional_info?: string;

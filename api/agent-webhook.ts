@@ -98,26 +98,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const greetingWords = ['hi', 'hello', 'hey', 'sup', 'yo', 'greetings', 'good morning', 'good afternoon', 'good evening'];
     const isGreeting = greetingWords.some(word => userMessage.toLowerCase().trim().startsWith(word));
     
-    // Check last interaction time
+    // Check last interaction time - use updated_at as fallback if last_interaction doesn't exist
     const { data: agentData } = await supabase
       .from('telegram_agents')
-      .select('last_interaction')
+      .select('last_interaction, updated_at')
       .eq('id', agentId)
       .single();
     
-    const lastInteraction = agentData?.last_interaction ? new Date(agentData.last_interaction) : null;
+    const lastInteractionTime = agentData?.last_interaction || agentData?.updated_at;
+    const lastInteraction = lastInteractionTime ? new Date(lastInteractionTime) : null;
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6 hours in milliseconds
     const isNewSession = !lastInteraction || lastInteraction < sixHoursAgo;
     
     const shouldGreet = isGreeting || isNewSession;
     
-    console.log('[AGENT-WEBHOOK] Should greet:', shouldGreet, 'Is greeting:', isGreeting, 'New session:', isNewSession);
+    console.log('[AGENT-WEBHOOK] Greeting check:', {
+      isGreeting,
+      isNewSession,
+      shouldGreet,
+      lastInteraction: lastInteraction?.toISOString(),
+      sixHoursAgo: sixHoursAgo.toISOString(),
+      message: userMessage.slice(0, 50)
+    });
 
-    // Update last interaction time
-    await supabase
-      .from('telegram_agents')
-      .update({ last_interaction: new Date().toISOString() })
-      .eq('id', agentId);
+    // Update last interaction time (will only work if column exists)
+    try {
+      await supabase
+        .from('telegram_agents')
+        .update({ last_interaction: new Date().toISOString() })
+        .eq('id', agentId);
+    } catch (error) {
+      console.log('[AGENT-WEBHOOK] Could not update last_interaction (column may not exist):', error);
+    }
 
     // Generate response using Gemini with fallback models
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);

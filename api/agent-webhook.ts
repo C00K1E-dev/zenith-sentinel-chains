@@ -173,12 +173,10 @@ Be helpful, accurate, and match the personality style.`;
 
     let response: string = '';
     
-    // Try multiple models in order: Live models (unlimited) -> Gemma fallbacks
+    // Try multiple models - using Gemma 3 models
     const models = [
-      'gemini-2.5-flash-live',
-      'gemini-2.0-flash-live',
-      'gemma-2-9b-it',
-      'gemma-2-27b-it'
+      'gemma-3-27b',      // Primary - larger model
+      'gemma-3-12b'       // Fallback - smaller but still capable
     ];
     
     for (const modelName of models) {

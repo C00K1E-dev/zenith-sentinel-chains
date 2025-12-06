@@ -295,19 +295,35 @@ const CreateAITelegramAgent = () => {
         throw error;
       }
 
-      // 2. Create telegram agent record (draft status)
+      // 2. Fetch bot username from Telegram API
+      let botUsername = '';
+      try {
+        console.log('[AGENT] Fetching bot info from Telegram...');
+        const botInfoResponse = await fetch(`https://api.telegram.org/bot${config.botToken}/getMe`);
+        const botInfoData = await botInfoResponse.json();
+        
+        if (botInfoData.ok && botInfoData.result.username) {
+          botUsername = botInfoData.result.username;
+          console.log('[AGENT] Bot username:', botUsername);
+        } else {
+          throw new Error('Failed to get bot username from Telegram');
+        }
+      } catch (error: any) {
+        console.error('[AGENT] Failed to fetch bot username:', error);
+        // Fallback to bot ID if username fetch fails
+        const botTokenPrefix = config.botToken.split(':')[0];
+        botUsername = `bot_${botTokenPrefix}`;
+      }
+
+      // 3. Create telegram agent record (draft status)
       let agent;
       try {
-        // Generate a unique bot_handle from bot token or use a timestamp-based fallback
-        const botTokenPrefix = config.botToken.split(':')[0]; // Extract bot ID from token
-        const uniqueHandle = `bot_${botTokenPrefix}_${Date.now()}`; // Ensure uniqueness
-        
-        console.log('[AGENT] Creating agent with handle:', uniqueHandle);
+        console.log('[AGENT] Creating agent with username:', botUsername);
         
         agent = await createAgent({
           user_id: user.id,
           project_name: config.projectName,
-          bot_handle: uniqueHandle, // Use unique identifier instead of empty string
+          bot_handle: botUsername, // Use actual Telegram @username
           bot_token: config.botToken,
           website_url: config.websiteUrl,
           whitepaper_url: config.whitepaper ? 'pending_upload' : undefined,
@@ -337,7 +353,7 @@ const CreateAITelegramAgent = () => {
 
       setAgentId(agent.id);
 
-      // 3. Create subscription record - USE TEST PRICING (1 USDT)
+      // 4. Create subscription record - USE TEST PRICING (1 USDT)
       const subscriptionCost = 1; // Test pricing: 1 USDT for all tiers
       
       let subscription;
@@ -385,10 +401,10 @@ const CreateAITelegramAgent = () => {
         // Continue anyway - agent can still work without full knowledge base
       }
 
-      // 5. Move to Step 4 (deployment)
+      // 6. Move to Step 4 (deployment)
       setStep(4);
       
-      // 6. Call API to deploy bot
+      // 7. Call API to deploy bot
       await deployBot(agent.id);
 
     } catch (error: any) {

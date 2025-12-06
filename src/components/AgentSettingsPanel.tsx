@@ -13,16 +13,13 @@ interface AgentSettingsPanelProps {
 interface AgentSettings {
   project_name: string;
   bot_handle: string;
-  personality_prompt: string;
+  personality: string;
+  custom_personality: string | null;
   temperature: number;
-  triggers: string[];
-  default_response: string;
+  trigger_keywords: string[];
+  custom_faqs: string;
+  additional_info: string;
   pricing_tier: string;
-  google_api_key: string | null;
-  faqs: Array<{
-    question: string;
-    answer: string;
-  }>;
 }
 
 export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentSettingsPanelProps) {
@@ -30,8 +27,6 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newTrigger, setNewTrigger] = useState('');
-  const [newFaqQuestion, setNewFaqQuestion] = useState('');
-  const [newFaqAnswer, setNewFaqAnswer] = useState('');
 
   useEffect(() => {
     loadSettings();
@@ -51,13 +46,13 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
       setSettings({
         project_name: data.project_name,
         bot_handle: data.bot_handle,
-        personality_prompt: data.personality_prompt || '',
+        personality: data.personality || 'professional',
+        custom_personality: data.custom_personality || null,
         temperature: data.temperature || 0.3,
-        triggers: data.triggers || [],
-        default_response: data.default_response || '',
-        pricing_tier: data.pricing_tier,
-        google_api_key: data.google_api_key,
-        faqs: data.faqs || []
+        trigger_keywords: data.trigger_keywords || [],
+        custom_faqs: data.custom_faqs || '',
+        additional_info: data.additional_info || '',
+        pricing_tier: data.pricing_tier
       });
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -80,12 +75,12 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
       const { error } = await supabase
         .from('telegram_agents')
         .update({
-          personality_prompt: settings.personality_prompt,
+          personality: settings.personality,
+          custom_personality: settings.custom_personality,
           temperature: settings.temperature,
-          triggers: settings.triggers,
-          default_response: settings.default_response,
-          faqs: settings.faqs,
-          google_api_key: settings.google_api_key
+          trigger_keywords: settings.trigger_keywords,
+          custom_faqs: settings.custom_faqs,
+          additional_info: settings.additional_info
         })
         .eq('id', agentId);
 
@@ -113,7 +108,7 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
     if (!newTrigger.trim() || !settings) return;
     setSettings({
       ...settings,
-      triggers: [...settings.triggers, newTrigger.trim()]
+      trigger_keywords: [...settings.trigger_keywords, newTrigger.trim()]
     });
     setNewTrigger('');
   };
@@ -122,27 +117,10 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
     if (!settings) return;
     setSettings({
       ...settings,
-      triggers: settings.triggers.filter((_, i) => i !== index)
+      trigger_keywords: settings.trigger_keywords.filter((_, i) => i !== index)
     });
   };
 
-  const addFaq = () => {
-    if (!newFaqQuestion.trim() || !newFaqAnswer.trim() || !settings) return;
-    setSettings({
-      ...settings,
-      faqs: [...settings.faqs, { question: newFaqQuestion.trim(), answer: newFaqAnswer.trim() }]
-    });
-    setNewFaqQuestion('');
-    setNewFaqAnswer('');
-  };
-
-  const removeFaq = (index: number) => {
-    if (!settings) return;
-    setSettings({
-      ...settings,
-      faqs: settings.faqs.filter((_, i) => i !== index)
-    });
-  };
 
   if (loading) {
     return (
@@ -221,21 +199,34 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                 </div>
               </div>
 
-              {/* Personality Prompt */}
+              {/* Personality */}
               <div>
                 <label className="text-sm font-semibold mb-2 block">
-                  Personality Prompt
+                  Personality Style
                   <span className="text-muted-foreground font-normal ml-2">
-                    (Defines how your agent behaves and responds)
+                    (Defines how your agent communicates)
                   </span>
                 </label>
-                <textarea
-                  value={settings.personality_prompt}
-                  onChange={(e) => setSettings({ ...settings, personality_prompt: e.target.value })}
-                  rows={4}
+                <select
+                  value={settings.personality}
+                  onChange={(e) => setSettings({ ...settings, personality: e.target.value })}
                   className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="You are a helpful assistant that..."
-                />
+                >
+                  <option value="professional">Professional - Formal and business-like</option>
+                  <option value="funny">Funny - Witty and entertaining</option>
+                  <option value="technical">Technical - Precise and detailed</option>
+                  <option value="casual">Casual - Friendly and relaxed</option>
+                  <option value="custom">Custom - Define your own</option>
+                </select>
+                {settings.personality === 'custom' && (
+                  <textarea
+                    value={settings.custom_personality || ''}
+                    onChange={(e) => setSettings({ ...settings, custom_personality: e.target.value })}
+                    rows={4}
+                    className="w-full mt-3 px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Describe your custom personality..."
+                  />
+                )}
               </div>
 
               {/* Temperature Control */}
@@ -269,51 +260,20 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                 </div>
               </div>
 
-              {/* Temperature Control */}
+              {/* Additional Info */}
               <div>
                 <label className="text-sm font-semibold mb-2 block">
-                  Response Accuracy Control
+                  Additional Information
                   <span className="text-muted-foreground font-normal ml-2">
-                    (Lower = More Factual, prevents hallucinations)
-                  </span>
-                </label>
-                <div className="p-4 bg-secondary/10 border border-border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-muted-foreground">More Creative</span>
-                    <span className="text-sm font-bold text-primary">{settings.temperature.toFixed(1)}</span>
-                    <span className="text-xs text-muted-foreground">More Factual</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={settings.temperature}
-                    onChange={(e) => setSettings({ ...settings, temperature: parseFloat(e.target.value) })}
-                    className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {settings.temperature <= 0.3 && "🎯 Highly factual - Minimizes hallucinations (Recommended)"}
-                    {settings.temperature > 0.3 && settings.temperature <= 0.6 && "⚖️ Balanced - Mix of creativity and accuracy"}
-                    {settings.temperature > 0.6 && "✨ Creative - More expressive but may add details"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Default Response */}
-              <div>
-                <label className="text-sm font-semibold mb-2 block">
-                  Default Response
-                  <span className="text-muted-foreground font-normal ml-2">
-                    (Used when agent can't find a specific answer)
+                    (Extra context about your project)
                   </span>
                 </label>
                 <textarea
-                  value={settings.default_response}
-                  onChange={(e) => setSettings({ ...settings, default_response: e.target.value })}
+                  value={settings.additional_info}
+                  onChange={(e) => setSettings({ ...settings, additional_info: e.target.value })}
                   rows={3}
                   className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="I'm not sure about that. Please contact support..."
+                  placeholder="Additional project details..."
                 />
               </div>
 
@@ -342,7 +302,7 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {settings.triggers.map((trigger, index) => (
+                  {settings.trigger_keywords.map((trigger, index) => (
                     <motion.div
                       key={index}
                       initial={{ scale: 0 }}
@@ -367,39 +327,20 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                 <label className="text-sm font-semibold mb-2 block">
                   Frequently Asked Questions
                   <span className="text-muted-foreground font-normal ml-2">
-                    (Agent uses these for quick responses)
+                    (Use Q: and A: format for each FAQ)
                   </span>
                 </label>
-                <div className="space-y-3 mb-3">
-                  <input
-                    type="text"
-                    value={newFaqQuestion}
-                    onChange={(e) => setNewFaqQuestion(e.target.value)}
-                    placeholder="Question..."
-                    className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  <textarea
-                    value={newFaqAnswer}
-                    onChange={(e) => setNewFaqAnswer(e.target.value)}
-                    rows={2}
-                    placeholder="Answer..."
-                    className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                  <button
-                    onClick={addFaq}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition"
-                  >
-                    Add FAQ
-                  </button>
-                </div>
-                <div className="space-y-3 max-h-60 overflow-y-auto">
-                  {settings.faqs.map((faq, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="p-4 bg-secondary/10 border border-border rounded-lg"
+                <textarea
+                  value={settings.custom_faqs}
+                  onChange={(e) => setSettings({ ...settings, custom_faqs: e.target.value })}
+                  rows={8}
+                  className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
+                  placeholder="Q: What is your project?&#10;A: We are building...&#10;&#10;Q: How do I get started?&#10;A: First, you need to..."
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Format: Start each question with "Q:" and each answer with "A:", separated by blank lines
+                </p>
+              </div>
                     >
                       <div className="flex items-start justify-between mb-2">
                         <p className="font-semibold text-sm">{faq.question}</p>

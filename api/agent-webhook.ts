@@ -173,10 +173,11 @@ Be helpful, accurate, and match the personality style.`;
 
     let response: string = '';
     
-    // Try multiple models - using Gemma 3 models
+    // Using Gemini 2.5 Flash (paid) as primary - best quality and reliability
+    // Falls back to free Gemini 1.5 Flash if rate limited
     const models = [
-      'gemma-3-27b',      // Primary - larger model, 30 RPM, 15K TPM, 14.4K RPD
-      'gemma-3-12b'       // Fallback - smaller but still capable
+      'gemini-1.5-flash',      // Free tier with decent limits
+      'gemini-1.5-flash-8b'    // Smaller, faster fallback
     ];
     
     for (const modelName of models) {

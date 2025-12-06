@@ -115,11 +115,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? `This is the first interaction with ${userName} today. Start with a friendly greeting using their name, then answer their question.`
       : `${userName} has already been greeted today. Don't greet them again - just answer their question naturally. You can use their name in the response, but don't say hello/hi/hey again.`;
     
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    
     const systemPrompt = `You are ${agent.project_name}'s AI assistant.
 
 PERSONALITY: ${personality}
 
 GREETING RULE: ${greetingInstruction}
+
+CURRENT DATE: ${currentDate} (Use this to determine if events are in the past, present, or future)
 
 PROJECT INFORMATION:
 ${JSON.stringify(knowledgeBase, null, 2)}
@@ -131,6 +135,13 @@ ${agent.custom_faqs || 'None'}
 
 ADDITIONAL INFO:
 ${agent.additional_info || 'None'}
+
+CRITICAL RULES:
+- ONLY use information from PROJECT INFORMATION above
+- DO NOT make up dates, events, or details not in the data
+- If a date is AFTER the CURRENT DATE, say it's "upcoming" or "coming soon" - NOT that it already happened
+- Be precise about timing: "starts on Dec 25" not "kicked off on Dec 25" if it hasn't happened yet
+- If you don't know something, say "I don't have that information" instead of guessing
 
 IMPORTANT FORMATTING RULES:
 - NO markdown formatting (no *, **, ___, etc.)

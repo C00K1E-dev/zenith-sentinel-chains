@@ -173,10 +173,9 @@ Be helpful, accurate, and match the personality style.`;
 
     let response: string = '';
     
-    // Using models from your actual Google AI Studio list
+    // Using gemini-2.5-flash-lite with paid tier (no rate limits)
     const models = [
-      'gemini-2.5-flash',      // 5 RPM, 250K TPM, 20 RPD - free tier
-      'gemini-2.5-flash-lite'  // 10 RPM, 250K TPM, 20 RPD - backup
+      'gemini-2.5-flash-lite'  // Primary model with billing enabled
     ];
     
     for (const modelName of models) {

@@ -118,8 +118,8 @@ interface RemediationState {
 // --- CONFIGURATION CONSTANTS ---
 // Using the specified API Key from environment
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-// Switching to the more robust 'flash' model to handle complex structured output requests
-const API_MODEL = "gemini-2.0-flash";
+// Using gemini-2.5-flash-lite with paid tier (no rate limits)
+const API_MODEL = "gemini-2.5-flash-lite";
 const API_URL_TEMPLATE = `https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=`;
 // Logo URL - Using SVG for perfect scaling
 const LOGO_URL = "/ss-icon.svg";

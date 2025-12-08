@@ -90,7 +90,7 @@ const Footer = () => {
                   Disclaimer
                 </a>
                 <a
-                  href="/documents/SmartSentinels - Intellectual Property Rights.pdf"
+                  href="/documents/License.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"

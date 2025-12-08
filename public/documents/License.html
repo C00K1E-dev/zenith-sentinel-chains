@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartSentinels - Intellectual Property Rights</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,75 +15,109 @@
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-            color: #e0e0e0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, hsl(220, 25%, 6%) 0%, hsl(220, 23%, 9%) 50%, hsl(220, 25%, 6%) 100%);
+            color: hsl(220, 10%, 97%);
             min-height: 100vh;
             line-height: 1.7;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Premium Background Effects */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, hsla(220, 90%, 56%, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, hsla(280, 60%, 60%, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(hsla(220, 20%, 18%, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, hsla(220, 20%, 18%, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
             max-width: 900px;
             margin: 0 auto;
             padding: 40px 24px;
+            position: relative;
+            z-index: 1;
         }
 
         header {
             text-align: center;
             padding: 60px 20px;
-            background: linear-gradient(180deg, rgba(248, 244, 66, 0.1) 0%, transparent 100%);
-            border-bottom: 1px solid rgba(248, 244, 66, 0.2);
+            background: linear-gradient(180deg, hsla(220, 90%, 56%, 0.08) 0%, transparent 100%);
+            border-bottom: 1px solid hsla(220, 90%, 56%, 0.2);
             margin-bottom: 40px;
+            position: relative;
         }
 
         .logo {
             width: 80px;
             height: 80px;
             margin: 0 auto 20px;
-            background: linear-gradient(135deg, #f8f442 0%, #d4af37 100%);
+            background: linear-gradient(135deg, hsl(220, 90%, 56%) 0%, hsl(280, 60%, 60%) 100%);
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 40px;
-            box-shadow: 0 0 40px rgba(248, 244, 66, 0.3);
+            box-shadow: 0 0 40px hsla(220, 90%, 56%, 0.4);
         }
 
         h1 {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 2.5rem;
-            color: #f8f442;
+            color: hsl(220, 90%, 56%);
             margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(248, 244, 66, 0.5);
+            text-shadow: 0 0 30px hsla(220, 90%, 56%, 0.5);
+            font-weight: 700;
         }
 
         .subtitle {
-            color: #888;
+            color: hsl(220, 10%, 60%);
             font-size: 1.1rem;
         }
 
         .copyright-box {
-            background: rgba(248, 244, 66, 0.1);
-            border: 1px solid rgba(248, 244, 66, 0.3);
-            border-radius: 12px;
+            background: hsla(220, 90%, 56%, 0.08);
+            border: 1px solid hsla(220, 90%, 56%, 0.25);
+            border-radius: 16px;
             padding: 24px;
             margin-bottom: 40px;
             text-align: center;
+            backdrop-filter: blur(16px);
         }
 
         .copyright-box h2 {
-            color: #f8f442;
+            font-family: 'Space Grotesk', sans-serif;
+            color: hsl(220, 90%, 56%);
             font-size: 1.3rem;
             margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .copyright-box p {
-            color: #ccc;
+            color: hsl(220, 10%, 80%);
             margin: 4px 0;
         }
 
         .badge {
             display: inline-block;
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            background: linear-gradient(135deg, hsl(0, 72%, 51%) 0%, hsl(0, 72%, 41%) 100%);
             color: white;
             padding: 6px 16px;
             border-radius: 20px;
@@ -89,36 +126,42 @@
             margin-top: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            box-shadow: 0 4px 12px hsla(0, 72%, 51%, 0.3);
         }
 
         .section-header {
-            background: linear-gradient(90deg, rgba(248, 244, 66, 0.2) 0%, transparent 100%);
-            border-left: 4px solid #f8f442;
+            background: linear-gradient(90deg, hsla(220, 90%, 56%, 0.15) 0%, transparent 100%);
+            border-left: 4px solid hsl(220, 90%, 56%);
             padding: 16px 24px;
             margin: 40px 0 24px;
             font-size: 1.3rem;
-            color: #f8f442;
+            color: hsl(220, 90%, 56%);
             font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            border-radius: 8px;
         }
 
         section {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: hsla(220, 23%, 9%, 0.6);
+            border: 1px solid hsla(220, 20%, 18%, 0.8);
             border-radius: 16px;
             padding: 32px;
             margin-bottom: 24px;
+            backdrop-filter: blur(16px);
         }
 
         section h3 {
-            color: #f8f442;
+            font-family: 'Space Grotesk', sans-serif;
+            color: hsl(220, 90%, 56%);
             font-size: 1.2rem;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 1px solid rgba(248, 244, 66, 0.2);
+            border-bottom: 1px solid hsla(220, 90%, 56%, 0.2);
+            font-weight: 600;
         }
 
         section p {
-            color: #ccc;
+            color: hsl(220, 10%, 80%);
             margin-bottom: 16px;
         }
 
@@ -131,14 +174,14 @@
             position: relative;
             padding-left: 28px;
             margin-bottom: 10px;
-            color: #bbb;
+            color: hsl(220, 10%, 75%);
         }
 
         .protected-list li::before {
             content: "•";
             position: absolute;
             left: 8px;
-            color: #f8f442;
+            color: hsl(220, 90%, 56%);
             font-weight: bold;
         }
 
@@ -146,7 +189,7 @@
             content: "✕";
             position: absolute;
             left: 4px;
-            color: #ef4444;
+            color: hsl(0, 72%, 51%);
             font-weight: bold;
         }
 
@@ -154,95 +197,107 @@
             content: "✓";
             position: absolute;
             left: 4px;
-            color: #22c55e;
+            color: hsl(142, 71%, 45%);
             font-weight: bold;
         }
 
         .warning-box {
-            background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(153, 27, 27, 0.15) 100%);
-            border: 1px solid rgba(220, 38, 38, 0.4);
+            background: linear-gradient(135deg, hsla(0, 72%, 51%, 0.12) 0%, hsla(0, 72%, 41%, 0.12) 100%);
+            border: 1px solid hsla(0, 72%, 51%, 0.35);
             border-radius: 12px;
             padding: 20px;
             margin-top: 16px;
         }
 
         .warning-box p {
-            color: #fca5a5;
+            color: hsl(0, 93%, 80%);
             font-weight: 500;
             margin: 0;
         }
 
         .legal-text {
-            background: rgba(0, 0, 0, 0.3);
+            background: hsla(220, 25%, 6%, 0.6);
             border-radius: 8px;
             padding: 20px;
             font-family: 'Courier New', monospace;
             font-size: 0.85rem;
-            color: #999;
+            color: hsl(220, 10%, 65%);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border: 1px solid hsla(220, 20%, 18%, 0.5);
         }
 
         .user-rights {
-            border-color: rgba(34, 197, 94, 0.3);
-            background: rgba(34, 197, 94, 0.05);
+            border-color: hsla(142, 71%, 45%, 0.3);
+            background: hsla(142, 71%, 45%, 0.05);
         }
 
         .user-rights h3 {
-            color: #22c55e;
-            border-bottom-color: rgba(34, 197, 94, 0.3);
+            color: hsl(142, 71%, 45%);
+            border-bottom-color: hsla(142, 71%, 45%, 0.3);
         }
 
         footer {
             text-align: center;
             padding: 60px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid hsla(220, 20%, 18%, 0.8);
             margin-top: 40px;
+            position: relative;
         }
 
         footer .brand {
-            color: #f8f442;
+            font-family: 'Space Grotesk', sans-serif;
+            color: hsl(220, 90%, 56%);
             font-size: 1.2rem;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 8px;
         }
 
         footer .tagline {
-            color: #666;
+            color: hsl(220, 10%, 50%);
             font-size: 0.95rem;
             margin-bottom: 20px;
         }
 
         footer a {
-            color: #f8f442;
+            color: hsl(220, 90%, 56%);
             text-decoration: none;
+            transition: all 0.3s ease;
         }
 
         footer a:hover {
-            text-decoration: underline;
+            text-shadow: 0 0 20px hsla(220, 90%, 56%, 0.6);
         }
 
         .contact-box {
-            background: rgba(248, 244, 66, 0.05);
-            border: 1px solid rgba(248, 244, 66, 0.2);
-            border-radius: 12px;
+            background: hsla(220, 90%, 56%, 0.05);
+            border: 1px solid hsla(220, 90%, 56%, 0.25);
+            border-radius: 16px;
             padding: 24px;
             text-align: center;
             margin-top: 32px;
+            backdrop-filter: blur(16px);
         }
 
         .contact-box h4 {
-            color: #f8f442;
+            font-family: 'Space Grotesk', sans-serif;
+            color: hsl(220, 90%, 56%);
             margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .contact-box a {
-            color: #f8f442;
+            color: hsl(220, 90%, 56%);
             font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .contact-box a:hover {
+            text-shadow: 0 0 15px hsla(220, 90%, 56%, 0.6);
         }
 
         .contact-box p {
-            color: #999;
+            color: hsl(220, 10%, 65%);
             margin: 8px 0;
             font-size: 0.9rem;
         }
@@ -272,6 +327,10 @@
                 color: black;
             }
 
+            body::before, body::after {
+                display: none;
+            }
+
             section {
                 border: 1px solid #ccc;
                 break-inside: avoid;
@@ -289,7 +348,9 @@
 </head>
 <body>
     <header>
-        <div class="logo">🛡️</div>
+        <div class="logo">
+            <img src="../ss-icon-192.png" alt="SmartSentinels Logo" style="width: 60px; height: 60px;">
+        </div>
         <h1>Intellectual Property Rights</h1>
         <p class="subtitle">Platform License & User Rights Agreement</p>
     </header>
@@ -299,10 +360,20 @@
             <h2>Copyright © 2025 Andrei Galea & SmartSentinels</h2>
             <p>All Rights Reserved</p>
             <p><strong>Author:</strong> Andrei Galea (Founder & Core Developer)</p>
+            <p style="margin-top: 12px; font-size: 0.9rem; line-height: 1.6;">
+                <strong>Protected Under:</strong><br>
+                • Berne Convention for the Protection of Literary and Artistic Works<br>
+                • International Copyright Law & Software Protection Treaties<br>
+                • Common Law Copyright (automatic upon creation)<br>
+                • Trade Secret & Proprietary Information Laws
+            </p>
+            <p style="margin-top: 8px; font-size: 0.85rem; color: hsl(220, 10%, 70%);">
+                Copyright protection is automatic upon creation and does not require registration.
+            </p>
             <span class="badge">Proprietary Platform License</span>
         </div>
 
-        <p style="text-align: center; color: #888; margin-bottom: 20px;">
+        <p style="text-align: center; color: hsl(220, 10%, 60%); margin-bottom: 20px;">
             This document outlines the intellectual property rights governing the 
             SmartSentinels platform, its software, and the decentralized network.
         </p>
@@ -344,7 +415,31 @@
         </section>
 
         <section>
-            <h3>3. Trade Secrets</h3>
+            <h3>3. Ownership & Authorship</h3>
+            <p>
+                <strong>Andrei Galea</strong> is the original author and sole owner of the SmartSentinels platform, 
+                including all source code, designs, documentation, and intellectual property created as part of this project.
+            </p>
+            <p>
+                This ownership is established through:
+            </p>
+            <ul class="protected-list">
+                <li><strong>Common Law Copyright:</strong> Automatic protection upon creation (no registration required)</li>
+                <li><strong>Provable Authorship:</strong> Git commit history, development records, and timestamps</li>
+                <li><strong>Trade Secret Protection:</strong> Proprietary algorithms and business methods</li>
+                <li><strong>Trademark Rights:</strong> SmartSentinels™ name and branding (unregistered common law trademark)</li>
+            </ul>
+            <div class="warning-box">
+                <p>
+                    ⚠️ This ownership is legally recognized even without formal registration. 
+                    Under the Berne Convention and international copyright law, protection is automatic 
+                    from the moment of creation.
+                </p>
+            </div>
+        </section>
+
+        <section>
+            <h3>4. Trade Secrets</h3>
             <p>
                 The Software contains proprietary trade secrets and confidential information. 
                 Any unauthorized disclosure may result in legal action.
@@ -352,11 +447,11 @@
         </section>
 
         <!-- SECTION B -->
-        <div class="section-header" style="background: linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, transparent 100%); border-left-color: #22c55e; color: #22c55e;">
+        <div class="section-header" style="background: linear-gradient(90deg, hsla(142, 71%, 45%, 0.15) 0%, transparent 100%); border-left-color: hsl(142, 71%, 45%); color: hsl(142, 71%, 45%);">
             SECTION B: DECENTRALIZED NETWORK (USER RIGHTS)
         </div>
 
-        <p style="color: #888; margin-bottom: 24px;">
+        <p style="color: hsl(220, 10%, 60%); margin-bottom: 24px;">
             SmartSentinels operates a decentralized network where participants can contribute and benefit. 
             The following rights apply to network participants:
         </p>

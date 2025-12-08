@@ -13,7 +13,7 @@ const doc_data = [
 	{ name: 'Terms and Conditions', file: '/documents/Terms and Conditions.pdf', type: 'pdf' },
 	{ name: 'Privacy Policy', file: '/documents/Privacy Policy.pdf', type: 'pdf' },
 	{ name: 'Disclaimer', file: '/documents/Disclaimer.pdf', type: 'pdf' },
-	{ name: 'Token Sale Terms', file: '/documents/TokenSaleTerms.pdf', type: 'pdf' },
+	{ name: 'IP Rights', file: '/documents/License.html', type: 'html' },
 ];
 
 const Documents = () => {

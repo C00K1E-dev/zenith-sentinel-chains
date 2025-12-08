@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Zap, Phone, Calendar, Bell, AlertTriangle, MessageSquare, ExternalLink } from 'lucide-react';
+import { Zap, Phone, Calendar, Bell, AlertTriangle, MessageSquare, ExternalLink, Target } from 'lucide-react';
 import { useState } from 'react';
 import aidaLogo from '@/assets/aida.svg';
 
@@ -140,7 +140,7 @@ const Vision = () => {
               className="lg:col-span-3"
             >
               <h4 className="text-lg md:text-xl font-orbitron font-bold mb-6 md:mb-8 text-primary uppercase tracking-wider flex items-center gap-3">
-                <span className="text-2xl">🎯</span> Target Industries
+                <Target className="text-primary" size={24} /> Target Industries
               </h4>
               <motion.div
                 variants={containerVariants}

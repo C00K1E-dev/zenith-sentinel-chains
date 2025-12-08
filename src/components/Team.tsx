@@ -8,7 +8,7 @@ import founder_data from '@/data/team';
 
 const Team = memo(() => {
   return (
-    <>
+    <section id="team">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -92,7 +92,7 @@ const Team = memo(() => {
             </motion.div>
           ))}
         </div>
-    </>
+    </section>
   );
 });
 

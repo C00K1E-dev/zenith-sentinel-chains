@@ -10,6 +10,7 @@ interface TelegramAgent {
   project_name: string;
   bot_handle: string;
   user_wallet: string;
+  user_email: string | null;
   pricing_tier: string;
   deployment_status: string;
   message_count: number;
@@ -79,7 +80,7 @@ export default function TelegramAgentsDashboard() {
         .from('telegram_agents')
         .select(`
           *,
-          users!telegram_agents_user_id_fkey(wallet_address),
+          users!telegram_agents_user_id_fkey(wallet_address, email),
           subscriptions(
             subscription_tier,
             subscription_cost_usd,
@@ -104,6 +105,7 @@ export default function TelegramAgentsDashboard() {
           project_name: agent.project_name,
           bot_handle: agent.bot_handle,
           user_wallet: agent.users?.wallet_address || 'N/A',
+          user_email: agent.users?.email || null,
           pricing_tier: agent.pricing_tier,
           deployment_status: agent.deployment_status,
           message_count: agent.message_count || 0,
@@ -323,6 +325,7 @@ export default function TelegramAgentsDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Project</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Bot Handle</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Owner</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Tier</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Messages</th>
@@ -341,6 +344,9 @@ export default function TelegramAgentsDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-xs font-mono">{agent.user_wallet.slice(0, 6)}...{agent.user_wallet.slice(-4)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-muted-foreground">{agent.user_email || 'N/A'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="capitalize text-sm px-2 py-1 rounded" style={{ 

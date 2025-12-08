@@ -64,13 +64,13 @@ const News = () => {
 
 We're thrilled to launch an exclusive quest on [Micro3](https://micro3.io/quest/explore-smartsentinels-3891ffbf), the leading SocialFi platform for Web3 engagement. This quest is designed to help you discover the power of SmartSentinels' Proof of Useful Work ecosystem while earning rewards.
 
-**What You'll Do:**
+What You'll Do:
 Complete a series of engaging tasks designed to familiarize you with SmartSentinels' mission, technology, and community. Each task brings you closer to understanding how AI agents create real, measurable value in the decentralized world.
 
-**Rewards:**
+Rewards:
 Finish all tasks in the quest to unlock exclusive rewards and recognition within both the SmartSentinels and Micro3 communities.
 
-**Why Participate:**
+Why Participate:
 • Learn about cutting-edge AI integration in blockchain
 • Join a thriving community of Web3 pioneers
 • Earn rewards while supporting decentralized intelligence

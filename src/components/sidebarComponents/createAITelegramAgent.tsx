@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Upload, AlertCircle, Check, Loader, ChevronRight, Copy, Rocket, FileText, Palette, DollarSign, Eye, Wallet, ExternalLink } from 'lucide-react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useNavigate } from 'react-router-dom';
 import { parseUnits } from 'viem';
 import { bsc } from 'wagmi/chains';
 import {
@@ -15,6 +16,7 @@ import {
 } from '@/lib/blockchain';
 import {
   getOrCreateUser,
+  updateUserEmail,
   createAgent,
   createSubscription,
   supabase
@@ -22,6 +24,7 @@ import {
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface AgentConfig {
+  email: string;
   projectName: string;
   websiteUrl: string;
   whitepaper: File | null;
@@ -38,7 +41,8 @@ interface AgentConfig {
 interface PricingOption {
   id: 'starter' | 'pro' | 'enterprise';
   name: string;
-  price: string;
+  monthlyPrice: number;
+  annualPrice: number;
   rpm: string;
   rpd: string;
   features: string[];
@@ -122,10 +126,12 @@ Extract and return ONLY a JSON object with these fields:
 
 const CreateAITelegramAgent = () => {
   const { address, isConnected } = useAccount();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
   const [previewStep, setPreviewStep] = useState(1);
   const [config, setConfig] = useState<AgentConfig>({
+    email: '',
     projectName: '',
     websiteUrl: '',
     whitepaper: null,
@@ -147,6 +153,7 @@ const CreateAITelegramAgent = () => {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [agentId, setAgentId] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   // Wagmi hooks for payment
   const { writeContract, data: hash, isPending: isTransferring } = useWriteContract();
@@ -159,28 +166,31 @@ const CreateAITelegramAgent = () => {
     {
       id: 'starter',
       name: 'Starter',
-      price: '$1/month (TEST)',
-      rpm: '15 RPM',
-      rpd: '1,000 RPD',
-      features: ['1 bot', 'Basic personality', '500 interactions/day', 'Email support'],
+      monthlyPrice: 99,
+      annualPrice: 950, // 20% off: 99 * 12 * 0.8 = 950.4
+      rpm: '1K RPM',
+      rpd: 'Unlimited',
+      features: ['1,000 requests/min', 'Standard response speed', 'Email support', 'Basic analytics'],
       color: 'from-blue-500 to-blue-600'
     },
     {
       id: 'pro',
       name: 'Pro',
-      price: '$1/month (TEST)',
-      rpm: '15 RPM',
-      rpd: '1,000 RPD',
-      features: ['3 bots', 'Custom personality', '2,000 interactions/day', '24h support'],
+      monthlyPrice: 249,
+      annualPrice: 2390, // 20% off: 249 * 12 * 0.8 = 2390.4
+      rpm: '2K RPM',
+      rpd: 'Unlimited',
+      features: ['2,000 requests/min', 'Faster response speed', 'Email support (48h)', 'Advanced analytics', 'Custom knowledge base'],
       color: 'from-purple-500 to-purple-600'
     },
     {
       id: 'enterprise',
       name: 'Enterprise',
-      price: '$1/month (TEST)',
-      rpm: '15 RPM',
-      rpd: '1,000 RPD',
-      features: ['Unlimited bots', 'White-label', 'Unlimited interactions', 'Same-day support'],
+      monthlyPrice: 499,
+      annualPrice: 4790, // 20% off: 499 * 12 * 0.8 = 4790.4
+      rpm: '4K RPM',
+      rpd: 'Unlimited',
+      features: ['4,000 requests/min (max capacity)', 'Fastest response speed', 'Same-day support', 'Real-time analytics', 'Premium knowledge base'],
       color: 'from-amber-500 to-amber-600'
     }
   ];
@@ -234,11 +244,14 @@ const CreateAITelegramAgent = () => {
       setTxHash(null); // Clear old transaction
       setPaymentStep(PaymentStep.TRANSFERRING);
 
-      // Get payment amount for selected tier
-      const amountUSDT = getPaymentAmount(config.pricingTier);
+      // Get payment amount for selected tier and billing cycle
+      const selectedOption = pricingOptions.find(p => p.id === config.pricingTier);
+      const amountUSDT = billingCycle === 'monthly' 
+        ? selectedOption?.monthlyPrice.toString() || '99'
+        : selectedOption?.annualPrice.toString() || '950';
       const amountWei = parseUnits(amountUSDT, 18);
 
-      console.log('[PAYMENT] Initiating transfer:', { amountUSDT, amountWei: amountWei.toString(), treasury: TREASURY_WALLET });
+      console.log('[PAYMENT] Initiating transfer:', { amountUSDT, billingCycle, amountWei: amountWei.toString(), treasury: TREASURY_WALLET });
 
       // Initiate USDT transfer to treasury
       writeContract({
@@ -287,6 +300,11 @@ const CreateAITelegramAgent = () => {
         user = await getOrCreateUser(address!);
         if (!user) {
           throw new Error('Failed to create user account - RLS policy may be blocking. Check Supabase dashboard.');
+        }
+        
+        // Update user email if provided
+        if (config.email) {
+          await updateUserEmail(user.id, config.email);
         }
       } catch (error: any) {
         if (error.message?.includes('row-level security')) {
@@ -452,6 +470,19 @@ const CreateAITelegramAgent = () => {
   // Step 1: Project Information
   const renderStep1 = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+      <div>
+        <label className="block text-sm font-semibold mb-2.5 text-foreground">Email Address</label>
+        <input
+          type="email"
+          value={config.email}
+          onChange={(e) => setConfig({ ...config, email: e.target.value })}
+          placeholder="your@email.com"
+          className="w-full px-4 py-2.5 glass-card border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition"
+          required
+        />
+        <p className="text-xs text-muted-foreground mt-1.5">For subscription updates and support</p>
+      </div>
+
       <div>
         <label className="block text-sm font-semibold mb-2.5 text-foreground">Project Name</label>
         <input
@@ -639,39 +670,76 @@ const CreateAITelegramAgent = () => {
   const renderStep3 = () => (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
       <div>
-        <p className="text-muted-foreground text-sm">Choose your pricing tier. You can upgrade or downgrade anytime. All tiers include the same API rate limits.</p>
+        <p className="text-muted-foreground text-sm">Choose your pricing tier based on your expected usage. Each tier provides different request capacity and support levels.</p>
       </div>
+
+      {/* Billing Cycle Toggle */}
+      <div className="flex items-center justify-center gap-4 p-4 glass-card rounded-lg">
+        <button
+          onClick={() => setBillingCycle('monthly')}
+          className={`px-6 py-2 rounded-lg font-semibold transition ${
+            billingCycle === 'monthly'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary/20 text-muted-foreground hover:bg-secondary/30'
+          }`}
+        >
+          Monthly
+        </button>
+        <button
+          onClick={() => setBillingCycle('annual')}
+          className={`px-6 py-2 rounded-lg font-semibold transition relative ${
+            billingCycle === 'annual'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary/20 text-muted-foreground hover:bg-secondary/30'
+          }`}
+        >
+          Annual
+          <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+            -20%
+          </span>
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-        {pricingOptions.map((option) => (
-          <button
-            key={option.id}
-            onClick={() => setConfig({ ...config, pricingTier: option.id })}
-            disabled={isTransferring || isConfirming}
-            className={`p-6 rounded-lg border-2 transition text-left h-full ${
-              config.pricingTier === option.id
-                ? 'border-primary bg-primary/10 shadow-lg lg:scale-105'
-                : 'border-muted hover:border-primary/50 hover:bg-muted/30'
-            } ${(isTransferring || isConfirming) ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <div className={`bg-gradient-to-r ${option.color} text-white p-2.5 rounded w-fit mb-4`}>
-              <p className="font-bold text-sm">{option.name}</p>
-            </div>
-            <p className="text-3xl font-bold mb-1">{option.price}</p>
-            <p className="text-xs text-muted-foreground mb-4">/month</p>
-            <div className="space-y-2 mb-6 text-sm text-muted-foreground">
-              <p>📊 {option.rpm}</p>
-              <p>📈 {option.rpd}</p>
-            </div>
-            <ul className="space-y-2.5 text-xs">
-              {option.features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <Check size={16} className="text-primary flex-shrink-0" />
-                  <span className="text-foreground font-medium">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </button>
-        ))}
+        {pricingOptions.map((option) => {
+          const price = billingCycle === 'monthly' ? option.monthlyPrice : option.annualPrice;
+          const displayPrice = billingCycle === 'monthly' ? `$${price}` : `$${price}`;
+          const savings = billingCycle === 'annual' ? option.monthlyPrice * 12 - option.annualPrice : 0;
+
+          return (
+            <button
+              key={option.id}
+              onClick={() => setConfig({ ...config, pricingTier: option.id })}
+              disabled={isTransferring || isConfirming}
+              className={`p-6 rounded-lg border-2 transition text-left h-full ${
+                config.pricingTier === option.id
+                  ? 'border-primary bg-primary/10 shadow-lg lg:scale-105'
+                  : 'border-muted hover:border-primary/50 hover:bg-muted/30'
+              } ${(isTransferring || isConfirming) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <div className={`bg-gradient-to-r ${option.color} text-white p-2.5 rounded w-fit mb-4`}>
+                <p className="font-bold text-sm">{option.name}</p>
+              </div>
+              <p className="text-3xl font-bold mb-1">{displayPrice}</p>
+              <p className="text-xs text-muted-foreground mb-2">/{billingCycle === 'monthly' ? 'month' : 'year'}</p>
+              {billingCycle === 'annual' && (
+                <p className="text-xs text-green-500 font-semibold mb-4">Save ${savings}/year</p>
+              )}
+              <div className="space-y-2 mb-6 text-sm text-muted-foreground">
+                <p>📊 {option.rpm}</p>
+                <p>📈 {option.rpd}</p>
+              </div>
+              <ul className="space-y-2.5 text-xs">
+                {option.features.map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <Check size={16} className="text-primary flex-shrink-0" />
+                    <span className="text-foreground font-medium">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </button>
+          );
+        })}
       </div>
 
       {/* Payment Section */}
@@ -680,7 +748,10 @@ const CreateAITelegramAgent = () => {
           <div>
             <h3 className="text-lg font-bold text-foreground mb-1">Complete Payment</h3>
             <p className="text-sm text-muted-foreground">
-              {pricingOptions.find(p => p.id === config.pricingTier)?.price} in USDT on BSC
+              ${billingCycle === 'monthly' 
+                ? pricingOptions.find(p => p.id === config.pricingTier)?.monthlyPrice 
+                : pricingOptions.find(p => p.id === config.pricingTier)?.annualPrice
+              } in USDT on BSC ({billingCycle === 'monthly' ? 'Monthly' : 'Annual'})
             </p>
           </div>
           {isConnected && (
@@ -782,7 +853,7 @@ const CreateAITelegramAgent = () => {
     </motion.div>
   );
 
-  // Step 4: Success
+  // Complete: Success
   const renderStep4 = () => (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-8">
       <motion.div
@@ -871,9 +942,10 @@ const CreateAITelegramAgent = () => {
           Create Another Agent
         </button>
         <button
+          onClick={() => navigate('/hub/my-agents')}
           className="w-full px-6 py-3 border border-muted text-foreground rounded-lg hover:border-primary/50 hover:bg-muted/30 transition font-medium"
         >
-          View Dashboard
+          View Agent
         </button>
       </div>
     </motion.div>
@@ -1069,14 +1141,14 @@ const CreateAITelegramAgent = () => {
             </motion.div>
           )}
 
-          {/* Step 4: Success */}
+          {/* Complete: Success */}
           {previewStep === 4 && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-6"
             >
-              <h3 className="text-xl font-bold text-amber-500 mb-2 flex items-center gap-2"><Rocket size={20} /> Step 4: Success</h3>
+              <h3 className="text-xl font-bold text-amber-500 mb-2 flex items-center gap-2"><Rocket size={20} /> Complete: Success</h3>
               <div className="glass-card p-6 sm:p-8">
                 {renderStep4()}
               </div>

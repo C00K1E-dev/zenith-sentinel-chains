@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Cpu, Zap, Brain, Rocket, Settings, FileText, ChevronDown, ChevronUp, MessageCircle, Clock, Users, TrendingUp, Check, Wallet } from 'lucide-react';
+import { Bot, Cpu, Zap, Brain, Rocket, Settings, FileText, ChevronDown, ChevronUp, MessageCircle, Clock, Users, TrendingUp, Check, Wallet, ExternalLink } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { useNavigate } from 'react-router-dom';
 import { useAccount } from 'wagmi';
@@ -274,21 +274,33 @@ PARAMETER custom_instructions """
                             </div>
                           </div>
 
-                          {/* CTA Button */}
-                          <motion.button
-                            onClick={() => {
-                              if (!isConnected) {
-                                setShowWalletWarning(true);
-                                setTimeout(() => setShowWalletWarning(false), 5000);
-                              } else {
-                                setSelectedAgent(agent.id);
-                              }
-                            }}
-                            className="w-full sm:w-auto px-8 py-3 rounded-lg transition font-bold shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-xl"
-                          >
-                            {!isConnected ? <Wallet size={18} /> : <Rocket size={18} />}
-                            {!isConnected ? 'Connect Wallet First' : 'Deploy Agent Now'}
-                          </motion.button>
+                          {/* CTA Buttons */}
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <motion.button
+                              onClick={() => {
+                                if (!isConnected) {
+                                  setShowWalletWarning(true);
+                                  setTimeout(() => setShowWalletWarning(false), 5000);
+                                } else {
+                                  setSelectedAgent(agent.id);
+                                }
+                              }}
+                              className="flex-1 sm:flex-none px-8 py-3 rounded-lg transition font-bold shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-xl"
+                            >
+                              {!isConnected ? <Wallet size={18} /> : <Rocket size={18} />}
+                              {!isConnected ? 'Connect Wallet First' : 'Deploy Agent Now'}
+                            </motion.button>
+                            
+                            <motion.a
+                              href="https://t.me/SmartSentinelsCommunity"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 sm:flex-none px-8 py-3 rounded-lg transition font-bold shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-teal-500 text-white hover:from-teal-700 hover:to-teal-600 hover:shadow-xl"
+                            >
+                              <ExternalLink size={18} />
+                              Live Demo
+                            </motion.a>
+                          </div>
                           
                           {/* Wallet Warning */}
                           {showWalletWarning && (

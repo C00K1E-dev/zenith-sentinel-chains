@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, X, Loader2, Bot } from 'lucide-react';
+import { Save, X, Loader2, Bot, Mail } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
@@ -344,30 +344,39 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-3 mt-6 pt-6 border-t border-border">
-              <button
-                onClick={onClose}
-                className="px-6 py-2 border border-border rounded-lg hover:bg-secondary/20 transition"
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
+              <a
+                href="mailto:office@smartsentinels.net"
+                className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition disabled:opacity-50 flex items-center gap-2"
-              >
-                {saving ? (
-                  <>
-                    <Loader2 className="animate-spin" size={16} />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save size={16} />
-                    Save Changes
-                  </>
-                )}
-              </button>
+                <Mail size={16} />
+                <span>Contact Support</span>
+              </a>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={onClose}
+                  className="px-6 py-2 border border-border rounded-lg hover:bg-secondary/20 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition disabled:opacity-50 flex items-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </motion.div>
         </div>

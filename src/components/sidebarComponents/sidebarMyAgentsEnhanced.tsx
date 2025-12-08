@@ -1,4 +1,4 @@
-import { Bot, Settings, TrendingUp, MessageCircle, Trash2, Calendar, DollarSign, RefreshCw, ExternalLink, AlertCircle, BarChart3 } from 'lucide-react';
+import { Bot, Settings, TrendingUp, MessageCircle, Trash2, Calendar, DollarSign, RefreshCw, ExternalLink, AlertCircle, BarChart3, Loader2, Network } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { getOrCreateUser, getUserAgents, getLatestSubscription, deleteAgent } from '@/lib/supabase';
@@ -48,6 +48,9 @@ export default function SidebarMyAgentsEnhanced() {
   const [renewalAgent, setRenewalAgent] = useState<{id: string; name: string} | null>(null);
   const [settingsAgentId, setSettingsAgentId] = useState<string | null>(null);
   const [analyticsAgent, setAnalyticsAgent] = useState<{ id: string; name: string } | null>(null);
+  const [deleteAgentData, setDeleteAgentData] = useState<{ id: string; name: string } | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (isConnected && address) {
@@ -97,17 +100,27 @@ export default function SidebarMyAgentsEnhanced() {
     }
   };
 
-  const handleDeleteAgent = async (agentId: string) => {
-    if (!confirm('Are you sure you want to delete this agent? This action cannot be undone.')) {
+  const openDeleteDialog = (agentId: string, agentName: string) => {
+    setDeleteAgentData({ id: agentId, name: agentName });
+    setDeleteConfirmName('');
+  };
+
+  const confirmDeleteAgent = async () => {
+    if (!deleteAgentData || deleteConfirmName !== deleteAgentData.name) {
       return;
     }
 
     try {
-      await deleteAgent(agentId);
-      setAgents(agents.filter(a => a.id !== agentId));
+      setIsDeleting(true);
+      await deleteAgent(deleteAgentData.id);
+      setAgents(agents.filter(a => a.id !== deleteAgentData.id));
+      setDeleteAgentData(null);
+      setDeleteConfirmName('');
     } catch (error) {
       console.error('Failed to delete agent:', error);
       alert('Failed to delete agent. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -171,7 +184,7 @@ export default function SidebarMyAgentsEnhanced() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-orbitron font-bold">My Agents</h2>
-          <p className="text-sm text-muted-foreground">Manage your Telegram AI agents</p>
+          <p className="text-sm text-muted-foreground">Manage your AI agents</p>
         </div>
         <button 
           onClick={loadAgents}
@@ -182,13 +195,14 @@ export default function SidebarMyAgentsEnhanced() {
         </button>
       </div>
 
-      {/* Stats Overview */}
+      {/* Overall Stats - All Agent Types */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass-card p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">Total Agents</p>
               <p className="text-2xl font-bold">{agents.length}</p>
+              <p className="text-xs text-muted-foreground mt-1">All Types</p>
             </div>
             <Bot className="text-primary" size={32} />
           </div>
@@ -196,10 +210,11 @@ export default function SidebarMyAgentsEnhanced() {
         <div className="glass-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground">Active</p>
+              <p className="text-xs text-muted-foreground">In Production</p>
               <p className="text-2xl font-bold text-green-500">
                 {agents.filter(a => a.subscriptionStatus.isActive).length}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">Live Agents</p>
             </div>
             <TrendingUp className="text-green-500" size={32} />
           </div>
@@ -207,19 +222,67 @@ export default function SidebarMyAgentsEnhanced() {
         <div className="glass-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-muted-foreground">Total Messages</p>
-              <p className="text-2xl font-bold">
-                {agents.reduce((sum, a) => sum + (a.message_count || 0), 0)}
+              <p className="text-xs text-muted-foreground">Total Revenue</p>
+              <p className="text-2xl font-bold text-blue-500">
+                ${agents.reduce((sum, a) => sum + (a.subscription?.subscription_cost_usd || 0), 0).toLocaleString()}
               </p>
+              <p className="text-xs text-muted-foreground mt-1">Lifetime</p>
             </div>
-            <MessageCircle className="text-blue-500" size={32} />
+            <DollarSign className="text-blue-500" size={32} />
           </div>
         </div>
       </div>
 
-      {/* Agents List */}
+      {/* Telegram Agents Section */}
       <div className="space-y-4">
-        <AnimatePresence>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MessageCircle className="text-primary" size={20} />
+            <h3 className="text-lg font-semibold">Telegram Agents</h3>
+            <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+              {agents.length} {agents.length === 1 ? 'Agent' : 'Agents'}
+            </span>
+          </div>
+        </div>
+
+        {/* Telegram-Specific Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="glass-card p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Telegram Agents</p>
+                <p className="text-xl font-bold">{agents.length}</p>
+              </div>
+              <Bot className="text-primary" size={24} />
+            </div>
+          </div>
+          <div className="glass-card p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Active</p>
+                <p className="text-xl font-bold text-green-500">
+                  {agents.filter(a => a.subscriptionStatus.isActive).length}
+                </p>
+              </div>
+              <TrendingUp className="text-green-500" size={24} />
+            </div>
+          </div>
+          <div className="glass-card p-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Total Messages</p>
+                <p className="text-xl font-bold">
+                  {agents.reduce((sum, a) => sum + (a.message_count || 0), 0).toLocaleString()}
+                </p>
+              </div>
+              <MessageCircle className="text-blue-500" size={24} />
+            </div>
+          </div>
+        </div>
+
+        {/* Agents List */}
+        <div className="space-y-4">
+          <AnimatePresence>
           {agents.map((agent) => (
             <motion.div
               key={agent.id}
@@ -327,6 +390,14 @@ export default function SidebarMyAgentsEnhanced() {
                   <Settings size={16} />
                   Settings
                 </button>
+                <button
+                  disabled
+                  className="px-3 py-2 text-green-500 bg-green-500/20 rounded-lg cursor-not-allowed flex items-center gap-2 opacity-60"
+                  title="Soon"
+                >
+                  <Network size={16} />
+                  Add to PoUW
+                </button>
                 
                 {(!agent.subscriptionStatus.isActive || agent.subscriptionStatus.daysRemaining < 7) && (
                   <button
@@ -339,7 +410,7 @@ export default function SidebarMyAgentsEnhanced() {
                 )}
 
                 <button
-                  onClick={() => handleDeleteAgent(agent.id)}
+                  onClick={() => openDeleteDialog(agent.id, agent.project_name)}
                   className="px-4 py-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/30 transition"
                   title="Delete Agent"
                 >
@@ -349,7 +420,11 @@ export default function SidebarMyAgentsEnhanced() {
             </motion.div>
           ))}
         </AnimatePresence>
+        </div>
       </div>
+
+      {/* Placeholder for other agent types */}
+      {/* Future: Trading Agents, Medical Agents, Legal Agents, etc. */}
 
       {/* Renewal Modal */}
       {showRenewalModal && renewalAgent && (
@@ -387,6 +462,83 @@ export default function SidebarMyAgentsEnhanced() {
           agentName={analyticsAgent.name}
           onClose={() => setAnalyticsAgent(null)}
         />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteAgentData && (
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+            onClick={() => {
+              setDeleteAgentData(null);
+              setDeleteConfirmName('');
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="glass-card p-6 max-w-md w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-red-500/10 rounded-lg">
+                  <AlertCircle className="text-red-500" size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-orbitron font-bold">Delete Agent</h2>
+                  <p className="text-sm text-muted-foreground">This action cannot be undone</p>
+                </div>
+              </div>
+
+              <p className="text-muted-foreground mb-4">
+                To confirm deletion, please type the agent name: <span className="font-bold text-foreground">{deleteAgentData.name}</span>
+              </p>
+
+              <input
+                type="text"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder="Type agent name to confirm"
+                className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 mb-6"
+                autoFocus
+              />
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    setDeleteAgentData(null);
+                    setDeleteConfirmName('');
+                  }}
+                  className="flex-1 px-6 py-2 border border-border rounded-lg hover:bg-secondary/20 transition"
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteAgent}
+                  disabled={deleteConfirmName !== deleteAgentData.name || isDeleting}
+                  className="flex-1 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="animate-spin" size={16} />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={16} />
+                      Delete Agent
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );

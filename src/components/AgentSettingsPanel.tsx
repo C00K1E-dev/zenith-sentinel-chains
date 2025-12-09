@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Save, X, Loader2, Bot, Mail } from 'lucide-react';
+import { Save, X, Loader2, Bot, Mail, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface AgentSettingsPanelProps {
   agentId: string;
@@ -26,7 +27,9 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
   const [settings, setSettings] = useState<AgentSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [newTrigger, setNewTrigger] = useState('');
+  const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadSettings();
@@ -54,6 +57,8 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
         additional_info: data.additional_info || '',
         pricing_tier: data.pricing_tier
       });
+
+      setWebsiteUrl(data.website_url);
     } catch (error) {
       console.error('Failed to load settings:', error);
       toast({
@@ -101,6 +106,113 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const buildKnowledgeBase = async (websiteUrl: string) => {
+    console.log(`[KNOWLEDGE_BASE] Starting scrape of ${websiteUrl}`);
+    
+    const response = await fetch(websiteUrl);
+    const html = await response.text();
+
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    
+    // Remove scripts, styles, and other unwanted elements
+    const elementsToRemove = doc.querySelectorAll('script, style, noscript, iframe, svg');
+    elementsToRemove.forEach(el => el.remove());
+
+    // Get visible text content
+    const textContent = doc.body.innerText
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    console.log(`[KNOWLEDGE_BASE] Scraped ${textContent.length} characters from website`);
+
+    // Use Gemini to structure the scraped data
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      console.warn('[KNOWLEDGE_BASE] No Gemini API key found, using raw text');
+      return { rawContent: textContent };
+    }
+
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+
+      const prompt = `Analyze this website content and extract structured information. Return ONLY a JSON object with these fields:
+- description: A 2-3 sentence overview of what this project/company does
+- features: Array of key features or services (max 5)
+- tokenomics: Object with token details if mentioned (supply, distribution, price, etc.)
+- roadmap: Array of upcoming milestones or timeline items
+- team: Array of team members if mentioned
+- faqs: Array of {question, answer} objects for common questions
+- socialLinks: Object with social media URLs if found
+
+Website content:
+${textContent}
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+      const result = await model.generateContent(prompt);
+      const structuredData = JSON.parse(result.response.text());
+
+      console.log('[KNOWLEDGE_BASE] Successfully structured data:', structuredData);
+      return structuredData;
+    } catch (error) {
+      console.error('[KNOWLEDGE_BASE] Error structuring data with Gemini:', error);
+      return { rawContent: textContent };
+    }
+  };
+
+  const handleRefreshKnowledgeBase = async () => {
+    if (!websiteUrl) {
+      toast({
+        title: 'Error',
+        description: 'No website URL found for this agent',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    try {
+      setRefreshing(true);
+      
+      toast({
+        title: 'Refreshing Knowledge Base',
+        description: 'Scraping website for latest information...'
+      });
+
+      // Scrape website and build new knowledge base
+      const knowledgeBase = await buildKnowledgeBase(websiteUrl);
+
+      // Update database
+      const { error } = await supabase
+        .from('telegram_agents')
+        .update({ 
+          knowledge_base: knowledgeBase,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', agentId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Knowledge base refreshed successfully! Your agent now has the latest website information.',
+        duration: 5000
+      });
+
+      // Reload settings to show updated data
+      await loadSettings();
+    } catch (error) {
+      console.error('Failed to refresh knowledge base:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to refresh knowledge base. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -199,6 +311,51 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                 </div>
               </div>
 
+              {/* Project Website */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  Project Website
+                  <span className="text-muted-foreground font-normal ml-2">
+                    (Source for knowledge base)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={websiteUrl || ''}
+                  disabled
+                  className="w-full px-4 py-2 bg-secondary/10 border border-border rounded-lg text-muted-foreground"
+                  placeholder="No website configured"
+                />
+              </div>
+
+              {/* Refresh Knowledge Base */}
+              <div>
+                <label className="text-sm font-semibold mb-2 block">
+                  Knowledge Base
+                  <span className="text-muted-foreground font-normal ml-2">
+                    (Update from website)
+                  </span>
+                </label>
+                <button
+                  onClick={handleRefreshKnowledgeBase}
+                  disabled={refreshing || !websiteUrl}
+                  title={websiteUrl ? "Refresh knowledge base from website" : "No website URL configured"}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600/10 border border-blue-600/50 text-blue-400 rounded-lg hover:bg-blue-600/20 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {refreshing ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      <span>Refreshing Knowledge Base...</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={18} />
+                      <span>Refresh Knowledge Base</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               {/* Personality */}
               <div>
                 <label className="text-sm font-semibold mb-2 block">
@@ -210,7 +367,7 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                 <select
                   value={settings.personality}
                   onChange={(e) => setSettings({ ...settings, personality: e.target.value })}
-                  className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-foreground [&>option]:bg-background [&>option]:text-foreground"
                 >
                   <option value="professional">Professional - Formal and business-like</option>
                   <option value="funny">Funny - Witty and entertaining</option>
@@ -343,40 +500,42 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-between mt-6 pt-6 border-t border-border">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3 pt-4 border-t border-border">
               <a
                 href="mailto:office@smartsentinels.net"
-                className="flex items-center gap-2 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition font-medium shadow-lg shadow-primary/20"
               >
                 <Mail size={16} />
                 <span>Contact Support</span>
               </a>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-6 py-2 border border-border rounded-lg hover:bg-secondary/20 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition disabled:opacity-50 flex items-center gap-2"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="animate-spin" size={16} />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={16} />
-                      Save Changes
-                    </>
-                  )}
-                </button>
-              </div>
+              
+              <div className="flex-1" />
+              
+              <button
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary/20 border border-border text-foreground rounded-lg hover:bg-secondary/30 transition font-medium"
+              >
+                <span>Cancel</span>
+              </button>
+              
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg shadow-primary/20"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="animate-spin" size={16} />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={16} />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
             </div>
           </motion.div>
         </div>

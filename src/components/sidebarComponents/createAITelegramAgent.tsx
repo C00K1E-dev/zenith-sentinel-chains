@@ -152,14 +152,15 @@ async function buildKnowledgeBase(
     const response = await fetch(websiteUrl);
     const html = await response.text();
     
-    // Extract text content (remove HTML tags)
+    // Extract text content (remove HTML tags) - NO LIMIT, get everything!
     const textContent = html
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 5000); // Limit to 5000 chars
+      .trim();
+    
+    console.log(`[KNOWLEDGE_BASE] Scraped ${textContent.length} characters from website`);
 
     // Use Gemini to extract structured information
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);

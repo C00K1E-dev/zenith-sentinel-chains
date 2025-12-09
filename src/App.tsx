@@ -23,8 +23,8 @@ const queryClient = new QueryClient();
 const config = createConfig({
   chains: [bsc, bscTestnet],
   connectors: [
-    injected({ shimDisconnect: true }),
-    metaMask({ shimDisconnect: true }),
+    injected(),
+    metaMask(),
     walletConnect({
       projectId: '2c5512f85fcb5e0b5c1a8c0c1b0e2b9a', // WalletConnect Cloud Project ID
       showQrModal: true,

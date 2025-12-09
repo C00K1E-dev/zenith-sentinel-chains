@@ -112,7 +112,7 @@ const SidebarAirdrop = memo(() => {
     {
       id: 'connect-metamask',
       name: 'Connect MetaMask Wallet',
-      description: 'Connect with MetaMask wallet to unlock an exclusive bonus and earn extra points',
+      description: 'Connect with MetaMask wallet (desktop or mobile) to unlock an exclusive bonus and earn extra points',
       points: 10,
       icon: Sparkles,
       completed: false,
@@ -289,7 +289,7 @@ const SidebarAirdrop = memo(() => {
       return;
     }
 
-    // Check if MetaMask is the connected wallet
+    // Check if MetaMask is the connected wallet (desktop or mobile)
     const isMetaMask = 
       connector?.name === 'MetaMask' || 
       connector?.name?.toLowerCase().includes('metamask') ||
@@ -299,7 +299,8 @@ const SidebarAirdrop = memo(() => {
       connectorName: connector?.name, 
       detectResult: detectMetaMaskWallet(), 
       isMetaMask,
-      userAgent: navigator.userAgent 
+      userAgent: navigator.userAgent,
+      isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
     });
     
     setIsMetaMaskWallet(isMetaMask);

@@ -53,11 +53,11 @@ export default function AgentAnalyticsPanel({ agentId, agentName, onClose }: Age
 
       // Get agent message logs
       const { data: messages, error } = await supabase
-        .from('agent_message_logs')
+        .from('agent_messages')
         .select('*')
         .eq('agent_id', agentId)
-        .gte('timestamp', startDate.toISOString())
-        .order('timestamp', { ascending: true });
+        .gte('created_at', startDate.toISOString())
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
 
@@ -77,7 +77,7 @@ export default function AgentAnalyticsPanel({ agentId, agentName, onClose }: Age
       const totalMessages = messages.length;
 
       // Calculate unique users
-      const uniqueUserIds = new Set(messages.map(m => m.user_id));
+      const uniqueUserIds = new Set(messages.map(m => m.telegram_user_id));
       const uniqueUsers = uniqueUserIds.size;
 
       // Calculate average response time
@@ -91,7 +91,7 @@ export default function AgentAnalyticsPanel({ agentId, agentName, onClose }: Age
       // Messages over time (daily aggregation)
       const messagesByDate: { [key: string]: number } = {};
       messages.forEach(m => {
-        const date = new Date(m.timestamp).toISOString().split('T')[0];
+        const date = new Date(m.created_at).toISOString().split('T')[0];
         messagesByDate[date] = (messagesByDate[date] || 0) + 1;
       });
       const messagesOverTime = Object.entries(messagesByDate).map(([date, count]) => ({
@@ -102,10 +102,11 @@ export default function AgentAnalyticsPanel({ agentId, agentName, onClose }: Age
       // User engagement
       const messagesByUser: { [key: string]: { count: number; username: string } } = {};
       messages.forEach(m => {
-        if (!messagesByUser[m.user_id]) {
-          messagesByUser[m.user_id] = { count: 0, username: m.username || 'Unknown' };
+        const userId = String(m.telegram_user_id);
+        if (!messagesByUser[userId]) {
+          messagesByUser[userId] = { count: 0, username: `User ${m.telegram_user_id}` };
         }
-        messagesByUser[m.user_id].count++;
+        messagesByUser[userId].count++;
       });
       const userEngagement = Object.entries(messagesByUser)
         .map(([userId, data]) => ({
@@ -119,7 +120,7 @@ export default function AgentAnalyticsPanel({ agentId, agentName, onClose }: Age
       // Hourly distribution
       const messagesByHour: { [key: number]: number } = {};
       messages.forEach(m => {
-        const hour = new Date(m.timestamp).getHours();
+        const hour = new Date(m.created_at).getHours();
         messagesByHour[hour] = (messagesByHour[hour] || 0) + 1;
       });
       const hourlyDistribution = Array.from({ length: 24 }, (_, hour) => ({
@@ -187,7 +188,7 @@ export default function AgentAnalyticsPanel({ agentId, agentName, onClose }: Age
                 <select
                   value={timeRange}
                   onChange={(e) => setTimeRange(e.target.value as any)}
-                  className="px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="px-4 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary [&>option]:bg-background [&>option]:text-foreground"
                 >
                   <option value="7d">Last 7 days</option>
                   <option value="30d">Last 30 days</option>

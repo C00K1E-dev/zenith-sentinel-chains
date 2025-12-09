@@ -1,5 +1,6 @@
-import { Bot, Settings, TrendingUp, MessageCircle, Trash2, Calendar, DollarSign, RefreshCw, ExternalLink, AlertCircle, BarChart3, Loader2, Network } from 'lucide-react';
+import { Bot, Settings, TrendingUp, MessageCircle, Trash2, Calendar, DollarSign, RefreshCw, ExternalLink, AlertCircle, BarChart3, Loader2, Network, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAccount } from 'wagmi';
 import { getOrCreateUser, getUserAgents, getLatestSubscription, deleteAgent } from '@/lib/supabase';
 import { getSubscriptionStatus } from '@/lib/subscriptionManager';
@@ -7,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import RenewalModal from '@/components/RenewalModal';
 import AgentSettingsPanel from '@/components/AgentSettingsPanel';
 import AgentAnalyticsPanel from '@/components/AgentAnalyticsPanel';
+import NotificationPanel from '@/components/NotificationPanel';
+import { getAgentUnreadCount } from '@/services/notifications';
 
 interface Agent {
   id: string;
@@ -51,6 +54,8 @@ export default function SidebarMyAgentsEnhanced() {
   const [deleteAgentData, setDeleteAgentData] = useState<{ id: string; name: string } | null>(null);
   const [deleteConfirmName, setDeleteConfirmName] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [notificationAgent, setNotificationAgent] = useState<{ id: string; name: string } | null>(null);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (isConnected && address) {
@@ -60,6 +65,21 @@ export default function SidebarMyAgentsEnhanced() {
       setLoading(false);
     }
   }, [isConnected, address]);
+
+  // Load unread notification counts
+  useEffect(() => {
+    const loadUnreadCounts = async () => {
+      const counts: Record<string, number> = {};
+      for (const agent of agents) {
+        counts[agent.id] = await getAgentUnreadCount(agent.id);
+      }
+      setUnreadCounts(counts);
+    };
+
+    if (agents.length > 0) {
+      loadUnreadCounts();
+    }
+  }, [agents]);
 
   const loadAgents = async () => {
     try {
@@ -410,6 +430,19 @@ export default function SidebarMyAgentsEnhanced() {
                 )}
 
                 <button
+                  onClick={() => setNotificationAgent({ id: agent.id, name: agent.project_name })}
+                  className="relative px-4 py-2 bg-cyan-500/20 text-cyan-500 rounded-lg hover:bg-cyan-500/30 transition"
+                  title="Notifications"
+                >
+                  <Mail size={16} />
+                  {unreadCounts[agent.id] > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {unreadCounts[agent.id]}
+                    </span>
+                  )}
+                </button>
+
+                <button
                   onClick={() => openDeleteDialog(agent.id, agent.project_name)}
                   className="px-4 py-2 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/30 transition"
                   title="Delete Agent"
@@ -426,8 +459,8 @@ export default function SidebarMyAgentsEnhanced() {
       {/* Placeholder for other agent types */}
       {/* Future: Trading Agents, Medical Agents, Legal Agents, etc. */}
 
-      {/* Renewal Modal */}
-      {showRenewalModal && renewalAgent && (
+      {/* Modals rendered via Portal to ensure full-screen overlay */}
+      {showRenewalModal && renewalAgent && createPortal(
         <RenewalModal
           agentId={renewalAgent.id}
           agentName={renewalAgent.name}
@@ -440,11 +473,11 @@ export default function SidebarMyAgentsEnhanced() {
             setRenewalAgent(null);
             loadAgents();
           }}
-        />
+        />,
+        document.body
       )}
 
-      {/* Settings Panel */}
-      {settingsAgentId && (
+      {settingsAgentId && createPortal(
         <AgentSettingsPanel
           agentId={settingsAgentId}
           onClose={() => setSettingsAgentId(null)}
@@ -452,20 +485,34 @@ export default function SidebarMyAgentsEnhanced() {
             setSettingsAgentId(null);
             loadAgents();
           }}
-        />
+        />,
+        document.body
       )}
 
-      {/* Analytics Panel */}
-      {analyticsAgent && (
+      {analyticsAgent && createPortal(
         <AgentAnalyticsPanel
           agentId={analyticsAgent.id}
           agentName={analyticsAgent.name}
           onClose={() => setAnalyticsAgent(null)}
-        />
+        />,
+        document.body
       )}
 
-      {/* Delete Confirmation Dialog */}
-      {deleteAgentData && (
+      {notificationAgent && createPortal(
+        <NotificationPanel
+          agentId={notificationAgent.id}
+          agentName={notificationAgent.name}
+          onClose={() => {
+            setNotificationAgent(null);
+            // Refresh unread counts after closing
+            loadAgents();
+          }}
+        />,
+        document.body
+      )}
+
+      {/* Delete Confirmation Dialog rendered via Portal */}
+      {deleteAgentData && createPortal(
         <AnimatePresence>
           <motion.div
             initial={{ opacity: 0 }}
@@ -538,7 +585,8 @@ export default function SidebarMyAgentsEnhanced() {
               </div>
             </motion.div>
           </motion.div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   );

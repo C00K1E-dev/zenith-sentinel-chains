@@ -22,6 +22,7 @@ import {
   supabase
 } from '@/lib/supabase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { toast } from 'sonner';
 
 interface AgentConfig {
   email: string;
@@ -47,6 +48,94 @@ interface PricingOption {
   rpd: string;
   features: string[];
   color: string;
+}
+
+/**
+ * Extract and process whitepaper PDF content using pdfjs-dist (browser-compatible)
+ */
+async function processWhitepaper(file: File): Promise<string> {
+  try {
+    console.log('[WHITEPAPER] Processing PDF...', file.name, `(${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+    
+    // Dynamically import pdfjs-dist (browser library)
+    const pdfjsLib = await import('pdfjs-dist');
+    
+    // Configure worker - use CDN for worker script
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    
+    // Convert File to ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // Load PDF document
+    console.log('[WHITEPAPER] Loading PDF document...');
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const pdf = await loadingTask.promise;
+    
+    console.log('[WHITEPAPER] PDF loaded. Pages:', pdf.numPages);
+    
+    // Extract text from all pages
+    let rawText = '';
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(' ');
+      rawText += pageText + '\n';
+      
+      // Progress logging for large PDFs
+      if (pageNum % 10 === 0) {
+        console.log(`[WHITEPAPER] Processed ${pageNum}/${pdf.numPages} pages...`);
+      }
+    }
+    
+    console.log('[WHITEPAPER] Extracted', rawText.length, 'characters from', pdf.numPages, 'pages');
+    
+    // Limit text to avoid token limits (10K chars should be enough)
+    const limitedText = rawText.slice(0, 10000);
+    
+    // Use Gemini to extract and structure key information
+    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
+    
+    const prompt = `Analyze this whitepaper and extract key information in JSON format:
+
+${limitedText}
+
+Extract and return ONLY a JSON object with these fields:
+{
+  "overview": "brief 2-3 sentence summary of the project",
+  "problem": "what problem does it solve",
+  "solution": "the proposed solution",
+  "tokenomics": {
+    "supply": "total supply",
+    "distribution": "how tokens are distributed",
+    "utility": "token use cases"
+  },
+  "technology": "tech stack and architecture",
+  "roadmap": ["key milestone 1", "key milestone 2", "key milestone 3"],
+  "team": "team information",
+  "partnerships": "key partners or advisors",
+  "competitive_advantage": "what makes this unique"
+}
+
+Focus on extracting factual information. If a field is not mentioned, use "Not specified in whitepaper".`;
+
+    const result = await model.generateContent(prompt);
+    const jsonText = result.response.text()
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
+    
+    console.log('[WHITEPAPER] Successfully processed and structured PDF content');
+    return jsonText;
+  } catch (error) {
+    console.error('[WHITEPAPER] Error processing PDF:', error);
+    // Return empty object if processing fails
+    return JSON.stringify({
+      overview: "Whitepaper uploaded but processing failed",
+      note: "Bot will rely on website content and custom FAQs for information",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }, null, 2);
+  }
 }
 
 /**
@@ -125,8 +214,12 @@ Extract and return ONLY a JSON object with these fields:
 }
 
 const CreateAITelegramAgent = () => {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
   const navigate = useNavigate();
+  
+  // Better connection detection for mobile wallets
+  const isWalletConnected = isConnected || (address && address.length > 0);
+  
   const [step, setStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
   const [previewStep, setPreviewStep] = useState(1);
@@ -234,7 +327,7 @@ const CreateAITelegramAgent = () => {
    * This is the critical payment flow that gates agent deployment
    */
   const handlePayment = async () => {
-    if (!isConnected || !address) {
+    if (!isWalletConnected || !address) {
       setPaymentError('Please connect your wallet first');
       return;
     }
@@ -245,10 +338,8 @@ const CreateAITelegramAgent = () => {
       setPaymentStep(PaymentStep.TRANSFERRING);
 
       // Get payment amount for selected tier and billing cycle
-      const selectedOption = pricingOptions.find(p => p.id === config.pricingTier);
-      const amountUSDT = billingCycle === 'monthly' 
-        ? selectedOption?.monthlyPrice.toString() || '99'
-        : selectedOption?.annualPrice.toString() || '950';
+      // TEST PRICING: Always use 1 USDT for testing
+      const amountUSDT = '1';
       const amountWei = parseUnits(amountUSDT, 18);
 
       console.log('[PAYMENT] Initiating transfer:', { amountUSDT, billingCycle, amountWei: amountWei.toString(), treasury: TREASURY_WALLET });
@@ -259,7 +350,8 @@ const CreateAITelegramAgent = () => {
         abi: ERC20_ABI,
         functionName: 'transfer',
         args: [TREASURY_WALLET, amountWei],
-        chainId: bsc.id,
+        chain: bsc,
+        account: address,
       });
     } catch (error: any) {
       console.error('Payment error:', error);
@@ -383,19 +475,24 @@ const CreateAITelegramAgent = () => {
           subscription_cost_usd: subscriptionCost,
           payment_status: 'confirmed',
           transaction_hash: transactionHash,
-          transaction_date: new Date().toISOString()
+          transaction_date: new Date().toISOString(),
+          expiry_date: billingCycle === 'monthly'
+            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+          auto_renew: true
         });
 
         if (!subscription) {
-          throw new Error('Failed to create subscription record - no data returned');
+          throw new Error('Failed to create subscription record');
         }
       } catch (error: any) {
-        console.error('[SUBSCRIPTION] Subscription creation error:', error);
+        console.error('[SUBSCRIPTION] Error:', error);
         throw new Error(`Subscription creation failed: ${error.message || 'Unknown error'}`);
       }
 
-      // 4. Build knowledge base from website
+      // 5. Build knowledge base from website (REQUIRED)
       console.log('[KNOWLEDGE] Fetching website content...');
+      
       try {
         const knowledgeBase = await buildKnowledgeBase(
           config.websiteUrl,
@@ -419,11 +516,113 @@ const CreateAITelegramAgent = () => {
         // Continue anyway - agent can still work without full knowledge base
       }
 
-      // 6. Move to Step 4 (deployment)
+      // 6. Process whitepaper asynchronously (OPTIONAL - doesn't block deployment)
+      if (config.whitepaper) {
+        console.log('[WHITEPAPER] Processing PDF in background...');
+        processWhitepaper(config.whitepaper)
+          .then(async (whitepaperContent) => {
+            console.log('[WHITEPAPER] PDF processed successfully');
+            
+            // Merge whitepaper into existing knowledge base
+            const { data: currentAgent } = await supabase
+              .from('telegram_agents')
+              .select('knowledge_base')
+              .eq('id', agent.id)
+              .single();
+            
+            if (currentAgent) {
+              const updatedKnowledgeBase = {
+                ...currentAgent.knowledge_base,
+                whitepaper: JSON.parse(whitepaperContent)
+              };
+              
+              await supabase
+                .from('telegram_agents')
+                .update({ 
+                  knowledge_base: updatedKnowledgeBase,
+                  whitepaper_url: 'processed',
+                  updated_at: new Date().toISOString()
+                })
+                .eq('id', agent.id);
+            }
+          })
+          .catch(error => {
+            console.error('[WHITEPAPER] Failed to process PDF:', error);
+            // Not critical - agent works fine without whitepaper
+          });
+      }
+
+      // 5. Register webhook with Telegram
+      console.log('[WEBHOOK] Registering webhook with Telegram...');
+      try {
+        const webhookUrl = `https://zenith-sentinel.vercel.app/api/telegram-webhook?agent_id=${agent.id}`;
+        const webhookResponse = await fetch(`https://api.telegram.org/bot${config.botToken}/setWebhook`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: webhookUrl,
+            allowed_updates: ['message', 'callback_query']
+          })
+        });
+
+        const webhookData = await webhookResponse.json();
+        if (!webhookData.ok) {
+          throw new Error(`Webhook registration failed: ${webhookData.description}`);
+        }
+
+        // Update agent status to deployed (with retry for race conditions)
+        console.log('[WEBHOOK] Updating agent deployment status to deployed for agent:', agent.id);
+        
+        let updateData;
+        let deployError;
+        let retries = 3;
+        
+        while (retries > 0) {
+          const result = await supabase
+            .from('telegram_agents')
+            .update({ 
+              deployment_status: 'deployed',
+              telegram_webhook_url: webhookUrl,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', agent.id)
+            .select();
+          
+          updateData = result.data;
+          deployError = result.error;
+          
+          if (!deployError && updateData && updateData.length > 0) {
+            console.log('[WEBHOOK] Successfully updated deployment status');
+            break;
+          }
+          
+          retries--;
+          if (retries > 0) {
+            console.log(`[WEBHOOK] Retrying update... (${retries} attempts remaining)`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Wait 500ms before retry
+          }
+        }
+
+        if (deployError) {
+          console.error('[WEBHOOK] Failed to update deployment status after retries:', deployError);
+          console.error('[WEBHOOK] Error details:', JSON.stringify(deployError, null, 2));
+          throw new Error(`Failed to mark agent as deployed: ${deployError.message}. This may be a database permission issue. Please check Supabase RLS policies for telegram_agents table.`);
+        }
+
+        if (!updateData || updateData.length === 0) {
+          console.error('[WEBHOOK] Update returned no data after retries - agent may not exist or RLS blocked the update');
+          throw new Error('Failed to verify deployment status update. This may be a database permission issue (RLS). Please check Supabase dashboard.');
+        }
+
+        console.log('[WEBHOOK] Webhook registered successfully, agent marked as deployed:', updateData[0]);
+      } catch (error) {
+        console.error('[WEBHOOK] Failed to register webhook:', error);
+        throw new Error('Failed to deploy bot. Please contact support.');
+      }
+
+      // 6. Move to Step 4 (success)
       setStep(4);
-      
-      // 7. Call API to deploy bot
-      await deployBot(agent.id);
+      toast.success('Agent created and deployed successfully!');
 
     } catch (error: any) {
       console.error('Post-payment error:', error);
@@ -434,29 +633,17 @@ const CreateAITelegramAgent = () => {
 
   /**
    * Deploy bot to Vercel after payment confirmed
+   * NOTE: This function is no longer needed - webhook registration happens in handlePaymentConfirmed
    */
   const deployBot = async (agentId: string) => {
+    // Deprecated - keeping for backwards compatibility
+    console.log('[DEPLOY] Bot deployment now happens via webhook registration');
     setLoading(true);
     try {
-      const response = await fetch('/api/create-telegram-agent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...config,
-          agentId,
-          walletAddress: address
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setDeployedBotToken(data.botInfo.username);
-      } else {
-        throw new Error('Deployment failed');
-      }
+      // Bot is already deployed via webhook registration
+      setDeployedBotToken(config.projectName.toLowerCase().replace(/\s+/g, '_') + '_bot');
     } catch (error: any) {
       console.error('Deployment error:', error);
-      alert('Error deploying bot: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -511,17 +698,44 @@ const CreateAITelegramAgent = () => {
         <label htmlFor="whitepaper-upload" className="border-2 border-dashed border-muted rounded-lg p-8 text-center cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition block">
           <Upload size={28} className="mx-auto mb-3 text-muted-foreground" />
           <p className="text-sm font-medium mb-1">
-            {config.whitepaper ? config.whitepaper.name : 'Click to upload or drag & drop'}
+            {config.whitepaper ? (
+              <>
+                {config.whitepaper.name}
+                <span className="ml-2 text-xs text-muted-foreground">
+                  ({(config.whitepaper.size / 1024 / 1024).toFixed(2)} MB)
+                </span>
+              </>
+            ) : (
+              'Click to upload or drag & drop'
+            )}
           </p>
-          <p className="text-xs text-muted-foreground">PDF only (optional)</p>
+          <p className="text-xs text-muted-foreground">PDF only, max 20 MB (optional)</p>
           <input
             type="file"
             accept=".pdf"
-            onChange={(e) => setConfig({ ...config, whitepaper: e.target.files?.[0] || null })}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                // Check file size (20 MB limit)
+                const maxSize = 20 * 1024 * 1024; // 20 MB in bytes
+                if (file.size > maxSize) {
+                  toast.error(`File too large! Maximum size is 20 MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)} MB.`);
+                  e.target.value = ''; // Reset input
+                  return;
+                }
+                setConfig({ ...config, whitepaper: file });
+              }
+            }}
             className="hidden"
             id="whitepaper-upload"
           />
         </label>
+        {config.whitepaper && config.whitepaper.size > 10 * 1024 * 1024 && (
+          <div className="mt-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-xs text-yellow-600 flex items-start gap-2">
+            <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+            <span>Large file detected. Processing may take longer and could slow down your browser.</span>
+          </div>
+        )}
       </div>
 
       <div>
@@ -754,7 +968,7 @@ const CreateAITelegramAgent = () => {
               } in USDT on BSC ({billingCycle === 'monthly' ? 'Monthly' : 'Annual'})
             </p>
           </div>
-          {isConnected && (
+          {isWalletConnected && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Wallet size={14} />
               <span className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
@@ -806,7 +1020,7 @@ const CreateAITelegramAgent = () => {
         {/* Payment Button */}
         <button
           onClick={paymentStep === PaymentStep.ERROR ? resetPaymentState : handlePayment}
-          disabled={!isConnected || isTransferring || isConfirming || paymentStep === PaymentStep.TRANSFER_CONFIRMED}
+          disabled={!isWalletConnected || isTransferring || isConfirming || paymentStep === PaymentStep.TRANSFER_CONFIRMED}
           className="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
         >
           {isTransferring || isConfirming ? (
@@ -824,6 +1038,11 @@ const CreateAITelegramAgent = () => {
               <AlertCircle size={18} />
               Retry Payment
             </>
+          ) : !isWalletConnected ? (
+            <>
+              <Wallet size={18} />
+              Connect Wallet to Pay
+            </>
           ) : (
             <>
               <Wallet size={18} />
@@ -831,6 +1050,13 @@ const CreateAITelegramAgent = () => {
             </>
           )}
         </button>
+        
+        {/* Mobile Wallet Helper */}
+        {!isWalletConnected && (
+          <p className="text-xs text-center text-muted-foreground mt-2">
+            💡 On mobile? Use WalletConnect, MetaMask, Trust Wallet, or Coinbase Wallet
+          </p>
+        )}
 
         {/* Manual Verification Button - Show if stuck in "Confirming" for too long OR if transaction hash exists but not confirmed */}
         {(isConfirming && hash) && (
@@ -926,13 +1152,16 @@ const CreateAITelegramAgent = () => {
           onClick={() => {
             setStep(1);
             setConfig({
+              email: '',
               projectName: '',
               websiteUrl: '',
               whitepaper: null,
               botToken: '',
+              additionalInfo: '',
               personality: 'funny',
-              customFaqs: '',
-              triggers: [],
+              temperature: 0.3,
+              customFaqs: 'Q: What is your project?\nA: We are building innovative solutions for blockchain',
+              triggers: ['hello', 'help', 'features'],
               pricingTier: 'starter',
             });
             setDeployedBotToken(null);

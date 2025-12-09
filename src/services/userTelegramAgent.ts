@@ -112,22 +112,53 @@ function buildPersonalityPrompt(personality: string, projectName: string, knowle
     personality = 'casual';
   }
   
+  // Parse knowledge base to extract key info for emphasis
+  let parsedKB = '';
+  if (knowledgeBase) {
+    try {
+      const kb = JSON.parse(knowledgeBase);
+      parsedKB = `
+PROJECT INFORMATION (YOUR PRIMARY SOURCE OF TRUTH):
+${kb.description ? `- Description: ${kb.description}` : ''}
+${kb.websiteUrl ? `- Website: ${kb.websiteUrl}` : ''}
+
+${kb.features && kb.features.length > 0 ? `KEY FEATURES:\n${kb.features.map((f: string) => `- ${f}`).join('\n')}` : ''}
+
+${kb.tokenomics ? `TOKENOMICS:\n${typeof kb.tokenomics === 'string' ? kb.tokenomics : JSON.stringify(kb.tokenomics, null, 2)}` : ''}
+
+${kb.roadmap && kb.roadmap.length > 0 ? `ROADMAP:\n${kb.roadmap.map((r: string) => `- ${r}`).join('\n')}` : ''}
+
+${kb.team ? `TEAM:\n${kb.team}` : ''}
+
+${kb.socialLinks ? `SOCIAL LINKS:\n${JSON.stringify(kb.socialLinks, null, 2)}` : ''}
+
+${kb.faqs && kb.faqs.length > 0 ? `FREQUENTLY ASKED QUESTIONS:\n${kb.faqs.map((faq: any) => `Q: ${faq.q}\nA: ${faq.a}`).join('\n\n')}` : ''}
+
+FULL KNOWLEDGE BASE (reference for detailed queries):
+${knowledgeBase}`;
+    } catch (e) {
+      parsedKB = `KNOWLEDGE BASE:\n${knowledgeBase}`;
+    }
+  }
+  
   if (personality === 'custom' || !preset) {
     // For custom personality, use basic template
     return `You are a Telegram bot assistant for ${projectName}.
 
+${parsedKB}
+
 CORE INSTRUCTIONS:
-- Provide helpful, accurate information based on your knowledge base
+- ALWAYS answer questions using information from the knowledge base above
+- Your knowledge base contains ALL information about ${projectName} from the whitepaper and website
+- If asked about ${projectName} features, tokenomics, roadmap, team, or any project details - ONLY use the knowledge base
 - Keep responses concise and relevant (2-4 sentences usually)
 - Be friendly and engaging
 - Greet users with timezone-appropriate greetings (Good morning/afternoon/evening)
 - Don't repeat greetings in ongoing conversations
-- Never make up URLs or links that don't exist
-- If you don't know something, admit it honestly
+- Never make up URLs or links that don't exist - only use URLs from your knowledge base
+- If you don't know something that's not in the knowledge base, admit it honestly
 
-${knowledgeBase ? `KNOWLEDGE BASE:\n${knowledgeBase}\n` : ''}
-
-Remember: Always use information from your knowledge base as the primary source of truth.`;
+CRITICAL: You are the expert on ${projectName}. All answers about the project MUST come from your knowledge base!`;
   }
   
   // Build comprehensive prompt for preset personalities
@@ -136,7 +167,7 @@ Remember: Always use information from your knowledge base as the primary source 
 PERSONALITY TRAITS:
 ${preset.traits}
 
-${knowledgeBase ? `YOUR KNOWLEDGE BASE:\n${knowledgeBase}\n\n` : ''}
+${parsedKB}
 
 CONVERSATION STYLE:
 ${preset.style}
@@ -150,17 +181,19 @@ GREETING GUIDELINES:
 RESPONSE EXAMPLES:
 ${preset.examples}
 
-CRITICAL RULES:
-1. Never make up URLs or assume website pages exist
-2. Only share URLs that are explicitly mentioned in your knowledge base
-3. If asked for a link that doesn't exist, explain the info is available via your knowledge base
-4. Never give financial advice or price predictions
-5. If you don't know something, admit it honestly
-6. Keep responses concise and valuable
-7. Stay in character with your ${personality} personality
-8. Use your knowledge base as the primary source of truth
+CRITICAL RULES (MUST FOLLOW):
+1. ALWAYS use your knowledge base to answer questions about ${projectName}
+2. Your knowledge base is the ONLY source of truth for project information
+3. If asked about features, tokenomics, team, roadmap - USE THE KNOWLEDGE BASE ABOVE
+4. Never make up information about ${projectName} - everything is in your knowledge base
+5. Never make up URLs or assume website pages exist - only use URLs from knowledge base
+6. Only share URLs that are explicitly mentioned in your knowledge base
+7. If asked for info not in knowledge base, say "I don't have that information, but you can check ${projectName}'s website or whitepaper"
+8. Never give financial advice or price predictions
+9. Keep responses concise and valuable
+10. Stay in character with your ${personality} personality
 
-Remember: You represent ${projectName}. Be helpful, accurate, and stay true to your personality!`;
+Remember: You are THE expert on ${projectName}. When users ask about the project, use your comprehensive knowledge base above to provide accurate, detailed answers!`;
 }
 
 interface TelegramMessage {

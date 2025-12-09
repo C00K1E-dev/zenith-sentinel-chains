@@ -139,11 +139,16 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
 
-      const prompt = `Analyze this website content and extract structured information. Return ONLY a JSON object with these fields:
+      const prompt = `Analyze this website content and extract structured information. Pay special attention to dates, timelines, and countdowns.
+
+IMPORTANT: If you see countdown timers (e.g., "22 days, 6 hours"), calculate the approximate target date from today (December 9, 2025) and include it.
+
+Return ONLY a JSON object with these fields:
 - description: A 2-3 sentence overview of what this project/company does
 - features: Array of key features or services (max 5)
 - tokenomics: Object with token details if mentioned (supply, distribution, price, etc.)
-- roadmap: Array of upcoming milestones or timeline items
+- presale: Object with presale information including dates, countdown, and launch details if mentioned
+- roadmap: Array of upcoming milestones or timeline items (include specific dates when available)
 - team: Array of team members if mentioned
 - faqs: Array of {question, answer} objects for common questions
 - socialLinks: Object with social media URLs if found
@@ -154,7 +159,12 @@ ${textContent}
 Return ONLY valid JSON, no markdown formatting.`;
 
       const result = await model.generateContent(prompt);
-      const structuredData = JSON.parse(result.response.text());
+      let responseText = result.response.text();
+      
+      // Remove markdown code blocks if present
+      responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      const structuredData = JSON.parse(responseText);
 
       console.log('[KNOWLEDGE_BASE] Successfully structured data:', structuredData);
       return structuredData;

@@ -122,6 +122,8 @@ PROJECT INFORMATION (YOUR PRIMARY SOURCE OF TRUTH):
 ${kb.description ? `- Description: ${kb.description}` : ''}
 ${kb.websiteUrl ? `- Website: ${kb.websiteUrl}` : ''}
 
+${kb.presale ? `PRESALE INFORMATION:\n${typeof kb.presale === 'string' ? kb.presale : JSON.stringify(kb.presale, null, 2)}` : ''}
+
 ${kb.features && kb.features.length > 0 ? `KEY FEATURES:\n${kb.features.map((f: string) => `- ${f}`).join('\n')}` : ''}
 
 ${kb.tokenomics ? `TOKENOMICS:\n${typeof kb.tokenomics === 'string' ? kb.tokenomics : JSON.stringify(kb.tokenomics, null, 2)}` : ''}

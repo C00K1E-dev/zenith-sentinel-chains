@@ -88,8 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Generate AI response
     const botResponse = await generateBotResponse(
       userMessage,
-      agentConfig,
-      chatId
+      agentConfig
     );
 
     // Send response
@@ -219,8 +218,7 @@ async function loadAgentConfig(agentId: string): Promise<any | null> {
  */
 async function generateBotResponse(
   userMessage: string,
-  agentConfig: any,
-  chatId: number
+  agentConfig: any
 ): Promise<string> {
   try {
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY || '');
@@ -250,8 +248,7 @@ function buildSystemInstruction(agentConfig: any): string {
     personality, 
     custom_personality,
     knowledge_base,
-    custom_faqs,
-    trigger_keywords
+    custom_faqs
   } = agentConfig;
 
   let instruction = `You are an AI assistant for ${project_name}.\n\n`;

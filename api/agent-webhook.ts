@@ -31,7 +31,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const chatId = message.chat.id;
     const userMessage = message.text || '';
     const userName = message.from?.first_name || message.from?.username || 'there';
-    const userId = message.from?.id?.toString() || 'unknown';
     
     // Get agent ID from query parameter
     const agentId = req.query.agentId as string;

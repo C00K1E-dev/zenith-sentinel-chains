@@ -251,7 +251,7 @@ class UserAgentGeminiService {
     console.log(`[USER_AGENT] Initialized with ${agentConfig.personality} personality (temp: ${recommendedTemp})`);
   }
 
-  async generateResponse(userId: number, userMessage: string, userName: string): Promise<string> {
+  async generateResponse(userId: number, userMessage: string): Promise<string> {
     try {
       // Get or create conversation history
       if (!this.conversationHistory.has(userId)) {
@@ -336,7 +336,7 @@ export class UserTelegramAgentService {
       await this.sendChatAction(chatId, 'typing');
 
       // Generate AI response
-      const response = await this.geminiService.generateResponse(userId, messageText, userName);
+      const response = await this.geminiService.generateResponse(userId, messageText);
 
       // Send response
       await this.sendMessage(chatId, response, message.message_id);

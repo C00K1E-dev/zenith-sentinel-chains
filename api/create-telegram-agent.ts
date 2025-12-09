@@ -210,8 +210,8 @@ export default async function handler(
       triggers: [...(projectInfo.features || []), ...triggers]
     };
 
-    // Generate bot code
-    const botCode = generateBotConfig(botConfig);
+    // Generate bot config
+    generateBotConfig(botConfig);
 
     // Save bot configuration (in production, save to database)
     console.log(`Created bot for ${projectName} with tier ${pricingTier}`);

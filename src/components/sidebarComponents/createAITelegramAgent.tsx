@@ -581,7 +581,7 @@ const CreateAITelegramAgent = () => {
           const result = await supabase
             .from('telegram_agents')
             .update({ 
-              deployment_status: 'deployed',
+              deployment_status: 'active',
               telegram_webhook_url: webhookUrl,
               updated_at: new Date().toISOString()
             })
@@ -606,7 +606,7 @@ const CreateAITelegramAgent = () => {
         if (deployError) {
           console.error('[WEBHOOK] Failed to update deployment status after retries:', deployError);
           console.error('[WEBHOOK] Error details:', JSON.stringify(deployError, null, 2));
-          throw new Error(`Failed to mark agent as deployed: ${deployError.message}. This may be a database permission issue. Please check Supabase RLS policies for telegram_agents table.`);
+          throw new Error(`Failed to mark agent as active: ${deployError.message}. This may be a database permission issue. Please check Supabase RLS policies for telegram_agents table.`);
         }
 
         if (!updateData || updateData.length === 0) {
@@ -614,7 +614,7 @@ const CreateAITelegramAgent = () => {
           throw new Error('Failed to verify deployment status update. This may be a database permission issue (RLS). Please check Supabase dashboard.');
         }
 
-        console.log('[WEBHOOK] Webhook registered successfully, agent marked as deployed:', updateData[0]);
+        console.log('[WEBHOOK] Webhook registered successfully, agent marked as active:', updateData[0]);
       } catch (error) {
         console.error('[WEBHOOK] Failed to register webhook:', error);
         throw new Error('Failed to deploy bot. Please contact support.');

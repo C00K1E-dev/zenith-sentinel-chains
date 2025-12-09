@@ -46,10 +46,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(404).json({ error: 'Agent not found' });
       }
 
-      // Check if agent is deployed
-      if (agent.deployment_status !== 'deployed') {
-        console.error('[WEBHOOK] Agent not deployed:', agentId, agent.deployment_status);
-        return res.status(400).json({ error: 'Agent not deployed' });
+      // Check if agent is active
+      if (agent.deployment_status !== 'active') {
+        console.error('[WEBHOOK] Agent not active:', agentId, agent.deployment_status);
+        return res.status(400).json({ error: 'Agent not active' });
       }
 
       const geminiApiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;

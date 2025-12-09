@@ -263,11 +263,16 @@ class GeminiService {
         },
       });
 
-      // Simple user message (personality is in systemInstruction now)
-      const result = await chat.sendMessage(`User ${userName} says: ${userMessage}`);
+      // Only include name in first message to establish identity, then use history
+      const isFirstMessage = history.length === 0;
+      const messageToSend = isFirstMessage 
+        ? `User ${userName} says: ${userMessage}` 
+        : userMessage;
+      
+      const result = await chat.sendMessage(messageToSend);
       const response = result.response.text();
 
-      // Update history
+      // Update history (store just the message, not the name)
       history.push(
         { role: 'user', parts: userMessage },
         { role: 'model', parts: response }

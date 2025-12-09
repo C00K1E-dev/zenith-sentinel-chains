@@ -11,6 +11,7 @@ interface AgentConfig {
   temperature: number;
   knowledgeBase?: string;
   projectName: string;
+  trigger_keywords?: string[];
 }
 
 // Personality Preset Templates
@@ -225,10 +226,12 @@ class UserAgentGeminiService {
   private model: any;
   private conversationHistory: Map<number, Array<{ role: string; parts: string }>>;
   private agentConfig: AgentConfig;
+  private triggerKeywords: string[];
 
-  constructor(apiKey: string, agentConfig: AgentConfig) {
+  constructor(apiKey: string, agentConfig: AgentConfig, triggerKeywords: string[] = []) {
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.agentConfig = agentConfig;
+    this.triggerKeywords = triggerKeywords;
     
     // Build comprehensive system instruction using personality presets
     const systemInstruction = buildPersonalityPrompt(
@@ -265,6 +268,20 @@ class UserAgentGeminiService {
         history.splice(0, history.length - 20);
       }
 
+      // Check if message contains trigger keywords and add context hint
+      let enhancedMessage = userMessage;
+      if (this.triggerKeywords && this.triggerKeywords.length > 0) {
+        const messageLower = userMessage.toLowerCase();
+        const matchedTriggers = this.triggerKeywords.filter(trigger => 
+          messageLower.includes(trigger.toLowerCase())
+        );
+        
+        if (matchedTriggers.length > 0) {
+          enhancedMessage = `[User is asking about: ${matchedTriggers.join(', ')}] ${userMessage}`;
+          console.log(`[USER_AGENT] Detected trigger keywords: ${matchedTriggers.join(', ')}`);
+        }
+      }
+
       // Create chat with history
       const chat = this.model.startChat({
         history: history,
@@ -275,8 +292,8 @@ class UserAgentGeminiService {
         },
       });
 
-      // Send user message (without repeating the name every time - history provides context)
-      const result = await chat.sendMessage(userMessage);
+      // Send enhanced message (with trigger context if detected)
+      const result = await chat.sendMessage(enhancedMessage);
       const response = result.response.text();
 
       // Update history
@@ -307,7 +324,11 @@ export class UserTelegramAgentService {
   constructor(botToken: string, geminiApiKey: string, agentConfig: AgentConfig) {
     this.botToken = botToken;
     this.agentConfig = agentConfig;
-    this.geminiService = new UserAgentGeminiService(geminiApiKey, agentConfig);
+    this.geminiService = new UserAgentGeminiService(
+      geminiApiKey, 
+      agentConfig, 
+      agentConfig.trigger_keywords || []
+    );
   }
 
   async initialize() {

@@ -115,14 +115,11 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
     const response = await fetch(websiteUrl);
     const html = await response.text();
 
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    
-    // Remove scripts, styles, and other unwanted elements
-    const elementsToRemove = doc.querySelectorAll('script, style, noscript, iframe, svg');
-    elementsToRemove.forEach(el => el.remove());
-
-    // Get visible text content
-    const textContent = doc.body.innerText
+    // Extract text content (remove HTML tags) - NO LIMIT, get everything!
+    const textContent = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
 
@@ -139,15 +136,15 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
 
-      const prompt = `Analyze this website content and extract structured information. Pay special attention to dates, timelines, and countdowns.
+      const prompt = `You are analyzing website content. Today is December 9, 2025.
 
-IMPORTANT: If you see countdown timers (e.g., "22 days, 6 hours"), calculate the approximate target date from today (December 9, 2025) and include it.
+CRITICAL: Look for countdown timers showing launch dates. If you see text like "JANUARY 1, 2026" or "NEW YEAR - NEW ERA" with a countdown, that IS the presale launch date.
 
-Return ONLY a JSON object with these fields:
+Extract structured information and return ONLY a JSON object with these fields:
 - description: A 2-3 sentence overview of what this project/company does
 - features: Array of key features or services (max 5)
 - tokenomics: Object with token details if mentioned (supply, distribution, price, etc.)
-- presale: Object with presale information including dates, countdown, and launch details if mentioned
+- presale: Object with date (the EXACT date from countdown if shown, e.g., "January 1, 2026"), softcap, hardcap, and any other launch details
 - roadmap: Array of upcoming milestones or timeline items (include specific dates when available)
 - team: Array of team members if mentioned
 - faqs: Array of {question, answer} objects for common questions

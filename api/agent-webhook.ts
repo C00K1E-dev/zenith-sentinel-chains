@@ -306,8 +306,9 @@ async function handleNewMembers(agent: any, chatId: number, members: any[]) {
 
 /**
  * Generate AI response using Gemini
+ * @param _userId - Telegram user ID (logged to database, not used in function body)
  */
-async function generateResponse(agent: any, userName: string, userMessage: string, userId: number): Promise<string> {
+async function generateResponse(agent: any, userName: string, userMessage: string, _userId: number): Promise<string> {
   const geminiApiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
   
   if (!geminiApiKey) {

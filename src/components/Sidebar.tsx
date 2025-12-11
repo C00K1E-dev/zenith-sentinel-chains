@@ -21,29 +21,11 @@ import {
 import { createThirdwebClient } from "thirdweb";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { bsc, bscTestnet } from "thirdweb/chains";
-import { 
-  createWallet,
-  walletConnect,
-  inAppWallet,
-} from "thirdweb/wallets";
 import { cn } from '@/lib/utils';
 
 const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
 });
-
-// Define supported wallets for mobile - using createWallet for specific wallets
-const wallets = [
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  createWallet("com.trustwallet.app"),
-  walletConnect(),
-  inAppWallet({
-    auth: {
-      options: ["email", "google", "apple", "facebook"],
-    },
-  }),
-];
 
 interface SidebarItem {
   name: string;
@@ -95,7 +77,6 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   // Memoize ConnectButton props to prevent unnecessary re-renders
   const connectButtonProps = useMemo(() => ({
     client: thirdwebClient,
-    wallets: wallets,
     theme: "dark" as const,
     chains: [bsc, bscTestnet],
     connectModal: {

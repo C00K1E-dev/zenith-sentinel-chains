@@ -8,7 +8,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { MetaTags } from './components/MetaTags';
 import { HelmetProvider } from 'react-helmet-async';
 import { bsc, bscTestnet } from 'wagmi/chains';
-import { injected, metaMask, walletConnect, coinbaseWallet } from 'wagmi/connectors';
+import { injected, metaMask } from 'wagmi/connectors';
 import Index from "./pages/Index";
 import Hub from "./pages/Hub";
 import Documents from "./pages/Documents";
@@ -25,20 +25,6 @@ const config = createConfig({
   connectors: [
     injected(),
     metaMask(),
-    walletConnect({
-      projectId: '2c5512f85fcb5e0b5c1a8c0c1b0e2b9a',
-      showQrModal: true,
-      metadata: {
-        name: 'SmartSentinels',
-        description: 'Create AI Telegram Agents for your crypto project',
-        url: 'https://smartsentinels.net',
-        icons: ['https://smartsentinels.net/favicon.ico']
-      }
-    }),
-    coinbaseWallet({
-      appName: 'SmartSentinels',
-      appLogoUrl: 'https://smartsentinels.net/favicon.ico'
-    })
   ],
   transports: {
     [bsc.id]: http(),

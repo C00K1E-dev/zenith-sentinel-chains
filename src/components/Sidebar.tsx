@@ -25,10 +25,6 @@ import {
   createWallet,
   walletConnect,
   inAppWallet,
-  metamaskWallet,
-  coinbaseWallet,
-  trustWallet,
-  rainbowWallet
 } from "thirdweb/wallets";
 import { cn } from '@/lib/utils';
 
@@ -36,13 +32,12 @@ const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
 });
 
-// Define supported wallets for mobile
+// Define supported wallets for mobile - using createWallet for specific wallets
 const wallets = [
-  metamaskWallet(),
-  coinbaseWallet(),
+  createWallet("io.metamask"),
+  createWallet("com.coinbase.wallet"),
+  createWallet("com.trustwallet.app"),
   walletConnect(),
-  trustWallet(),
-  rainbowWallet(),
   inAppWallet({
     auth: {
       options: ["email", "google", "apple", "facebook"],

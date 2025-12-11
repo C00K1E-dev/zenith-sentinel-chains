@@ -26,7 +26,7 @@ const config = createConfig({
     injected(),
     metaMask(),
     walletConnect({
-      projectId: '2c5512f85fcb5e0b5c1a8c0c1b0e2b9a', // WalletConnect Cloud Project ID
+      projectId: '2c5512f85fcb5e0b5c1a8c0c1b0e2b9a',
       showQrModal: true,
       metadata: {
         name: 'SmartSentinels',

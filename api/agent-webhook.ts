@@ -345,15 +345,23 @@ async function generateResponse(agent: any, userName: string, userMessage: strin
   // Use agent's temperature setting, fallback to preset
   const temperature = agent.temperature ?? preset.temperature;
 
-  console.log('[AGENT-WEBHOOK] Using personality:', personalityKey, 'Temperature:', temperature);
+  // Get current date for context
+  const currentDate = new Date().toISOString().split('T')[0];
 
-  // Build system prompt - similar pattern to SmartSentinels bot
+  console.log('[AGENT-WEBHOOK] Using personality:', personalityKey, 'Temperature:', temperature);
+  console.log('[AGENT-WEBHOOK] Knowledge base content length:', knowledgeContent.length);
+  console.log('[AGENT-WEBHOOK] Knowledge base preview (first 500 chars):', knowledgeContent.slice(0, 500));
+
+  // Build system prompt - ULTRA STRICT about factual accuracy
   const systemPrompt = `You are the AI assistant for ${agent.project_name}.
 
 ${personalityPrompt}
 
-YOUR KNOWLEDGE BASE (USE THIS TO ANSWER QUESTIONS):
-${knowledgeContent || 'No specific knowledge base provided. Answer based on general context.'}
+CURRENT DATE: ${currentDate}
+
+=== YOUR KNOWLEDGE BASE (PRIMARY SOURCE OF TRUTH) ===
+${knowledgeContent || 'No specific knowledge base provided.'}
+=== END KNOWLEDGE BASE ===
 
 WEBSITE: ${agent.website_url || 'Not provided'}
 
@@ -363,26 +371,37 @@ ${agent.custom_faqs || 'None provided'}
 ADDITIONAL INFO:
 ${agent.additional_info || 'None provided'}
 
-RULES (MUST FOLLOW):
-1. ALWAYS use your knowledge base to answer questions about ${agent.project_name}
-2. If you don't know something, admit it honestly and suggest checking the website
-3. Never give financial advice or price predictions
-4. Keep responses concise (2-4 sentences usually, longer for complex questions)
-5. Only share URLs that exist in your knowledge base - NEVER make up URLs
-6. Stay in character with your personality
-7. Be helpful, friendly, and accurate
-8. If asked about topics not in your knowledge base, politely redirect to official channels
-9. Greet users warmly when they greet you, but don't repeat greetings in ongoing conversations
-10. Address the user by name when appropriate
+CRITICAL RULES FOR ACCURACY (MUST FOLLOW):
+1. EXTRACT EXACT INFORMATION from the knowledge base - do NOT paraphrase dates, numbers, or specific details
+2. For DATE questions: Search for specific dates like "Dec 25", "Jan 15", "Q1 2026" etc. and quote them EXACTLY
+3. For PRESALE/TOKEN SALE: Look for phrases like "Token Sale", "Presale", specific dates - quote the EXACT dates found
+4. DO NOT confuse different phases - "Discovery Phase" and "Token Sale" are DIFFERENT events with DIFFERENT dates
+5. If the knowledge base says something happens on a specific date, say THAT date - not "NOW" or "soon"
+6. If you don't find the exact information, say "I couldn't find that specific detail in my knowledge base"
+7. Never give financial advice or price predictions
+8. Keep responses concise (2-4 sentences usually)
+9. Only share URLs that exist in your knowledge base - NEVER make up URLs
+10. Stay in character with your personality while being FACTUALLY ACCURATE
 
-Remember: You represent ${agent.project_name}. Be knowledgeable, helpful, and maintain the project's reputation!`;
+EXAMPLE OF CORRECT BEHAVIOR:
+- If KB says "DEC 25 Dec 25 - Jan 15 Token Sale" and user asks "when is presale?"
+- CORRECT: "The Token Sale runs from December 25th to January 15th!"
+- WRONG: "The presale is happening NOW!" (This confuses phases)
+
+Remember: ACCURACY comes first, personality second. Extract exact data from your knowledge base!`;
+
+  // Cap temperature at 0.3 max for STRICT factual accuracy (user's high temps cause hallucinations)
+  const effectiveTemperature = Math.min(temperature, 0.3);
+  
+  console.log('[AGENT-WEBHOOK] Requested temp:', temperature, 'Effective temp:', effectiveTemperature);
 
   try {
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash-lite',
       generationConfig: {
-        temperature: temperature,
-        topP: 0.9,
+        temperature: effectiveTemperature,
+        topP: 0.8, // Reduced from 0.9 for more focused responses
+        topK: 40,  // Limit vocabulary for accuracy
         maxOutputTokens: 800
       }
     });
@@ -390,8 +409,9 @@ Remember: You represent ${agent.project_name}. Be knowledgeable, helpful, and ma
     const chat = model.startChat({
       history: [],
       generationConfig: {
-        temperature: temperature,
-        topP: 0.9,
+        temperature: effectiveTemperature,
+        topP: 0.8,
+        topK: 40,
         maxOutputTokens: 800
       }
     });

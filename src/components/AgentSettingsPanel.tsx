@@ -3,7 +3,6 @@ import { Save, X, Loader2, Bot, Mail, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/components/ui/use-toast';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface AgentSettingsPanelProps {
   agentId: string;
@@ -110,75 +109,28 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
   };
 
   const buildKnowledgeBase = async (websiteUrl: string) => {
-    console.log(`[KNOWLEDGE_BASE] Starting scrape of ${websiteUrl}`);
+    console.log(`[KNOWLEDGE_BASE] Starting server-side scrape of ${websiteUrl}`);
     
-    const response = await fetch(websiteUrl);
-    const html = await response.text();
+    // Use server-side API to avoid CORS issues
+    const response = await fetch('/api/scrape-website', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        url: websiteUrl,
+        projectName: settings?.project_name || 'Project'
+      })
+    });
 
-    // Extract text content (remove HTML tags) - NO LIMIT, get everything!
-    const textContent = html
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    console.log(`[KNOWLEDGE_BASE] Scraped ${textContent.length} characters from website`);
-
-    // Use Gemini to structure the scraped data
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      console.warn('[KNOWLEDGE_BASE] No Gemini API key found, using raw text');
-      return { rawContent: textContent };
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to scrape website');
     }
 
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
-
-      const prompt = `Analyze this website content and extract key information about the project.
-
-Extract and return a JSON object with these fields:
-- description: Brief 2-3 sentence project overview
-- features: Array of main features/benefits (5-10 items)
-- tokenomics: Object with token details (supply, distribution, ticker, etc.) - only if found
-- presale: Object with sale information (dates, prices, caps) - only if found
-- roadmap: Array of timeline milestones with dates/quarters - only if found
-- team: Array of team members/advisors - only if found
-- faqs: Array of {question, answer} pairs - only if found
-- socialLinks: Object with URLs (twitter, telegram, discord, etc.) - only if found
-
-Rules:
-- Extract dates exactly as they appear (don't convert or interpret)
-- Include all numbers/percentages as written
-- If a field has no data, use empty array [] or empty object {}
-- Return ONLY valid JSON, no markdown or explanations
-
-Website content:
-${textContent.slice(0, 15000)}
-
-Return valid JSON:`;
-
-      console.log('[KNOWLEDGE_BASE] Calling Gemini to structure data...');
-      const result = await model.generateContent(prompt);
-      let responseText = result.response.text();
-      
-      console.log('[KNOWLEDGE_BASE] Gemini raw response:', responseText.slice(0, 200));
-      
-      // Remove markdown code blocks if present
-      responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      
-      // Try to parse JSON
-      const structuredData = JSON.parse(responseText);
-
-      console.log('[KNOWLEDGE_BASE] Successfully structured data:', Object.keys(structuredData));
-      return structuredData;
-    } catch (error) {
-      console.error('[KNOWLEDGE_BASE] Error structuring data with Gemini:', error);
-      console.error('[KNOWLEDGE_BASE] Error details:', error instanceof Error ? error.message : 'Unknown error');
-      // Fallback to raw content if structuring fails
-      return { rawContent: textContent };
-    }
+    const data = await response.json();
+    console.log(`[KNOWLEDGE_BASE] Scraped ${data.stats?.textChars || 0} characters from website`);
+    
+    // Return the structured data from server
+    return data.structured || { rawContent: data.content };
   };
 
   const handleRefreshKnowledgeBase = async () => {
@@ -223,9 +175,10 @@ Return valid JSON:`;
       await loadSettings();
     } catch (error) {
       console.error('Failed to refresh knowledge base:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: 'Error',
-        description: 'Failed to refresh knowledge base. Please try again.',
+        description: `Failed to refresh knowledge base: ${errorMessage}`,
         variant: 'destructive'
       });
     } finally {

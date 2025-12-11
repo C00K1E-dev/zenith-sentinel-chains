@@ -139,7 +139,8 @@ Focus on extracting factual information. If a field is not mentioned, use "Not s
 }
 
 /**
- * Build knowledge base by fetching and parsing website content
+ * Build knowledge base by fetching and parsing website content via server-side API
+ * This avoids CORS issues that would block client-side fetching
  */
 async function buildKnowledgeBase(
   websiteUrl: string,
@@ -148,68 +149,52 @@ async function buildKnowledgeBase(
   additionalInfo?: string
 ): Promise<Record<string, any>> {
   try {
-    // Fetch website HTML
-    const response = await fetch(websiteUrl);
-    const html = await response.text();
+    console.log(`[KNOWLEDGE_BASE] Starting server-side scrape of ${websiteUrl}`);
     
-    // Extract text content (remove HTML tags) - NO LIMIT, get everything!
-    const textContent = html
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    // Use server-side API to avoid CORS issues
+    const response = await fetch('/api/scrape-website', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        url: websiteUrl,
+        projectName: projectName
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('[KNOWLEDGE_BASE] Server scrape failed:', errorData);
+      throw new Error(errorData.error || 'Failed to scrape website');
+    }
+
+    const data = await response.json();
+    console.log(`[KNOWLEDGE_BASE] Scraped ${data.stats?.textChars || 0} characters from website`);
     
-    console.log(`[KNOWLEDGE_BASE] Scraped ${textContent.length} characters from website`);
-
-    // Use Gemini to extract structured information
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-
-    const prompt = `Extract key information from this website about ${projectName} and format as JSON:
-
-Website Content:
-${textContent}
-
-Custom FAQs:
-${customFaqs}
-
-Additional Info:
-${additionalInfo || 'None'}
-
-Extract and return ONLY a JSON object with these fields:
-{
-  "description": "brief project description",
-  "features": ["feature1", "feature2"],
-  "tokenomics": {"supply": "...", "distribution": "..."},
-  "roadmap": ["milestone1", "milestone2"],
-  "team": "team info",
-  "socialLinks": {"twitter": "...", "discord": "..."},
-  "faqs": [{"q": "question", "a": "answer"}]
-}`;
-
-    const result = await model.generateContent(prompt);
-    const jsonText = result.response.text()
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
+    // Merge with custom data
+    const knowledgeBase = data.structured || { rawContent: data.content };
     
-    const knowledgeBase = JSON.parse(jsonText);
+    // Add custom FAQs and additional info
+    if (customFaqs) {
+      knowledgeBase.customFaqs = customFaqs;
+    }
+    if (additionalInfo) {
+      knowledgeBase.additionalInfo = additionalInfo;
+    }
     
-    return {
-      ...knowledgeBase,
-      websiteUrl,
-      lastUpdated: new Date().toISOString()
-    };
+    knowledgeBase.websiteUrl = websiteUrl;
+    knowledgeBase.lastUpdated = new Date().toISOString();
+    
+    return knowledgeBase;
   } catch (error) {
     console.error('Error building knowledge base:', error);
-    // Return basic structure
+    // Return basic structure on failure
     return {
       description: `AI assistant for ${projectName}`,
       websiteUrl,
       customFaqs,
       additionalInfo,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'Failed to scrape website'
     };
   }
 }

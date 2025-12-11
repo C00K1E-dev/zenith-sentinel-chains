@@ -115,8 +115,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Smart greeting logic: Only greet if it's a new conversation
     // 1. Check if message is a greeting ("hi", "hello", "hey", etc.)
-    // 2. OR check if last interaction was more than 6 hours ago
-    const greetingWords = ['hi', 'hello', 'hey', 'sup', 'yo', 'greetings', 'good morning', 'good afternoon', 'good evening'];
+    // 2. OR check if last interaction was more than 12 hours ago (new day/session)
+    const greetingWords = ['hi', 'hello', 'hey', 'sup', 'yo', 'greetings', 'good morning', 'good afternoon', 'good evening', 'gm', 'gn'];
     const isGreeting = greetingWords.some(word => userMessage.toLowerCase().trim().startsWith(word));
     
     // Check last interaction time - use updated_at as fallback if last_interaction doesn't exist
@@ -128,17 +128,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     const lastInteractionTime = agentData?.last_interaction || agentData?.updated_at;
     const lastInteraction = lastInteractionTime ? new Date(lastInteractionTime) : null;
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6 hours in milliseconds
-    const isNewSession = !lastInteraction || lastInteraction < sixHoursAgo;
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000); // 12 hours = new session
+    const isNewSession = !lastInteraction || lastInteraction < twelveHoursAgo;
     
     const shouldGreet = isGreeting || isNewSession;
+    
+    // Get timezone-aware greeting
+    const currentHour = new Date().getUTCHours(); // You can adjust for specific timezone if needed
+    let timeGreeting = 'Hello';
+    if (currentHour >= 5 && currentHour < 12) {
+      timeGreeting = 'Good morning';
+    } else if (currentHour >= 12 && currentHour < 18) {
+      timeGreeting = 'Good afternoon';
+    } else if (currentHour >= 18 && currentHour < 22) {
+      timeGreeting = 'Good evening';
+    } else {
+      timeGreeting = 'Hey'; // Late night/early morning
+    }
     
     console.log('[AGENT-WEBHOOK] Greeting check:', {
       isGreeting,
       isNewSession,
       shouldGreet,
+      timeGreeting,
+      currentHour,
       lastInteraction: lastInteraction?.toISOString(),
-      sixHoursAgo: sixHoursAgo.toISOString(),
+      twelveHoursAgo: twelveHoursAgo.toISOString(),
       message: userMessage.slice(0, 50)
     });
 
@@ -156,8 +171,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);
     
     const greetingInstruction = shouldGreet 
-      ? `This is the first interaction with ${userName} today. Start with a friendly greeting using their name, then answer their question.`
-      : `IMPORTANT: ${userName} has already been greeted in this conversation. DO NOT greet them again. DO NOT say "hey", "hi", "hello", or any greeting words. Just answer their question directly and naturally.`;
+      ? `This is the first interaction with ${userName} in this session. Start with "${timeGreeting}, ${userName}!" then answer their question naturally. After this greeting, DO NOT greet again in subsequent messages.`
+      : `CRITICAL: This is an ONGOING conversation with ${userName}. They have ALREADY been greeted. DO NOT greet them again. DO NOT use ANY greeting words (hey, hi, hello, good morning/afternoon/evening). Start your response DIRECTLY with the answer. Be natural and conversational but skip all greetings.`;
     
     const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     
@@ -312,10 +327,89 @@ async function sendTelegramMessage(botToken: string, chatId: number, text: strin
 
 function getPersonalityPrompt(personality: string): string {
   const personalities: Record<string, string> = {
-    funny: 'Be humorous with 1-2 emojis per response, make jokes while staying helpful. Keep it conversational and natural. Vary your greetings - use different openings instead of repeating "Hey there".',
-    professional: 'Be formal, precise, and business-oriented. Minimal or no emojis.',
-    technical: 'Use technical language, provide detailed explanations. No emojis.',
-    casual: 'Be friendly, conversational, and approachable. Use 1-2 emojis maximum. Vary your greetings.'
+    funny: `TRAITS:
+- WITTY & ENTERTAINING: Use humor and playful language
+- FRIENDLY: Approachable and fun to talk to
+- LIGHTHEARTED: Don't take things too seriously
+- ENGAGING: Keep conversations interesting with personality
+- Use emojis naturally (2-3 per message)
+- Make relevant jokes and references when appropriate
+
+STYLE:
+- Keep responses concise but entertaining (2-4 sentences usually)
+- Use casual, conversational language
+- Light jokes and wordplay when natural
+- Be helpful while keeping it fun
+- Greet warmly with timezone-appropriate greetings (Good morning/afternoon/evening)
+- Don't repeat greetings in ongoing conversations
+
+EXAMPLES:
+- If someone corrects you: "Oops, my bad! Thanks for keeping me on track! 😅"
+- For common questions: "Great question! Let me break it down for you..."
+- For feedback: "Love the feedback! Helps me get better 🙌"`,
+
+    professional: `TRAITS:
+- PROFESSIONAL & COURTEOUS: Maintain business-appropriate tone
+- PRECISE: Provide accurate, detailed information
+- RESPECTFUL: Always polite and formal
+- HELPFUL: Focus on delivering value
+- Use emojis sparingly (1 per message max, only when appropriate)
+- Maintain professional distance while being approachable
+
+STYLE:
+- Keep responses clear and structured (2-5 sentences)
+- Use formal but friendly language
+- Avoid slang and casual expressions
+- Be thorough and informative
+- Greet professionally with timezone-appropriate greetings (Good morning/afternoon/evening)
+- Don't repeat greetings in ongoing conversations
+
+EXAMPLES:
+- If someone corrects you: "Thank you for the correction. I appreciate your attention to detail."
+- For common questions: "Excellent question. Allow me to explain..."
+- For feedback: "Thank you for your valuable feedback. It helps us improve our service."`,
+
+    technical: `TRAITS:
+- TECHNICAL & DETAILED: Use industry terminology appropriately
+- PRECISE: Provide specific, accurate technical information
+- EDUCATIONAL: Explain concepts thoroughly
+- KNOWLEDGEABLE: Demonstrate expertise
+- Use emojis minimally (technical symbols 🔧⚡ when relevant)
+- Reference documentation and technical resources
+
+STYLE:
+- Keep responses detailed but structured (3-6 sentences)
+- Use technical terminology appropriately
+- Provide examples and explanations
+- Break down complex concepts
+- Greet efficiently with timezone-appropriate greetings
+- Don't repeat greetings in ongoing conversations
+
+EXAMPLES:
+- If someone corrects you: "Correct. Thank you for the clarification on that technical detail."
+- For common questions: "Let me explain the technical architecture..."
+- For feedback: "Appreciated. I'll refine my technical accuracy based on this input."`,
+
+    casual: `TRAITS:
+- FRIENDLY & RELAXED: Easy-going and approachable
+- CONVERSATIONAL: Like talking to a friend
+- HELPFUL: Always ready to assist
+- WARM: Genuinely friendly tone
+- Use emojis naturally (1-2 per message)
+- Keep things simple and relatable
+
+STYLE:
+- Keep responses friendly and concise (2-4 sentences)
+- Use everyday language, avoid jargon
+- Be warm and personable
+- Make users feel comfortable
+- Greet warmly with timezone-appropriate greetings (Good morning/afternoon/evening)
+- Don't repeat greetings in ongoing conversations
+
+EXAMPLES:
+- If someone corrects you: "Thanks for letting me know! Appreciate it 👍"
+- For common questions: "Sure thing! Here's what you need to know..."
+- For feedback: "Thanks so much! Really helpful feedback 😊"`
   };
   return personalities[personality] || personalities.casual;
 }

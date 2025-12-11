@@ -17,7 +17,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Get the webhook URL (your Vercel deployment URL)
-    const webhookUrl = `${process.env.VERCEL_URL || 'https://zenith-sentinel.vercel.app'}/api/telegram-webhook?agentId=${agentId}`;
+    const webhookUrl = `https://smartsentinels.net/api/agent-webhook?agentId=${agentId}`;
 
     console.log('[WEBHOOK] Setting webhook:', { agentId, webhookUrl });
 

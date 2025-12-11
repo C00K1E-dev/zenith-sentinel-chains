@@ -3,43 +3,155 @@ import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 /**
- * MULTI-AGENT TELEGRAM WEBHOOK
- * Handles multiple paid Telegram AI agents
- * Does NOT interfere with the main SmartSentinels bot
+ * USER-CREATED TELEGRAM AGENTS WEBHOOK
+ * 
+ * This webhook handles ALL user-created paid Telegram AI agents.
+ * Each agent is identified by the agentId query parameter.
+ * 
+ * Flow:
+ * 1. Telegram sends update to: /api/agent-webhook?agentId=XXX
+ * 2. We load agent config from Supabase
+ * 3. Check subscription is active
+ * 4. Generate AI response using agent's knowledge base
+ * 5. Send response back to Telegram
+ * 6. Log analytics
  */
 
+// Initialize Supabase
 const supabaseUrl = process.env.VITE_SUPABASE_URL!;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Personality presets - same quality as SmartSentinels bot
+const PERSONALITY_PRESETS: Record<string, { prompt: string; temperature: number }> = {
+  funny: {
+    prompt: `PERSONALITY TRAITS:
+- WITTY & ENTERTAINING: Use humor and playful language
+- FRIENDLY: Approachable and fun to talk to
+- LIGHTHEARTED: Don't take things too seriously
+- ENGAGING: Keep conversations interesting with personality
+- Use emojis naturally (2-3 per message)
+- Make relevant jokes and references when appropriate
+
+CONVERSATION STYLE:
+- Keep responses concise but entertaining (2-4 sentences usually)
+- Use casual, conversational language
+- Light jokes and wordplay when natural
+- Be helpful while keeping it fun
+
+RESPONSE EXAMPLES:
+- If someone corrects you: "Oops, my bad! Thanks for keeping me on track! 😅"
+- For common questions: "Great question! Let me break it down for you..."
+- For feedback: "Love the feedback! Helps me get better 🙌"`,
+    temperature: 0.8
+  },
+
+  professional: {
+    prompt: `PERSONALITY TRAITS:
+- PROFESSIONAL & COURTEOUS: Maintain business-appropriate tone
+- PRECISE: Provide accurate, detailed information
+- RESPECTFUL: Always polite and formal
+- HELPFUL: Focus on delivering value
+- Use emojis sparingly (1 per message max, only when appropriate)
+- Maintain professional distance while being approachable
+
+CONVERSATION STYLE:
+- Keep responses clear and structured (2-5 sentences)
+- Use formal but friendly language
+- Avoid slang and casual expressions
+- Be thorough and informative
+
+RESPONSE EXAMPLES:
+- If someone corrects you: "Thank you for the correction. I appreciate your attention to detail."
+- For common questions: "Excellent question. Allow me to explain..."
+- For feedback: "Thank you for your valuable feedback. It helps us improve our service."`,
+    temperature: 0.5
+  },
+
+  technical: {
+    prompt: `PERSONALITY TRAITS:
+- TECHNICAL & DETAILED: Use industry terminology appropriately
+- PRECISE: Provide specific, accurate technical information
+- EDUCATIONAL: Explain concepts thoroughly
+- KNOWLEDGEABLE: Demonstrate expertise
+- Use emojis minimally (technical symbols 🔧⚡ when relevant)
+- Reference documentation and technical resources
+
+CONVERSATION STYLE:
+- Keep responses detailed but structured (3-6 sentences)
+- Use technical terminology appropriately
+- Provide examples and explanations
+- Break down complex concepts
+
+RESPONSE EXAMPLES:
+- If someone corrects you: "Correct. Thank you for the clarification on that technical detail."
+- For common questions: "Let me explain the technical architecture..."
+- For feedback: "Appreciated. I'll refine my technical accuracy based on this input."`,
+    temperature: 0.4
+  },
+
+  casual: {
+    prompt: `PERSONALITY TRAITS:
+- FRIENDLY & RELAXED: Easy-going and approachable
+- CONVERSATIONAL: Like talking to a friend
+- HELPFUL: Always ready to assist
+- WARM: Genuinely friendly tone
+- Use emojis naturally (1-2 per message)
+- Keep things simple and relatable
+
+CONVERSATION STYLE:
+- Keep responses friendly and concise (2-4 sentences)
+- Use everyday language, avoid jargon
+- Be warm and personable
+- Make users feel comfortable
+
+RESPONSE EXAMPLES:
+- If someone corrects you: "Thanks for letting me know! Appreciate it 👍"
+- For common questions: "Sure thing! Here's what you need to know..."
+- For feedback: "Thanks so much! Really helpful feedback 😊"`,
+    temperature: 0.7
+  },
+
+  custom: {
+    prompt: '', // Custom personality uses agent.custom_personality directly
+    temperature: 0.6 // Default temperature for custom, can be overridden
+  }
+};
+
+// Main webhook handler
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const startTime = Date.now();
+
   try {
     const update = req.body;
-    
-    // Extract bot token from the update (Telegram includes bot info)
-    // We'll identify the agent by the bot_token in the database
     const message = update.message || update.edited_message;
-    
+
     if (!message) {
       return res.status(200).json({ ok: true });
     }
 
     const chatId = message.chat.id;
+    const chatType = message.chat.type; // 'private', 'group', 'supergroup'
     const userMessage = message.text || '';
     const userName = message.from?.first_name || message.from?.username || 'there';
-    const userId = message.from?.id || chatId; // Telegram user ID
-    
+    const telegramUserId = message.from?.id || chatId;
+
     // Get agent ID from query parameter
     const agentId = req.query.agentId as string;
-    
+
     if (!agentId) {
       console.error('[AGENT-WEBHOOK] No agentId provided');
       return res.status(400).json({ error: 'Agent ID required' });
     }
+
+    console.log('[AGENT-WEBHOOK] ==========================================');
+    console.log('[AGENT-WEBHOOK] Agent:', agentId);
+    console.log('[AGENT-WEBHOOK] Chat:', chatId, 'Type:', chatType);
+    console.log('[AGENT-WEBHOOK] User:', userName, 'Message:', userMessage?.slice(0, 50));
 
     // Load agent configuration
     const { data: agent, error: agentError } = await supabase
@@ -49,408 +161,352 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (agentError || !agent) {
-      console.error('[AGENT-WEBHOOK] Agent not found:', agentError);
+      console.error('[AGENT-WEBHOOK] Agent not found:', agentError?.message);
       return res.status(404).json({ error: 'Agent not found' });
     }
 
-    // Handle new members joining the group
+    // Check if agent is active
+    if (agent.deployment_status !== 'active') {
+      console.log('[AGENT-WEBHOOK] Agent not active:', agent.deployment_status);
+      return res.status(200).json({ ok: true }); // Silent ignore
+    }
+
+    console.log('[AGENT-WEBHOOK] Project:', agent.project_name, 'Personality:', agent.personality);
+
+    // ============================================
+    // HANDLE NEW MEMBERS
+    // ============================================
     if (message.new_chat_members && message.new_chat_members.length > 0) {
-      console.log('[AGENT-WEBHOOK] New members joined:', message.new_chat_members.length);
-      
-      for (const newMember of message.new_chat_members) {
-        // Don't greet the bot itself
-        if (newMember.is_bot) continue;
-        
-        const memberName = newMember.first_name || newMember.username || 'there';
-        const welcomeMessage = `Welcome to ${agent.project_name}, ${memberName}! 🎉\n\nI'm the AI assistant here to help answer your questions. Feel free to ask me anything about the project!`;
-        
-        await sendTelegramMessage(agent.bot_token, chatId, welcomeMessage);
-        console.log('[AGENT-WEBHOOK] Sent welcome message to:', memberName);
-      }
-      
+      await handleNewMembers(agent, chatId, message.new_chat_members);
       return res.status(200).json({ ok: true });
     }
-    
-    console.log('[AGENT-WEBHOOK] Received message:', { chatId, userMessage, userName });
 
-    if (agentError || !agent) {
-      console.error('[AGENT-WEBHOOK] Agent not found:', agentError);
-      return res.status(404).json({ error: 'Agent not found' });
+    // Skip empty messages
+    if (!userMessage.trim()) {
+      return res.status(200).json({ ok: true });
     }
 
-    console.log('[AGENT-WEBHOOK] Agent loaded:', agent.project_name);
-
-    // Check subscription status
+    // ============================================
+    // CHECK SUBSCRIPTION
+    // ============================================
     const { data: subscription } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('agent_id', agentId)
+      .eq('payment_status', 'confirmed')
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
 
     if (!subscription || new Date(subscription.expiry_date) < new Date()) {
-      // Subscription expired
+      console.log('[AGENT-WEBHOOK] Subscription expired for agent:', agentId);
       await sendTelegramMessage(
         agent.bot_token,
         chatId,
-        '⚠️ Subscription expired. Please renew to continue using this bot.'
+        '⚠️ This bot\'s subscription has expired. Please contact the project owner to renew.'
       );
       return res.status(200).json({ ok: true });
     }
 
-    // Build knowledge base prompt
-    const knowledgeBase = agent.knowledge_base || {};
-    const personality = agent.custom_personality || getPersonalityPrompt(agent.personality);
-    const triggers = agent.trigger_keywords || [];
-    
-    // Handle both structured and raw content formats
-    let knowledgeBaseText = '';
-    if (knowledgeBase.rawContent) {
-      // If only raw content exists, use it directly
-      knowledgeBaseText = knowledgeBase.rawContent;
-      console.log('[AGENT-WEBHOOK] Using raw content knowledge base, length:', knowledgeBaseText.length);
-      console.log('[AGENT-WEBHOOK] KB Preview:', knowledgeBaseText.slice(0, 300));
-    } else {
-      // If structured data exists, format it
-      knowledgeBaseText = JSON.stringify(knowledgeBase, null, 2);
-      console.log('[AGENT-WEBHOOK] Using structured knowledge base, length:', knowledgeBaseText.length);
-    }
-    
-    if (!knowledgeBaseText || knowledgeBaseText.length < 100) {
-      console.error('[AGENT-WEBHOOK] WARNING: Knowledge base is empty or too small!', {
-        hasKB: !!agent.knowledge_base,
-        kbKeys: Object.keys(knowledgeBase),
-        kbLength: knowledgeBaseText.length
-      });
-    }
-    
-    console.log('[AGENT-WEBHOOK] Config:', {
-      personality: agent.personality,
-      triggers,
-      hasKnowledgeBase: Object.keys(knowledgeBase).length > 0,
-      knowledgeBaseSize: knowledgeBaseText.length
-    });
-    
-    // Respond to all messages for better conversation flow
-    // Triggers are optional - if set, they act as hints but don't block responses
-    console.log('[AGENT-WEBHOOK] Responding to message');
+    // ============================================
+    // CHECK IF BOT SHOULD RESPOND
+    // ============================================
+    const botUsername = agent.bot_handle?.replace('@', '') || '';
+    const isPrivateChat = chatType === 'private';
+    const isMentioned = userMessage.includes(`@${botUsername}`);
+    const matchesTrigger = checkTriggers(userMessage, agent.trigger_keywords || []);
 
-    // Smart greeting logic: Only greet if it's a new conversation
-    // Use database last_interaction field (now exists in table)
-    const conversationKey = `${agentId}_${userId}`;
+    // In groups, only respond if mentioned or matches trigger
+    // In private chats, always respond
+    if (!isPrivateChat && !isMentioned && !matchesTrigger) {
+      console.log('[AGENT-WEBHOOK] Skipping - not mentioned/triggered in group');
+      return res.status(200).json({ ok: true });
+    }
+
+    // ============================================
+    // GENERATE AI RESPONSE
+    // ============================================
+    const response = await generateResponse(agent, userName, userMessage, telegramUserId);
+
+    // Send response
+    await sendTelegramMessage(agent.bot_token, chatId, response, message.message_id);
+
+    // ============================================
+    // LOG ANALYTICS
+    // ============================================
+    const responseTime = Date.now() - startTime;
     
-    // Get last interaction from database
-    const { data: agentData } = await supabase
-      .from('telegram_agents')
-      .select('last_interaction')
-      .eq('id', agentId)
-      .single();
-    
-    const lastInteractionTime = agentData?.last_interaction ? new Date(agentData.last_interaction).getTime() : 0;
-    const nowTimestamp = Date.now();
-    const timeSinceLastMessage = nowTimestamp - lastInteractionTime;
-    const twelveHoursInMs = 12 * 60 * 60 * 1000; // 12 hours
-    
-    // Check if user is greeting or if it's been 12+ hours since last message
-    const greetingWords = ['hi', 'hello', 'hey', 'sup', 'yo', 'greetings', 'good morning', 'good afternoon', 'good evening', 'gm', 'gn'];
-    const isGreeting = greetingWords.some(word => userMessage.toLowerCase().trim().startsWith(word));
-    const isNewSession = timeSinceLastMessage > twelveHoursInMs || lastInteractionTime === 0;
-    
-    const shouldGreet = isGreeting || isNewSession;
-    
-    // Update last interaction in database with error handling
     try {
-      const { error: updateError } = await supabase
-        .from('telegram_agents')
-        .update({ last_interaction: new Date().toISOString() })
-        .eq('id', agentId);
-      
-      if (updateError) {
-        console.error('[AGENT-WEBHOOK] Failed to update last_interaction:', updateError);
-      } else {
-        console.log('[AGENT-WEBHOOK] Updated last_interaction for agent:', agentId);
-      }
-    } catch (err) {
-      console.error('[AGENT-WEBHOOK] Exception updating last_interaction:', err);
-    }
-    
-    // Get timezone-aware greeting (using local time, not UTC)
-    const currentDateTime = new Date();
-    const currentHour = currentDateTime.getHours(); // Local time, not UTC
-    let timeGreeting = 'Hello';
-    if (currentHour >= 5 && currentHour < 12) {
-      timeGreeting = 'Good morning';
-    } else if (currentHour >= 12 && currentHour < 18) {
-      timeGreeting = 'Good afternoon';
-    } else if (currentHour >= 18 && currentHour < 22) {
-      timeGreeting = 'Good evening';
-    } else {
-      timeGreeting = 'Hey';
-    }
-    
-    console.log('[AGENT-WEBHOOK] Greeting check:', {
-      userId,
-      agentId,
-      isGreeting,
-      isNewSession,
-      shouldGreet,
-      timeGreeting,
-      lastInteraction: lastInteractionTime ? new Date(lastInteractionTime).toISOString() : 'never',
-      timeSinceLastMessage: `${Math.round(timeSinceLastMessage / 1000 / 60)}min`,
-      message: userMessage.slice(0, 50)
-    });
-
-    // Generate response using Gemini with fallback models
-    const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);
-    
-    const greetingInstruction = shouldGreet 
-      ? `This is the first interaction with ${userName} in this session. Start with "${timeGreeting}, ${userName}!" then answer their question naturally. After this greeting, DO NOT greet again in subsequent messages.`
-      : `⚠️ CRITICAL - ABSOLUTE RULE: This is an ONGOING conversation with ${userName}. They have ALREADY been greeted earlier. DO NOT GREET THEM AGAIN - not even with informal greetings. DO NOT use ANY words like: hey, hi, hello, good morning, good afternoon, good evening, greetings, welcome, etc. START DIRECTLY WITH THE ANSWER to their question. Be conversational and friendly but ZERO greetings.`;
-    
-    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-    
-    const systemPrompt = `You are ${agent.project_name}'s AI assistant.
-
-CRITICAL GREETING INSTRUCTION (HIGHEST PRIORITY - OVERRIDE ALL OTHER INSTRUCTIONS):
-${greetingInstruction}
-
-PERSONALITY: ${personality}
-
-CURRENT DATE: ${currentDate} (Use this to determine if events are in the past, present, or future)
-
-PROJECT INFORMATION:
-${knowledgeBaseText}
-
-WEBSITE: ${agent.website_url}
-
-CUSTOM FAQS:
-${agent.custom_faqs || 'None'}
-
-ADDITIONAL INFO:
-${agent.additional_info || 'None'}
-
-CRITICAL INSTRUCTIONS (READ THESE FIRST):
-1. ALL INFORMATION IS IN THE PROJECT INFORMATION SECTION ABOVE - SEARCH IT THOROUGHLY
-2. When answering ANY question:
-   - FIRST: Read through the entire PROJECT INFORMATION section
-   - SECOND: Search for keywords that match the user's question
-   - THIRD: Extract EXACT text that answers their question
-3. SPECIFIC SEARCH KEYWORDS BY TOPIC:
-   * DATES/PRESALE/LAUNCH: Search for "presale", "sale", "launch", "Dec", "Jan", "Q1", "Q2", months, dates, DEC, token sale dates
-   * PRICES/TOKENOMICS: Search for "$", "price", "USDT", "cap", "supply", "allocation", numbers before "million" or "thousand"
-   * FEATURES: Search for "privacy", "EVM", "features", "technology", "secure"
-   * ROADMAP: Search for "phase", "quarter", "Q1", "Q2", timeline words
-4. WHEN YOU FIND INFORMATION:
-   - Quote the exact text from PROJECT INFORMATION
-   - Do NOT paraphrase or interpret
-   - Include context (dates, amounts, etc)
-5. IF INFORMATION IS NOT IN PROJECT INFORMATION:
-   - Say: "I don't have that specific information. Check ${agent.website_url} for details."
-   - Do NOT make up, guess, or infer information
-6. For future dates (after ${currentDate}), use future tense
-
-FORMATTING RULES:
-- NO markdown formatting (no *, **, ___, etc.)
-- Use plain text only
-- Maximum 2 emojis per response
-- Keep responses conversational and concise (2-4 sentences)
-- Use the person's name naturally when appropriate
-
-Respond to user questions about ${agent.project_name} based on the information above.
-Be helpful, accurate, and match the personality style.`;
-
-    console.log('[AGENT-WEBHOOK] System prompt length:', systemPrompt.length);
-    console.log('[AGENT-WEBHOOK] KB in prompt:', systemPrompt.includes('DEC 25') ? 'YES - Contains DEC 25' : 'NO - Missing presale data');
-    console.log('[AGENT-WEBHOOK] User question:', userMessage);
-
-    let response: string = '';
-    
-    // Using gemini-2.5-flash-lite with paid tier (no rate limits)
-    const models = [
-      'gemini-2.5-flash-lite'  // Primary model with billing enabled
-    ];
-    
-    for (const modelName of models) {
-      console.log(`[AGENT-WEBHOOK] Trying model: ${modelName}`);
-      
-      const model = genAI.getGenerativeModel({ 
-        model: modelName,
-        generationConfig: {
-          temperature: agent.temperature || 0.3, // Use agent's temperature or default
-          topP: 0.8,               // Nucleus sampling - focus on most likely tokens
-          topK: 40,                // Limit vocabulary to top 40 most likely tokens
-          maxOutputTokens: 500,    // Prevent overly long responses
-        }
+      await supabase.from('agent_messages').insert({
+        agent_id: agentId,
+        telegram_user_id: telegramUserId,
+        user_message: userMessage.slice(0, 1000), // Limit stored message
+        bot_response: response.slice(0, 2000), // Limit stored response
+        response_time_ms: responseTime,
+        created_at: new Date().toISOString()
       });
-      
-      // Retry logic with exponential backoff
-      let retries = 4; // Increased retries for API overload
-      let delay = 500; // Start with 500ms
-      
-      for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-          const result = await model.generateContent([
-            systemPrompt,
-            `User ${userName} says: ${userMessage}`,
-            'Assistant:'
-          ]);
 
-          response = result.response.text();
-          console.log(`[AGENT-WEBHOOK] Success with model: ${modelName}`);
-          break; // Success, exit retry loop
-          
-        } catch (error: any) {
-          console.error(`[AGENT-WEBHOOK] ${modelName} error (attempt ${attempt}/${retries}):`, error.message);
-          
-          if (attempt < retries && (error.message?.includes('503') || error.message?.includes('429') || error.message?.includes('overloaded'))) {
-            console.log(`[AGENT-WEBHOOK] Retrying in ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2; // Exponential backoff: 500ms, 1s, 2s, 4s
-          } else if (attempt === retries) {
-            console.log(`[AGENT-WEBHOOK] All retries failed for ${modelName}, trying next model...`);
-            break; // Try next model
-          }
-        }
-      }
-      
-      if (response) break; // Got a response, exit model loop
+      await supabase
+        .from('telegram_agents')
+        .update({ 
+          message_count: (agent.message_count || 0) + 1,
+          last_interaction: new Date().toISOString()
+        })
+        .eq('id', agentId);
+
+      console.log('[AGENT-WEBHOOK] Analytics logged, response time:', responseTime, 'ms');
+    } catch (logError) {
+      console.error('[AGENT-WEBHOOK] Failed to log analytics:', logError);
     }
-    
-    // If all models failed, send fallback message
-    if (!response) {
-      response = `Hey! 👋 I'm having a bit of trouble right now (API overload). Could you try asking again in a moment? Thanks for your patience!`;
-      console.log(`[AGENT-WEBHOOK] All models failed, using fallback message`);
-    }
-
-    // Send response via Telegram
-    await sendTelegramMessage(agent.bot_token, chatId, response);
-
-    // Update message count (last_interaction already updated above)
-    await supabase
-      .from('telegram_agents')
-      .update({ 
-        message_count: (agent.message_count || 0) + 1,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', agentId);
 
     return res.status(200).json({ ok: true });
 
   } catch (error: any) {
     console.error('[AGENT-WEBHOOK] Error:', error);
-    return res.status(200).json({ ok: true }); // Always return 200 to Telegram
+    // Always return 200 to prevent Telegram from retrying
+    return res.status(200).json({ ok: true });
   }
 }
 
-async function sendTelegramMessage(botToken: string, chatId: number, text: string) {
-  // Clean up markdown formatting
-  const cleanText = text
-    .replace(/\*\*\*/g, '')     // Remove bold+italic ***
-    .replace(/\*\*/g, '')       // Remove bold **
-    .replace(/\*/g, '')         // Remove italic *
-    .replace(/___/g, '')        // Remove underline ___
-    .replace(/__/g, '')         // Remove underline __
-    .replace(/_/g, '')          // Remove underline _
-    .replace(/~~~/g, '')        // Remove strikethrough
-    .replace(/~~/g, '')         // Remove strikethrough
-    .replace(/```[^`]*```/g, '') // Remove code blocks
-    .replace(/`/g, '')          // Remove inline code
-    .trim();
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Check if message matches any trigger keywords
+ */
+function checkTriggers(message: string, triggers: string[]): boolean {
+  if (!triggers || triggers.length === 0) return true; // No triggers = respond to all
   
-  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-  await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text: cleanText
-      // Removed parse_mode to send as plain text
-    })
-  });
+  const lowerMessage = message.toLowerCase();
+  return triggers.some(trigger => lowerMessage.includes(trigger.toLowerCase()));
 }
 
-function getPersonalityPrompt(personality: string): string {
-  const personalities: Record<string, string> = {
-    funny: `TRAITS:
-- WITTY & ENTERTAINING: Use humor and playful language
-- FRIENDLY: Approachable and fun to talk to
-- LIGHTHEARTED: Don't take things too seriously
-- ENGAGING: Keep conversations interesting with personality
-- Use emojis naturally (2-3 per message)
-- Make relevant jokes and references when appropriate
+/**
+ * Handle new members joining the group
+ */
+async function handleNewMembers(agent: any, chatId: number, members: any[]) {
+  const welcomeTemplates = [
+    `Welcome to ${agent.project_name}, {name}! 🎉 I'm here to answer your questions about the project. Feel free to ask me anything!`,
+    `Hey {name}! 👋 Welcome aboard! I'm the ${agent.project_name} assistant - ask me anything about the project!`,
+    `{name} just joined! 🚀 Welcome to ${agent.project_name}! I'm the AI assistant here to help. What would you like to know?`
+  ];
 
-STYLE:
-- Keep responses concise but entertaining (2-4 sentences usually)
-- Use casual, conversational language
-- Light jokes and wordplay when natural
-- Be helpful while keeping it fun
-- NOTE: Greetings are handled by the GREETING RULE section - follow that exactly, do not add extra greetings
+  for (const member of members) {
+    if (member.is_bot) continue; // Don't welcome bots
 
-EXAMPLES:
-- If someone corrects you: "Oops, my bad! Thanks for keeping me on track! 😅"
-- For common questions: "Great question! Let me break it down for you..."
-- For feedback: "Love the feedback! Helps me get better 🙌"`,
+    const name = member.username ? `@${member.username}` : member.first_name;
+    const template = welcomeTemplates[Math.floor(Math.random() * welcomeTemplates.length)];
+    const welcomeMessage = template.replace('{name}', name);
 
-    professional: `TRAITS:
-- PROFESSIONAL & COURTEOUS: Maintain business-appropriate tone
-- PRECISE: Provide accurate, detailed information
-- RESPECTFUL: Always polite and formal
-- HELPFUL: Focus on delivering value
-- Use emojis sparingly (1 per message max, only when appropriate)
-- Maintain professional distance while being approachable
+    await sendTelegramMessage(agent.bot_token, chatId, welcomeMessage);
+    console.log('[AGENT-WEBHOOK] Welcomed new member:', name);
+  }
+}
 
-STYLE:
-- Keep responses clear and structured (2-5 sentences)
-- Use formal but friendly language
-- Avoid slang and casual expressions
-- Be thorough and informative
-- NOTE: Greetings are handled by the GREETING RULE section - follow that exactly, do not add extra greetings
+/**
+ * Generate AI response using Gemini
+ */
+async function generateResponse(agent: any, userName: string, userMessage: string, userId: number): Promise<string> {
+  const geminiApiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+  
+  if (!geminiApiKey) {
+    console.error('[AGENT-WEBHOOK] Missing Gemini API key');
+    return "I'm having trouble connecting right now. Please try again later!";
+  }
 
-EXAMPLES:
-- If someone corrects you: "Thank you for the correction. I appreciate your attention to detail."
-- For common questions: "Excellent question. Allow me to explain..."
-- For feedback: "Thank you for your valuable feedback. It helps us improve our service."`,
+  const genAI = new GoogleGenerativeAI(geminiApiKey);
 
-    technical: `TRAITS:
-- TECHNICAL & DETAILED: Use industry terminology appropriately
-- PRECISE: Provide specific, accurate technical information
-- EDUCATIONAL: Explain concepts thoroughly
-- KNOWLEDGEABLE: Demonstrate expertise
-- Use emojis minimally (technical symbols 🔧⚡ when relevant)
-- Reference documentation and technical resources
+  // Build knowledge base content
+  const knowledgeBase = agent.knowledge_base || {};
+  let knowledgeContent = '';
+  
+  if (knowledgeBase.rawContent) {
+    knowledgeContent = knowledgeBase.rawContent;
+  } else if (Object.keys(knowledgeBase).length > 0) {
+    knowledgeContent = formatKnowledgeBase(knowledgeBase);
+  }
 
-STYLE:
-- Keep responses detailed but structured (3-6 sentences)
-- Use technical terminology appropriately
-- Provide examples and explanations
-- Break down complex concepts
-- NOTE: Greetings are handled by the GREETING RULE section - follow that exactly, do not add extra greetings
+  // Get personality preset
+  const personalityKey = agent.personality || 'casual';
+  const preset = PERSONALITY_PRESETS[personalityKey] || PERSONALITY_PRESETS.casual;
+  
+  // For 'custom' personality, use custom_personality text. Otherwise use preset.
+  let personalityPrompt: string;
+  if (personalityKey === 'custom' && agent.custom_personality) {
+    personalityPrompt = `CUSTOM PERSONALITY INSTRUCTIONS:\n${agent.custom_personality}`;
+  } else if (agent.custom_personality) {
+    // If custom_personality is set but personality is not 'custom', still honor it
+    personalityPrompt = agent.custom_personality;
+  } else {
+    personalityPrompt = preset.prompt;
+  }
+  
+  // Use agent's temperature setting, fallback to preset
+  const temperature = agent.temperature ?? preset.temperature;
 
-EXAMPLES:
-- If someone corrects you: "Correct. Thank you for the clarification on that technical detail."
-- For common questions: "Let me explain the technical architecture..."
-- For feedback: "Appreciated. I'll refine my technical accuracy based on this input."`,
+  console.log('[AGENT-WEBHOOK] Using personality:', personalityKey, 'Temperature:', temperature);
 
-    casual: `TRAITS:
-- FRIENDLY & RELAXED: Easy-going and approachable
-- CONVERSATIONAL: Like talking to a friend
-- HELPFUL: Always ready to assist
-- WARM: Genuinely friendly tone
-- Use emojis naturally (1-2 per message)
-- Keep things simple and relatable
+  // Build system prompt - similar pattern to SmartSentinels bot
+  const systemPrompt = `You are the AI assistant for ${agent.project_name}.
 
-STYLE:
-- Keep responses friendly and concise (2-4 sentences)
-- Use everyday language, avoid jargon
-- Be warm and personable
-- Make users feel comfortable
-- NOTE: Greetings are handled by the GREETING RULE section - follow that exactly, do not add extra greetings
+${personalityPrompt}
 
-EXAMPLES:
-- If someone corrects you: "Thanks for letting me know! Appreciate it 👍"
-- For common questions: "Sure thing! Here's what you need to know..."
-- For feedback: "Thanks so much! Really helpful feedback 😊"`
-  };
-  return personalities[personality] || personalities.casual;
+YOUR KNOWLEDGE BASE (USE THIS TO ANSWER QUESTIONS):
+${knowledgeContent || 'No specific knowledge base provided. Answer based on general context.'}
+
+WEBSITE: ${agent.website_url || 'Not provided'}
+
+CUSTOM FAQS:
+${agent.custom_faqs || 'None provided'}
+
+ADDITIONAL INFO:
+${agent.additional_info || 'None provided'}
+
+RULES (MUST FOLLOW):
+1. ALWAYS use your knowledge base to answer questions about ${agent.project_name}
+2. If you don't know something, admit it honestly and suggest checking the website
+3. Never give financial advice or price predictions
+4. Keep responses concise (2-4 sentences usually, longer for complex questions)
+5. Only share URLs that exist in your knowledge base - NEVER make up URLs
+6. Stay in character with your personality
+7. Be helpful, friendly, and accurate
+8. If asked about topics not in your knowledge base, politely redirect to official channels
+9. Greet users warmly when they greet you, but don't repeat greetings in ongoing conversations
+10. Address the user by name when appropriate
+
+Remember: You represent ${agent.project_name}. Be knowledgeable, helpful, and maintain the project's reputation!`;
+
+  try {
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash-lite',
+      generationConfig: {
+        temperature: temperature,
+        topP: 0.9,
+        maxOutputTokens: 800
+      }
+    });
+
+    const chat = model.startChat({
+      history: [],
+      generationConfig: {
+        temperature: temperature,
+        topP: 0.9,
+        maxOutputTokens: 800
+      }
+    });
+
+    // Send system prompt first, then user message
+    await chat.sendMessage(systemPrompt);
+    const result = await chat.sendMessage(`${userName} asks: ${userMessage}`);
+    
+    return result.response.text();
+
+  } catch (error: any) {
+    console.error('[AGENT-WEBHOOK] Gemini error:', error);
+    
+    // Retry with fallback
+    if (error.message?.includes('503') || error.message?.includes('overloaded')) {
+      return "I'm a bit busy right now! 😅 Please try again in a moment.";
+    }
+    
+    return "Oops! I had a little hiccup. Can you try asking that again?";
+  }
+}
+
+/**
+ * Format knowledge base object into readable text
+ */
+function formatKnowledgeBase(kb: Record<string, any>): string {
+  const sections: string[] = [];
+
+  if (kb.description) {
+    sections.push(`PROJECT DESCRIPTION:\n${kb.description}`);
+  }
+
+  if (kb.features && kb.features.length > 0) {
+    sections.push(`KEY FEATURES:\n${kb.features.map((f: string) => `- ${f}`).join('\n')}`);
+  }
+
+  if (kb.tokenomics) {
+    const tokenomics = typeof kb.tokenomics === 'string' 
+      ? kb.tokenomics 
+      : JSON.stringify(kb.tokenomics, null, 2);
+    sections.push(`TOKENOMICS:\n${tokenomics}`);
+  }
+
+  if (kb.presale) {
+    const presale = typeof kb.presale === 'string' 
+      ? kb.presale 
+      : JSON.stringify(kb.presale, null, 2);
+    sections.push(`PRESALE INFO:\n${presale}`);
+  }
+
+  if (kb.roadmap && kb.roadmap.length > 0) {
+    sections.push(`ROADMAP:\n${kb.roadmap.map((r: string) => `- ${r}`).join('\n')}`);
+  }
+
+  if (kb.team) {
+    sections.push(`TEAM:\n${kb.team}`);
+  }
+
+  if (kb.socialLinks) {
+    sections.push(`SOCIAL LINKS:\n${JSON.stringify(kb.socialLinks, null, 2)}`);
+  }
+
+  if (kb.faqs && kb.faqs.length > 0) {
+    const faqText = kb.faqs.map((faq: any) => `Q: ${faq.q || faq.question}\nA: ${faq.a || faq.answer}`).join('\n\n');
+    sections.push(`FAQs:\n${faqText}`);
+  }
+
+  if (kb.whitepaper) {
+    const wp = typeof kb.whitepaper === 'string' 
+      ? kb.whitepaper 
+      : JSON.stringify(kb.whitepaper, null, 2);
+    sections.push(`WHITEPAPER INFO:\n${wp}`);
+  }
+
+  return sections.join('\n\n');
+}
+
+/**
+ * Send message via Telegram API
+ */
+async function sendTelegramMessage(
+  botToken: string, 
+  chatId: number, 
+  text: string, 
+  replyToMessageId?: number
+): Promise<void> {
+  // Clean markdown to avoid formatting issues
+  const cleanText = text
+    .replace(/\*\*\*/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .replace(/___/g, '')
+    .replace(/__/g, '')
+    .replace(/```[^`]*```/g, '')
+    .replace(/`/g, '')
+    .trim();
+
+  const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+  
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: cleanText,
+        reply_to_message_id: replyToMessageId
+      })
+    });
+
+    const data = await response.json();
+    if (!data.ok) {
+      console.error('[AGENT-WEBHOOK] Telegram API error:', data.description);
+    }
+  } catch (error) {
+    console.error('[AGENT-WEBHOOK] Failed to send message:', error);
+  }
 }

@@ -556,7 +556,7 @@ const CreateAITelegramAgent = () => {
       // 5. Register webhook with Telegram
       console.log('[WEBHOOK] Registering webhook with Telegram...');
       try {
-        const webhookUrl = `https://zenith-sentinel.vercel.app/api/agent-webhook?agentId=${agent.id}`;
+        const webhookUrl = `https://smartsentinels.net/api/agent-webhook?agentId=${agent.id}`;
         const webhookResponse = await fetch(`https://api.telegram.org/bot${config.botToken}/setWebhook`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

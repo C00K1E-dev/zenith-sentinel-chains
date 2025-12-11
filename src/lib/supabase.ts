@@ -58,6 +58,7 @@ export interface TelegramAgent {
   vercel_deployment_url?: string;
   telegram_webhook_url?: string;
   message_count: number;
+  last_interaction?: string; // Timestamp of last user interaction
   created_at: string;
   updated_at: string;
 }

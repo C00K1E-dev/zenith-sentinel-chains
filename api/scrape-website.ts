@@ -84,7 +84,7 @@ async function structureContent(
 
     const prompt = `Analyze this website content for "${projectName}" and extract key information.
 
-IMPORTANT: Extract dates, numbers, and specific details EXACTLY as they appear. Do not interpret or modify them.
+CRITICAL: Extract dates, numbers, and specific details EXACTLY as they appear. Do not interpret or modify them.
 
 Website Content:
 ${contentForAI}
@@ -99,7 +99,7 @@ Return a JSON object with these fields (use empty array [] or null if not found)
     "distribution": "..."
   },
   "presale": {
-    "dates": "EXACT dates as written (e.g., 'Dec 25 - Jan 15')",
+    "dates": "EXACT presale/token sale dates ONLY (look for 'Token Sale', 'Presale' near dates like 'Dec 25 - Jan 15')",
     "price": "...",
     "softCap": "...",
     "hardCap": "..."
@@ -118,16 +118,19 @@ Return a JSON object with these fields (use empty array [] or null if not found)
     {"question": "...", "answer": "..."}
   ],
   "keyDates": {
-    "presaleStart": "EXACT date",
-    "presaleEnd": "EXACT date",
-    "tokenLaunch": "EXACT date"
+    "presaleStart": "The date when presale/token sale STARTS (e.g., 'DEC 25', 'Dec 25')",
+    "presaleEnd": "The date when presale/token sale ENDS (e.g., 'Jan 15')",
+    "tokenLaunch": "When trading begins (often same as presale end)"
   }
 }
 
-Rules:
-- Extract dates EXACTLY as written (e.g., "DEC 25", "Q1 2026", "Jan 15")
-- Include ALL numbers and percentages verbatim
-- If field not found, use null or empty array
+IMPORTANT RULES:
+1. For presale.dates and keyDates: Look specifically for "Token Sale", "Presale" sections
+   - Example: "DEC 25 Dec 25 - Jan 15 Token Sale" means presaleStart="DEC 25", presaleEnd="Jan 15"
+   - Do NOT use "Early Access Q2 2026" dates for presale - those are for products, not the token sale
+2. Extract dates EXACTLY as written (e.g., "DEC 25", "Q1 2026", "Jan 15")
+3. Include ALL numbers and percentages verbatim
+4. If field not found, use null or empty array
 - Return ONLY valid JSON, no markdown code blocks`;
 
     console.log('[SCRAPER] Calling Gemini to structure data...');

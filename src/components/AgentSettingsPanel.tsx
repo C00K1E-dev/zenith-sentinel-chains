@@ -392,16 +392,20 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
                 <label className="text-sm font-semibold mb-2 block">
                   Additional Information
                   <span className="text-muted-foreground font-normal ml-2">
-                    (Extra context about your project)
+                    (Critical info not on your website)
                   </span>
                 </label>
                 <textarea
                   value={settings.additional_info}
                   onChange={(e) => setSettings({ ...settings, additional_info: e.target.value })}
-                  rows={3}
+                  rows={4}
                   className="w-full px-4 py-2 bg-secondary/20 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                  placeholder="Additional project details..."
+                  placeholder={`Add info that may not be scraped from your website:
+• Presale dates: "January 1, 2026 at 08:00 UTC"
+• Social links: Twitter @yourproject, t.me/yourgroup
+• Token price, important dates, recent updates...`}
                 />
+                <p className="text-xs text-muted-foreground mt-1">⚠️ Dynamic/JS-rendered content (countdowns, popups) can't be scraped. Add that info here.</p>
               </div>
 
               {/* Triggers */}

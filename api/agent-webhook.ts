@@ -372,16 +372,17 @@ ADDITIONAL INFO:
 ${agent.additional_info || 'None provided'}
 
 CRITICAL RULES FOR ACCURACY (MUST FOLLOW):
-1. EXTRACT EXACT INFORMATION from the knowledge base - do NOT paraphrase dates, numbers, or specific details
-2. For DATE questions: Search for specific dates like "Dec 25", "Jan 15", "Q1 2026" etc. and quote them EXACTLY
-3. For PRESALE/TOKEN SALE: Look for phrases like "Token Sale", "Presale", specific dates - quote the EXACT dates found
-4. DO NOT confuse different phases - "Discovery Phase" and "Token Sale" are DIFFERENT events with DIFFERENT dates
-5. If the knowledge base says something happens on a specific date, say THAT date - not "NOW" or "soon"
-6. If you don't find the exact information, say "I couldn't find that specific detail in my knowledge base"
-7. Never give financial advice or price predictions
-8. Keep responses concise (2-4 sentences usually)
-9. Only share URLs that exist in your knowledge base - NEVER make up URLs
-10. Stay in character with your personality while being FACTUALLY ACCURATE
+1. CHECK "ADDITIONAL INFO" FIRST - This contains manually-added critical info like presale dates and social links
+2. EXTRACT EXACT INFORMATION from the knowledge base - do NOT paraphrase dates, numbers, or specific details
+3. For DATE questions: Check Additional Info first, then KEY DATES section, then search for specific dates like "Dec 25", "Jan 15", "Q1 2026"
+4. For PRESALE/TOKEN SALE: Look for phrases like "Token Sale", "Presale", specific dates - quote the EXACT dates found
+5. DO NOT confuse different phases - "Discovery Phase" and "Token Sale" are DIFFERENT events with DIFFERENT dates
+6. If the knowledge base says something happens on a specific date, say THAT date - not "NOW" or "soon"
+7. If you don't find the exact information, say "I couldn't find that specific detail in my knowledge base"
+8. Never give financial advice or price predictions
+9. Keep responses concise (2-4 sentences usually)
+10. Only share URLs that exist in your knowledge base - NEVER make up URLs
+11. Stay in character with your personality while being FACTUALLY ACCURATE
 
 EXAMPLE OF CORRECT BEHAVIOR:
 - If KB says "DEC 25 Dec 25 - Jan 15 Token Sale" and user asks "when is presale?"
@@ -444,6 +445,17 @@ function formatKnowledgeBase(kb: Record<string, any>): string {
     sections.push(`PROJECT DESCRIPTION:\n${kb.description}`);
   }
 
+  // IMPORTANT: Key dates should be at the top for easy reference
+  if (kb.keyDates) {
+    const dates = kb.keyDates;
+    let dateText = 'KEY DATES (IMPORTANT - USE THESE FOR DATE QUESTIONS):';
+    if (dates.presaleStart) dateText += `\n- Presale/Token Sale STARTS: ${dates.presaleStart}`;
+    if (dates.presaleEnd) dateText += `\n- Presale/Token Sale ENDS: ${dates.presaleEnd}`;
+    if (dates.tokenLaunch) dateText += `\n- Token Launch/Trading: ${dates.tokenLaunch}`;
+    if (dates.mainnetLaunch) dateText += `\n- Mainnet Launch: ${dates.mainnetLaunch}`;
+    sections.push(dateText);
+  }
+
   if (kb.features && kb.features.length > 0) {
     sections.push(`KEY FEATURES:\n${kb.features.map((f: string) => `- ${f}`).join('\n')}`);
   }
@@ -463,11 +475,18 @@ function formatKnowledgeBase(kb: Record<string, any>): string {
   }
 
   if (kb.roadmap && kb.roadmap.length > 0) {
-    sections.push(`ROADMAP:\n${kb.roadmap.map((r: string) => `- ${r}`).join('\n')}`);
+    // Format roadmap properly - it might be objects or strings
+    const roadmapText = kb.roadmap.map((r: any) => {
+      if (typeof r === 'string') return `- ${r}`;
+      if (r.phase && r.date) return `- ${r.phase} (${r.date}): ${r.items?.join(', ') || ''}`;
+      return `- ${JSON.stringify(r)}`;
+    }).join('\n');
+    sections.push(`ROADMAP:\n${roadmapText}`);
   }
 
   if (kb.team) {
-    sections.push(`TEAM:\n${kb.team}`);
+    const teamText = Array.isArray(kb.team) ? kb.team.join(', ') : kb.team;
+    sections.push(`TEAM:\n${teamText}`);
   }
 
   if (kb.socialLinks) {
@@ -484,6 +503,11 @@ function formatKnowledgeBase(kb: Record<string, any>): string {
       ? kb.whitepaper 
       : JSON.stringify(kb.whitepaper, null, 2);
     sections.push(`WHITEPAPER INFO:\n${wp}`);
+  }
+
+  // Include raw content as backup if available
+  if (kb.rawContent && sections.length < 3) {
+    sections.push(`RAW WEBSITE CONTENT:\n${kb.rawContent.slice(0, 10000)}`);
   }
 
   return sections.join('\n\n');

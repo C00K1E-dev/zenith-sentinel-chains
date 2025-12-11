@@ -739,15 +739,20 @@ const CreateAITelegramAgent = () => {
       </div>
 
       <div>
-        <label className="block text-sm font-semibold mb-2.5 text-foreground">Additional Information <span className="text-xs text-muted-foreground font-normal">(optional)</span></label>
+        <label className="block text-sm font-semibold mb-2.5 text-foreground">Additional Information <span className="text-xs text-muted-foreground font-normal">(recommended)</span></label>
         <textarea
           value={config.additionalInfo || ''}
           onChange={(e) => setConfig({ ...config, additionalInfo: e.target.value })}
-          placeholder="Add any relevant context about your project, industry, target audience, or special instructions for the agent..."
-          rows={4}
+          placeholder={`Add important info that may not be on your website:
+
+• Presale dates: "January 1, 2026 at 08:00 UTC"
+• Social links: Twitter @yourproject, t.me/yourgroup
+• Token price: $0.01 in presale
+• Any unique selling points or recent updates`}
+          rows={5}
           className="w-full px-4 py-2.5 glass-card border border-muted rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition resize-none text-sm"
         />
-        <p className="text-xs text-muted-foreground mt-1.5">This helps the AI agent better understand your project context and provide more relevant responses</p>
+        <p className="text-xs text-muted-foreground mt-1.5">⚠️ Dynamic content (countdowns, JS-rendered data) may not be scraped. Add presale dates and social links here for accuracy.</p>
       </div>
     </motion.div>
   );

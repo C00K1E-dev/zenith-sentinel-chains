@@ -136,37 +136,47 @@ export default function AgentSettingsPanel({ agentId, onClose, onSaved }: AgentS
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
 
-      const prompt = `You are analyzing website content. Today is December 9, 2025.
+      const prompt = `Analyze this website content and extract key information about the project.
 
-CRITICAL: Look for countdown timers showing launch dates. If you see text like "JANUARY 1, 2026" or "NEW YEAR - NEW ERA" with a countdown, that IS the presale launch date.
+Extract and return a JSON object with these fields:
+- description: Brief 2-3 sentence project overview
+- features: Array of main features/benefits (5-10 items)
+- tokenomics: Object with token details (supply, distribution, ticker, etc.) - only if found
+- presale: Object with sale information (dates, prices, caps) - only if found
+- roadmap: Array of timeline milestones with dates/quarters - only if found
+- team: Array of team members/advisors - only if found
+- faqs: Array of {question, answer} pairs - only if found
+- socialLinks: Object with URLs (twitter, telegram, discord, etc.) - only if found
 
-Extract structured information and return ONLY a JSON object with these fields:
-- description: A 2-3 sentence overview of what this project/company does
-- features: Array of key features or services (max 5)
-- tokenomics: Object with token details if mentioned (supply, distribution, price, etc.)
-- presale: Object with date (the EXACT date from countdown if shown, e.g., "January 1, 2026"), softcap, hardcap, and any other launch details
-- roadmap: Array of upcoming milestones or timeline items (include specific dates when available)
-- team: Array of team members if mentioned
-- faqs: Array of {question, answer} objects for common questions
-- socialLinks: Object with social media URLs if found
+Rules:
+- Extract dates exactly as they appear (don't convert or interpret)
+- Include all numbers/percentages as written
+- If a field has no data, use empty array [] or empty object {}
+- Return ONLY valid JSON, no markdown or explanations
 
 Website content:
-${textContent}
+${textContent.slice(0, 15000)}
 
-Return ONLY valid JSON, no markdown formatting.`;
+Return valid JSON:`;
 
+      console.log('[KNOWLEDGE_BASE] Calling Gemini to structure data...');
       const result = await model.generateContent(prompt);
       let responseText = result.response.text();
+      
+      console.log('[KNOWLEDGE_BASE] Gemini raw response:', responseText.slice(0, 200));
       
       // Remove markdown code blocks if present
       responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       
+      // Try to parse JSON
       const structuredData = JSON.parse(responseText);
 
-      console.log('[KNOWLEDGE_BASE] Successfully structured data:', structuredData);
+      console.log('[KNOWLEDGE_BASE] Successfully structured data:', Object.keys(structuredData));
       return structuredData;
     } catch (error) {
       console.error('[KNOWLEDGE_BASE] Error structuring data with Gemini:', error);
+      console.error('[KNOWLEDGE_BASE] Error details:', error instanceof Error ? error.message : 'Unknown error');
+      // Fallback to raw content if structuring fails
       return { rawContent: textContent };
     }
   };

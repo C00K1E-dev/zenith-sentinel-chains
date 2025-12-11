@@ -109,11 +109,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (knowledgeBase.rawContent) {
       // If only raw content exists, use it directly
       knowledgeBaseText = knowledgeBase.rawContent;
-      console.log('[AGENT-WEBHOOK] Using raw content knowledge base');
+      console.log('[AGENT-WEBHOOK] Using raw content knowledge base, length:', knowledgeBaseText.length);
+      console.log('[AGENT-WEBHOOK] KB Preview:', knowledgeBaseText.slice(0, 300));
     } else {
       // If structured data exists, format it
       knowledgeBaseText = JSON.stringify(knowledgeBase, null, 2);
-      console.log('[AGENT-WEBHOOK] Using structured knowledge base');
+      console.log('[AGENT-WEBHOOK] Using structured knowledge base, length:', knowledgeBaseText.length);
+    }
+    
+    if (!knowledgeBaseText || knowledgeBaseText.length < 100) {
+      console.error('[AGENT-WEBHOOK] WARNING: Knowledge base is empty or too small!', {
+        hasKB: !!agent.knowledge_base,
+        kbKeys: Object.keys(knowledgeBase),
+        kbLength: knowledgeBaseText.length
+      });
     }
     
     console.log('[AGENT-WEBHOOK] Config:', {
@@ -139,8 +148,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
     
     const lastInteractionTime = agentData?.last_interaction ? new Date(agentData.last_interaction).getTime() : 0;
-    const now = Date.now();
-    const timeSinceLastMessage = now - lastInteractionTime;
+    const nowTimestamp = Date.now();
+    const timeSinceLastMessage = nowTimestamp - lastInteractionTime;
     const twelveHoursInMs = 12 * 60 * 60 * 1000; // 12 hours
     
     // Check if user is greeting or if it's been 12+ hours since last message
@@ -150,14 +159,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     const shouldGreet = isGreeting || isNewSession;
     
-    // Update last interaction in database
-    await supabase
-      .from('telegram_agents')
-      .update({ last_interaction: new Date().toISOString() })
-      .eq('id', agentId);
+    // Update last interaction in database with error handling
+    try {
+      const { error: updateError } = await supabase
+        .from('telegram_agents')
+        .update({ last_interaction: new Date().toISOString() })
+        .eq('id', agentId);
+      
+      if (updateError) {
+        console.error('[AGENT-WEBHOOK] Failed to update last_interaction:', updateError);
+      } else {
+        console.log('[AGENT-WEBHOOK] Updated last_interaction for agent:', agentId);
+      }
+    } catch (err) {
+      console.error('[AGENT-WEBHOOK] Exception updating last_interaction:', err);
+    }
     
-    // Get timezone-aware greeting
-    const currentHour = new Date().getUTCHours();
+    // Get timezone-aware greeting (using local time, not UTC)
+    const currentDateTime = new Date();
+    const currentHour = currentDateTime.getHours(); // Local time, not UTC
     let timeGreeting = 'Hello';
     if (currentHour >= 5 && currentHour < 12) {
       timeGreeting = 'Good morning';
@@ -210,19 +230,17 @@ ADDITIONAL INFO:
 ${agent.additional_info || 'None'}
 
 CRITICAL INSTRUCTIONS:
-- Read the PROJECT INFORMATION carefully - it contains ALL project details
-- Search for common information patterns:
-  * Dates: Look for "presale", "sale", "launch", "Q1", "Q2", month names, specific dates
-  * Numbers: "supply", "cap", "price", "percentage", "APY", "rewards"
-  * Features: Technical specs, benefits, unique selling points
-  * Team: Team members, advisors, partners
-  * Roadmap: Timeline, phases, milestones, upcoming events
-- Extract information as it appears in the text - don't modify or interpret
-- ONLY state facts explicitly found in PROJECT INFORMATION
-- DO NOT make assumptions, guesses, or add information not in the data
-- If information is not clearly stated, respond: "I don't have that specific information. Check ${agent.website_url} for details."
-- For dates: If they appear AFTER today (${currentDate}), use future tense. If before, use past tense.
-- Be direct and factual - cite what you found in the information
+- Read the PROJECT INFORMATION text carefully - all answers must come from this data
+- Search for keywords related to the question:
+  * For dates: Look for words like "presale", "sale", "launch", "start", quarters (Q1, Q2), month names
+  * For prices: Look for "$", "price", "cap", "cost", "softcap", "hardcap"
+  * For supply/tokenomics: Look for "supply", "distribution", "allocation", percentages
+  * For roadmap: Look for timeline words, phases, quarters, dates
+- If you find matching information, extract it EXACTLY as written
+- ONLY answer with facts found in PROJECT INFORMATION
+- If you cannot find the specific information asked about, respond: "I don't have that information. Check ${agent.website_url} for details."
+- Do NOT make up, guess, or infer information not explicitly stated
+- For future dates (after ${currentDate}), use future tense
 
 FORMATTING RULES:
 - NO markdown formatting (no *, **, ___, etc.)
@@ -233,6 +251,10 @@ FORMATTING RULES:
 
 Respond to user questions about ${agent.project_name} based on the information above.
 Be helpful, accurate, and match the personality style.`;
+
+    console.log('[AGENT-WEBHOOK] System prompt length:', systemPrompt.length);
+    console.log('[AGENT-WEBHOOK] KB in prompt:', systemPrompt.includes('DEC 25') ? 'YES - Contains DEC 25' : 'NO - Missing presale data');
+    console.log('[AGENT-WEBHOOK] User question:', userMessage);
 
     let response: string = '';
     

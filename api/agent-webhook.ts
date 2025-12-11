@@ -31,6 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const chatId = message.chat.id;
     const userMessage = message.text || '';
     const userName = message.from?.first_name || message.from?.username || 'there';
+    const userId = message.from?.id || chatId; // Telegram user ID
     
     // Get agent ID from query parameter
     const agentId = req.query.agentId as string;
@@ -103,10 +104,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const personality = agent.custom_personality || getPersonalityPrompt(agent.personality);
     const triggers = agent.trigger_keywords || [];
     
+    // Handle both structured and raw content formats
+    let knowledgeBaseText = '';
+    if (knowledgeBase.rawContent) {
+      // If only raw content exists, use it directly
+      knowledgeBaseText = knowledgeBase.rawContent;
+      console.log('[AGENT-WEBHOOK] Using raw content knowledge base');
+    } else {
+      // If structured data exists, format it
+      knowledgeBaseText = JSON.stringify(knowledgeBase, null, 2);
+      console.log('[AGENT-WEBHOOK] Using structured knowledge base');
+    }
+    
     console.log('[AGENT-WEBHOOK] Config:', {
       personality: agent.personality,
       triggers,
-      hasKnowledgeBase: Object.keys(knowledgeBase).length > 0
+      hasKnowledgeBase: Object.keys(knowledgeBase).length > 0,
+      knowledgeBaseSize: knowledgeBaseText.length
     });
     
     // Respond to all messages for better conversation flow
@@ -114,27 +128,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('[AGENT-WEBHOOK] Responding to message');
 
     // Smart greeting logic: Only greet if it's a new conversation
-    // 1. Check if message is a greeting ("hi", "hello", "hey", etc.)
-    // 2. OR check if last interaction was more than 12 hours ago (new day/session)
-    const greetingWords = ['hi', 'hello', 'hey', 'sup', 'yo', 'greetings', 'good morning', 'good afternoon', 'good evening', 'gm', 'gn'];
-    const isGreeting = greetingWords.some(word => userMessage.toLowerCase().trim().startsWith(word));
+    // Use database last_interaction field (now exists in table)
+    const conversationKey = `${agentId}_${userId}`;
     
-    // Check last interaction time - use updated_at as fallback if last_interaction doesn't exist
+    // Get last interaction from database
     const { data: agentData } = await supabase
       .from('telegram_agents')
-      .select('last_interaction, updated_at')
+      .select('last_interaction')
       .eq('id', agentId)
       .single();
     
-    const lastInteractionTime = agentData?.last_interaction || agentData?.updated_at;
-    const lastInteraction = lastInteractionTime ? new Date(lastInteractionTime) : null;
-    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000); // 12 hours = new session
-    const isNewSession = !lastInteraction || lastInteraction < twelveHoursAgo;
+    const lastInteractionTime = agentData?.last_interaction ? new Date(agentData.last_interaction).getTime() : 0;
+    const now = Date.now();
+    const timeSinceLastMessage = now - lastInteractionTime;
+    const twelveHoursInMs = 12 * 60 * 60 * 1000; // 12 hours
+    
+    // Check if user is greeting or if it's been 12+ hours since last message
+    const greetingWords = ['hi', 'hello', 'hey', 'sup', 'yo', 'greetings', 'good morning', 'good afternoon', 'good evening', 'gm', 'gn'];
+    const isGreeting = greetingWords.some(word => userMessage.toLowerCase().trim().startsWith(word));
+    const isNewSession = timeSinceLastMessage > twelveHoursInMs || lastInteractionTime === 0;
     
     const shouldGreet = isGreeting || isNewSession;
     
+    // Update last interaction in database
+    await supabase
+      .from('telegram_agents')
+      .update({ last_interaction: new Date().toISOString() })
+      .eq('id', agentId);
+    
     // Get timezone-aware greeting
-    const currentHour = new Date().getUTCHours(); // You can adjust for specific timezone if needed
+    const currentHour = new Date().getUTCHours();
     let timeGreeting = 'Hello';
     if (currentHour >= 5 && currentHour < 12) {
       timeGreeting = 'Good morning';
@@ -143,29 +166,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } else if (currentHour >= 18 && currentHour < 22) {
       timeGreeting = 'Good evening';
     } else {
-      timeGreeting = 'Hey'; // Late night/early morning
+      timeGreeting = 'Hey';
     }
     
     console.log('[AGENT-WEBHOOK] Greeting check:', {
+      userId,
+      agentId,
       isGreeting,
       isNewSession,
       shouldGreet,
       timeGreeting,
-      currentHour,
-      lastInteraction: lastInteraction?.toISOString(),
-      twelveHoursAgo: twelveHoursAgo.toISOString(),
+      lastInteraction: lastInteractionTime ? new Date(lastInteractionTime).toISOString() : 'never',
+      timeSinceLastMessage: `${Math.round(timeSinceLastMessage / 1000 / 60)}min`,
       message: userMessage.slice(0, 50)
     });
-
-    // Update last interaction time (will only work if column exists)
-    try {
-      await supabase
-        .from('telegram_agents')
-        .update({ last_interaction: new Date().toISOString() })
-        .eq('id', agentId);
-    } catch (error) {
-      console.log('[AGENT-WEBHOOK] Could not update last_interaction (column may not exist):', error);
-    }
 
     // Generate response using Gemini with fallback models
     const genAI = new GoogleGenerativeAI(process.env.VITE_GEMINI_API_KEY!);
@@ -185,7 +199,7 @@ GREETING RULE: ${greetingInstruction}
 CURRENT DATE: ${currentDate} (Use this to determine if events are in the past, present, or future)
 
 PROJECT INFORMATION:
-${JSON.stringify(knowledgeBase, null, 2)}
+${knowledgeBaseText}
 
 WEBSITE: ${agent.website_url}
 
@@ -195,25 +209,26 @@ ${agent.custom_faqs || 'None'}
 ADDITIONAL INFO:
 ${agent.additional_info || 'None'}
 
-CRITICAL ANTI-HALLUCINATION RULES:
-- ONLY use facts explicitly stated in PROJECT INFORMATION above
-- DO NOT infer, assume, or extrapolate information not directly provided
-- DO NOT make up dates, events, numbers, or details
-- If a date is AFTER the CURRENT DATE (${currentDate}), use FUTURE tense: "will start", "is coming", "launches on"
-- If a date is BEFORE the CURRENT DATE, use PAST tense: "started", "launched", "happened"
-- If you don't have specific information, say: "I don't have that information right now. Check ${agent.website_url}"
-- DO NOT combine multiple facts to create new information
-- DO NOT add context or background not in the data
-- When mentioning dates, ALWAYS verify against CURRENT DATE first
-- If uncertain about ANY detail, acknowledge uncertainty instead of guessing
+CRITICAL INSTRUCTIONS:
+- Read the PROJECT INFORMATION carefully - it contains ALL project details
+- Search for common information patterns:
+  * Dates: Look for "presale", "sale", "launch", "Q1", "Q2", month names, specific dates
+  * Numbers: "supply", "cap", "price", "percentage", "APY", "rewards"
+  * Features: Technical specs, benefits, unique selling points
+  * Team: Team members, advisors, partners
+  * Roadmap: Timeline, phases, milestones, upcoming events
+- Extract information as it appears in the text - don't modify or interpret
+- ONLY state facts explicitly found in PROJECT INFORMATION
+- DO NOT make assumptions, guesses, or add information not in the data
+- If information is not clearly stated, respond: "I don't have that specific information. Check ${agent.website_url} for details."
+- For dates: If they appear AFTER today (${currentDate}), use future tense. If before, use past tense.
+- Be direct and factual - cite what you found in the information
 
-IMPORTANT FORMATTING RULES:
+FORMATTING RULES:
 - NO markdown formatting (no *, **, ___, etc.)
 - Use plain text only
 - Maximum 2 emojis per response
-- Use natural paragraph breaks instead of bullet points
-- Keep responses conversational and readable
-- No lists with asterisks or dashes
+- Keep responses conversational and concise (2-4 sentences)
 - Use the person's name naturally when appropriate
 
 Respond to user questions about ${agent.project_name} based on the information above.

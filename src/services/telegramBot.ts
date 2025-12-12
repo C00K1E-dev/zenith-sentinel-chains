@@ -20,6 +20,7 @@ interface TelegramMessage {
     id: number;
     first_name: string;
     username?: string;
+    is_bot?: boolean;
   }>;
 }
 
@@ -311,7 +312,7 @@ export class TelegramBotService {
   async setWebhook(webhookUrl: string) {
     const result = await this.apiRequest('setWebhook', {
       url: webhookUrl,
-      allowed_updates: ['message', 'edited_message']
+      allowed_updates: ['message', 'edited_message', 'chat_member']
     });
     console.log('Webhook set:', result);
     return result;
@@ -383,7 +384,7 @@ export class TelegramBotService {
     return triggers.some(trigger => lowerText.includes(trigger));
   }
 
-  private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string }>) {
+  private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
     const welcomeMessages = [
       `Welcome to SmartSentinels, {name}! 🛡️ We're turning devices into AI workers powered by Proof of Useful Work. Ask me anything about iNFTs, PoUW, or how to earn SSTL - I'm way funnier than ChatGPT! 😄`,
       `Yo {name}! 👋 Welcome to the future of decentralized AI! We're building autonomous agents that actually earn while they work. Got questions about the project? I got answers (and memes)! 🤖`,
@@ -394,12 +395,17 @@ export class TelegramBotService {
     ];
 
     for (const member of members) {
-      if (member.first_name === this.botUsername) continue; // Don't welcome ourselves
+      // Skip bots (including ourselves)
+      if (member.is_bot) {
+        console.log(`[SMARTSENTINELS-BOT] Skipping bot: ${member.first_name}`);
+        continue;
+      }
       
       const name = member.username ? `@${member.username}` : member.first_name;
       const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
         .replace('{name}', name);
       
+      console.log(`[SMARTSENTINELS-BOT] Welcoming new member: ${name}`);
       await this.sendMessage(chatId, welcomeMsg);
     }
   }

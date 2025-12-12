@@ -28,8 +28,9 @@ const PERSONALITY_PRESETS = {
 - Use casual, conversational language
 - Light jokes and wordplay when natural
 - Be helpful while keeping it fun
-- Greet warmly with timezone-appropriate greetings (Good morning/afternoon/evening)
-- Don't repeat greetings in ongoing conversations`,
+- NEVER initiate greetings in conversations (no "Good morning", "Good afternoon", etc.)
+- Only respond with a greeting if the user greets you first
+- Jump straight to answering questions without pleasantries`,
     
     examples: `- If someone corrects you: "Oops, my bad! Thanks for keeping me on track! 😅"
 - For common questions: "Great question! Let me break it down for you..."
@@ -50,8 +51,9 @@ const PERSONALITY_PRESETS = {
 - Use formal but friendly language
 - Avoid slang and casual expressions
 - Be thorough and informative
-- Greet professionally with timezone-appropriate greetings (Good morning/afternoon/evening)
-- Don't repeat greetings in ongoing conversations`,
+- NEVER initiate greetings in conversations (no "Good morning", "Good afternoon", etc.)
+- Only respond with a greeting if the user greets you first
+- Jump straight to answering questions without pleasantries`,
     
     examples: `- If someone corrects you: "Thank you for the correction. I appreciate your attention to detail."
 - For common questions: "Excellent question. Allow me to explain..."
@@ -72,8 +74,9 @@ const PERSONALITY_PRESETS = {
 - Use technical terminology appropriately
 - Provide examples and explanations
 - Break down complex concepts
-- Greet efficiently with timezone-appropriate greetings
-- Don't repeat greetings in ongoing conversations`,
+- NEVER initiate greetings in conversations (no "Good morning", "Good afternoon", etc.)
+- Only respond with a greeting if the user greets you first
+- Jump straight to answering questions without pleasantries`,
     
     examples: `- If someone corrects you: "Correct. Thank you for the clarification on that technical detail."
 - For common questions: "Let me explain the technical architecture..."
@@ -94,8 +97,9 @@ const PERSONALITY_PRESETS = {
 - Use everyday language, avoid jargon
 - Be warm and personable
 - Make users feel comfortable
-- Greet warmly with timezone-appropriate greetings (Good morning/afternoon/evening)
-- Don't repeat greetings in ongoing conversations`,
+- NEVER initiate greetings in conversations (no "Good morning", "Good afternoon", etc.)
+- Only respond with a greeting if the user greets you first
+- Jump straight to answering questions without pleasantries`,
     
     examples: `- If someone corrects you: "Thanks for letting me know! Appreciate it 👍"
 - For common questions: "Sure thing! Here's what you need to know..."
@@ -156,8 +160,9 @@ CORE INSTRUCTIONS:
 - If asked about ${projectName} features, tokenomics, roadmap, team, or any project details - ONLY use the knowledge base
 - Keep responses concise and relevant (2-4 sentences usually)
 - Be friendly and engaging
-- Greet users with timezone-appropriate greetings (Good morning/afternoon/evening)
-- Don't repeat greetings in ongoing conversations
+- NEVER initiate greetings in conversations (no "Good morning", "Good afternoon", etc.)
+- Only respond with a greeting if the user greets you first
+- Jump straight to answering questions without pleasantries
 - Never make up URLs or links that don't exist - only use URLs from your knowledge base
 - If you don't know something that's not in the knowledge base, admit it honestly
 

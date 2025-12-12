@@ -55,8 +55,30 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "Edge Computing - Distributed AI processing at the edge for maximum efficiency and privacy",
     "Token Rewards - Earn SSTL tokens for contributing compute power and owning iNFTs",
     "ERC-7857 iNFTs - Intelligent NFTs with embedded IP rights, on-chain logic, and automated revenue sharing",
-    "Multi-Industry AI Agents - Deployed across Financial Services, Healthcare, Telecommunications, Travel, Media, and Retail"
+    "Multi-Industry AI Agents - Deployed across Financial Services, Healthcare, Telecommunications, Travel, Media, and Retail",
+    "AI Telegram Agent Creation - Create your own custom AI Telegram bot for your community or business with personalized knowledge base and personality"
   ],
+  
+  telegramAgents: {
+    description: "Create your own AI-powered Telegram bot for your project or community",
+    pricing: {
+      starter: "$99/month - Basic AI agent with knowledge base scraping",
+      pro: "$249/month - Advanced agent with enhanced features",
+      enterprise: "$499/month - Premium agent with full customization"
+    },
+    features: [
+      "Custom Knowledge Base - Automatically scrape your website/whitepaper to train your agent",
+      "4 Personality Presets - Choose from Funny, Professional, Technical, or Casual personalities",
+      "Custom Personality - Define your own unique personality and tone",
+      "Powered by Gemini AI - Google's latest AI model for intelligent responses",
+      "Auto-Response - Agent answers questions 24/7 based on your knowledge base",
+      "Agent Management - Update settings, refresh knowledge base, monitor performance",
+      "Secure Payments - Pay with USDT on BNB Chain",
+      "Instant Setup - Bot deployed and ready in minutes"
+    ],
+    howItWorks: "1. Connect wallet → 2. Choose subscription tier → 3. Enter bot token & project details → 4. Add website URL for knowledge base → 5. Select personality → 6. Pay with USDT → 7. Your AI agent is live!",
+    dashboard: "Manage your agents at https://smartsentinels.net/hub/my-agents"
+  },
   
   tokenomics: {
     totalSupply: "100M SSTL",
@@ -159,6 +181,9 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "How can I buy SSTL?": "Currently in private seed round. Public sale coming in Q1 2026. Join our Telegram for updates! https://t.me/SmartSentinelsCommunity",
     "Is this audited?": "Yes! Our smart contracts are professionally audited. Check the audit report: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum",
     "What devices can run agents?": "Currently supporting NVIDIA Jetson Orin and AMD UM790 Pro devices. More hardware coming soon as we scale the network!",
+    "How do I create a Telegram AI agent?": "Visit https://smartsentinels.net/hub/create-agent! Connect your wallet, choose your subscription tier ($99/$249/$499), enter your bot token, add your website URL for the knowledge base, select a personality, and pay with USDT. Your AI agent will be live in minutes! 🤖",
+    "What are Telegram AI agents?": "Custom AI bots for your Telegram community! They answer questions 24/7 based on YOUR project's knowledge base (scraped from your website). Choose from 4 personality presets or create a custom one. Powered by Google's Gemini AI. Perfect for crypto projects, businesses, or communities!",
+    "How much does an AI agent cost?": "Starter: $99/month, Pro: $249/month, Enterprise: $499/month. Paid in USDT on BNB Chain. Cancel anytime. Manage your agents at https://smartsentinels.net/hub/my-agents",
     "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply goes to PoUW rewards, 10% gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
     "Is this a scam?": "If we were a scam, would we: Build actual AI agents? Get audited? Partner with BNB Chain, NVIDIA? Have a real team on LinkedIn? Launch a working MVP? Nah fam, we're here to revolutionize how AI creates value. DYOR and join us! 🛡️"
   }

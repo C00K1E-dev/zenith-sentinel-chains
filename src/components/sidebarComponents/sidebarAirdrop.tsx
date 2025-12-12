@@ -1013,27 +1013,11 @@ const SidebarAirdrop = memo(() => {
 
   return (
     <div className={styles.container}>
-      {/* Coming Soon Banner */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className={styles.comingSoonBanner}
-      >
-        <div className={styles.comingSoonContent}>
-          <span className={styles.comingSoonBadge}>COMING SOON</span>
-          <h2 className={styles.comingSoonTitle}>🚀 Airdrop Campaign Launching Soon!</h2>
-          <p className={styles.comingSoonText}>
-            Get ready to earn SSTL tokens by completing tasks. Follow our social media channels for launch announcements and exclusive updates.
-          </p>
-        </div>
-      </motion.div>
-
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className={styles.header}
-        style={{ opacity: 0.5 }}
       >
         <div className={styles.headerContent}>
           <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-accent/20 to-accent/10 flex items-center justify-center">

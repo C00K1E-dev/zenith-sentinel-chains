@@ -1245,6 +1245,9 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
               <strong className="text-primary">SWC Registry Integration:</strong> <span>Trained on all <span className="text-primary">37 Smart Contract Weakness Classification</span> (SWC) vulnerabilities
               with detailed analysis patterns and remediation strategies.</span>
             </p>
+            <p className="mb-0">
+              <strong className="text-primary">Report Features:</strong> <span>After audit completion, download your comprehensive PDF report or upload it to IPFS for permanent, decentralized storage with verifiable proof of audit.</span>
+            </p>
           </div>
         </div>
         <div>

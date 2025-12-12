@@ -23,11 +23,11 @@ export const USDT_CONTRACT_ADDRESS = '0x55d398326f99059fF775485246999027B3197955
 // SmartSentinels Treasury Wallet
 export const TREASURY_WALLET = import.meta.env.VITE_SMARTSENTINELS_WALLET as `0x${string}`;
 
-// Pricing in USDT (with 18 decimals) - SET TO 1 USDT FOR TESTING
+// Pricing in USDT (with 18 decimals)
 export const PRICING_TIERS = {
-  starter: { usd: 1, label: '$1/month (TEST)' },
-  pro: { usd: 1, label: '$1/month (TEST)' },
-  enterprise: { usd: 1, label: '$1/month (TEST)' }
+  starter: { usd: 99, label: '$99/month' },
+  pro: { usd: 249, label: '$249/month' },
+  enterprise: { usd: 499, label: '$499/month' }
 };
 
 // ERC20 ABI (minimal - only what we need)

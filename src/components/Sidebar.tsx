@@ -47,11 +47,11 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const menuItems: SidebarItem[] = useMemo(() => [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
     // { name: 'Seed Round', path: '/hub/seed-round', icon: DollarSign }, // Hidden - needs testing before production
-    { name: 'Airdrop', path: '/hub/airdrop', icon: Gift },
+    { name: 'Airdrop', path: '/hub/airdrop', icon: Gift, badge: 'New' },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },
     { name: 'Device Monitoring', path: '/hub/devices', icon: Monitor },
-    { name: 'Create Agent', path: '/hub/create-agent', icon: Bot, badge: 'Soon' },
+    { name: 'Create Agent', path: '/hub/create-agent', icon: Bot, badge: 'New' },
     { name: 'Marketplace', path: '/hub/marketplace', icon: Store, badge: 'Soon' },
     { name: 'Staking', path: '/hub/staking', icon: Coins, badge: 'Soon' },
   ], []);
@@ -281,7 +281,12 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                 <>
                   <span className="flex-1 text-sm">{item.name}</span>
                   {item.badge && (
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary border border-primary/30 font-medium">
+                    <span className={cn(
+                      "px-2 py-0.5 text-xs rounded-full font-medium",
+                      item.badge === 'New'
+                        ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                        : "bg-primary/20 text-primary border border-primary/30"
+                    )}>
                       {item.badge}
                     </span>
                   )}
@@ -293,7 +298,12 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                 <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
                   {item.name}
                   {item.badge && (
-                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-primary/20 text-primary font-medium">
+                    <span className={cn(
+                      "ml-2 px-2 py-0.5 text-xs rounded-full font-medium",
+                      item.badge === 'New'
+                        ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                        : "bg-primary/20 text-primary"
+                    )}>
                       {item.badge}
                     </span>
                   )}

@@ -9,6 +9,7 @@ import {
   USDT_CONTRACT_ADDRESS,
   TREASURY_WALLET,
   ERC20_ABI,
+  PRICING_TIERS,
   getPaymentAmount,
   PaymentStep,
   getPaymentStepMessage,
@@ -324,8 +325,7 @@ const CreateAITelegramAgent = () => {
       setPaymentStep(PaymentStep.TRANSFERRING);
 
       // Get payment amount for selected tier and billing cycle
-      // TEST PRICING: Always use 1 USDT for testing
-      const amountUSDT = '1';
+      const amountUSDT = PRICING_TIERS[config.pricingTier].usd.toString();
       const amountWei = parseUnits(amountUSDT, 18);
 
       console.log('[PAYMENT] Initiating transfer:', { amountUSDT, billingCycle, amountWei: amountWei.toString(), treasury: TREASURY_WALLET });
@@ -449,8 +449,8 @@ const CreateAITelegramAgent = () => {
 
       setAgentId(agent.id);
 
-      // 4. Create subscription record - USE TEST PRICING (1 USDT)
-      const subscriptionCost = 1; // Test pricing: 1 USDT for all tiers
+      // 4. Create subscription record
+      const subscriptionCost = PRICING_TIERS[config.pricingTier].usd;
       
       let subscription;
       try {
@@ -1173,17 +1173,6 @@ const CreateAITelegramAgent = () => {
 
   return (
     <div className="w-full">
-      {/* Dev Preview Toggle */}
-      <div className="mb-6 flex justify-end">
-        <button
-          onClick={() => setShowPreview(!showPreview)}
-          className="text-xs px-3 py-1.5 bg-amber-500/20 text-amber-600 border border-amber-500/50 rounded hover:bg-amber-500/30 transition font-medium flex items-center gap-1.5"
-        >
-          <Eye size={14} />
-          {showPreview ? 'Hide Preview' : 'Dev Preview'}
-        </button>
-      </div>
-
       {!showPreview ? (
         // NORMAL MODE - Step by step wizard
         <>

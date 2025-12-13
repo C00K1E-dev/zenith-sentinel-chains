@@ -162,7 +162,7 @@ const AUDIT_REPORT_SCHEMA = {
                     severity: { type: "STRING", enum: ["Critical", "High", "Medium", "Low", "Informational", "Gas"] },
                     title: { type: "STRING", description: "A concise title for the finding (e.g., Reentrancy Vulnerability)." },
                     description: { type: "STRING", description: "Detailed explanation of the issue." },
-                    lineNumbers: { type: "ARRAY", items: { type: "INTEGER" }, description: "Array of line numbers where the issue occurs." },
+                    lineNumbers: { type: "ARRAY", items: { type: "INTEGER" }, description: "CRITICAL: Include ONLY 3-5 most relevant line numbers. Never list entire file ranges. If issue spans many lines, pick the 3-5 most critical ones." },
                 },
                 required: ["severity", "title", "description"],
             },
@@ -311,12 +311,21 @@ const useAuditPrompt = () => {
             "\n   → Recognize modern patterns, but ensure they're used correctly" +
             "\n\n--- SCORING FORMULA ---" +
             "\n🎯 START AT 100 POINTS. Subtract based on severity and exploitability:" +
-            "\n• Critical (Immediate fund loss, contract takeover): -20 points" +
-            "\n• High (Significant exploitable flaw): -10 points" +
-            "\n• Medium (Issue with workarounds/conditions): -4 points" +
-            "\n• Low (Best practice deviation, minor risk): -2 points" +
-            "\n• Informational (Design notes, suggestions): -0.5 points" +
-            "\n• Gas (Optimization opportunities): -0.2 points" +
+            "\n• Critical (Immediate fund loss, contract takeover): -20 points PER ISSUE" +
+            "\n• High (Significant exploitable flaw): -10 points PER ISSUE" +
+            "\n• Medium (Issue with workarounds/conditions): -4 points PER ISSUE" +
+            "\n• Low (Best practice deviation, minor risk): -2 points PER ISSUE" +
+            "\n• Informational (Design notes, suggestions): -0.5 points PER ISSUE" +
+            "\n• Gas (Optimization opportunities): -0.2 points PER ISSUE" +
+            "\n\n⚠️ CRITICAL SCORING RULES:" +
+            "\n• DIFFERENT contracts have DIFFERENT scores - analyze each contract's ACTUAL issues!" +
+            "\n• A contract with 0 Critical + 0 High + 1 Medium = ~96/100" +
+            "\n• A contract with 1 Critical + 2 High = ~60/100" +
+            "\n• A contract with 0 issues = 100/100 (extremely rare!)" +
+            "\n• A contract with 5 Low + 3 Informational = ~88.5/100" +
+            "\n• NEVER give 95.5 to every contract - that's a sign you're not analyzing properly!" +
+            "\n• Security score MUST reflect the ACTUAL vulnerabilities found, not a generic value" +
+            "\n• Calculate: 100 - (Critical×20 + High×10 + Medium×4 + Low×2 + Info×0.5 + Gas×0.2)" +
             "\n\n⚖️ CONTEXT-AWARE SEVERITY ADJUSTMENT:" +
             "\n• SWC-105 with Ownable2Step + nonReentrant = LOW (mention centralization)" +
             "\n• SWC-105 with no protection = CRITICAL" +
@@ -336,14 +345,22 @@ const useAuditPrompt = () => {
             "\n3. EVALUATE severity in context (DeFi vs NFT vs DAO vs Token)" +
             "\n4. CHECK for compensating controls (modifiers, validation, audited libs)" +
             "\n5. SCORE accurately with context-adjusted severity" +
-            "\n6. EXPLAIN findings clearly with mitigation suggestions"
+            "\n6. EXPLAIN findings clearly with mitigation suggestions" +
+            "\n\n--- CRITICAL: LINE NUMBER REPORTING ---" +
+            "\n⚠️ NEVER report more than 5 line numbers per vulnerability!" +
+            "\n• If an issue spans 100+ lines, pick the 3-5 MOST CRITICAL lines only" +
+            "\n• Examples:" +
+            "\n  ❌ WRONG: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12...100]" +
+            "\n  ✅ CORRECT: [45, 67, 89] (the 3 key lines where the issue is most evident)" +
+            "\n• For contract-wide issues (like floating pragma), use: [1]" +
+            "\n• This prevents JSON truncation and keeps reports readable"
         );
     }, []);
 };
 
 // --- 3. Deterministic HTML Generation from JSON Counts (Matching the Screenshot) ---
 
-const generateAuditHTML = (auditData: AuditData): string => {
+const generateAuditHTML_OLD_BACKUP = (auditData: AuditData): string => {
     // Helper to get color classes based on severity
     const getColorClass = (severity: string): string => {
         switch (severity.toLowerCase()) {
@@ -555,6 +572,1114 @@ const generateAuditHTML = (auditData: AuditData): string => {
 </html>`;
 
     return html;
+};
+
+// Premium Audit Report HTML Generator
+const generateAuditHTML = (auditData: AuditData): string => {
+  const {
+    contractName,
+    version,
+    securityScore,
+    vulnerabilityBreakdown,
+    vulnerabilities,
+    overallAssessment,
+    transactionHash
+  } = auditData;
+
+  const scorePercentage = (securityScore / 100) * 502.4;
+  const strokeDashoffset = 502.4 - scorePercentage;
+  
+  const getScoreGrade = (score: number): string => {
+    if (score >= 90) return 'EXCELLENT';
+    if (score >= 80) return 'GOOD';
+    if (score >= 70) return 'FAIR';
+    if (score >= 60) return 'POOR';
+    return 'CRITICAL';
+  };
+
+  const getScoreColor = (score: number): string => {
+    if (score >= 90) return '#10B981';
+    if (score >= 80) return '#34D399';
+    if (score >= 70) return '#F59E0B';
+    if (score >= 60) return '#F97316';
+    return '#EF4444';
+  };
+
+  const currentDate = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
+  const shortTxHash = `${transactionHash.slice(0, 6)}...${transactionHash.slice(-4)}`;
+  const totalFindings = vulnerabilities.length;
+
+  const scoreColor = getScoreColor(securityScore);
+  const scoreGrade = getScoreGrade(securityScore);
+
+  const severityOrder = ['Critical', 'High', 'Medium', 'Low', 'Informational', 'Gas'];
+  const sortedVulnerabilities = [...vulnerabilities].sort((a, b) => {
+    return severityOrder.indexOf(a.severity) - severityOrder.indexOf(b.severity);
+  });
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSentinels AI Audit Report - ${contractName}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --primary-light: #60A5FA;
+            --accent: #F8F442;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --bg-dark: #0A0A0F;
+            --bg-card: #12121A;
+            --bg-elevated: #1A1A25;
+            --border: rgba(255,255,255,0.08);
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Premium Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(248, 244, 66, 0.03) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Subtle Grid Pattern */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Premium Header */
+        .premium-header {
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0;
+            position: relative;
+        }
+
+        .premium-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        .brand-text {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .brand-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .report-type {
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #3B82F6 0%, #9F7AEA 40%, #14B8A6 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Premium Cards */
+        .premium-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .premium-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-header-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Score Ring - Premium */
+        .score-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .score-ring {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .score-ring svg {
+            transform: rotate(-90deg);
+            filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.4));
+        }
+
+        .score-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: ${scoreColor};
+        }
+
+        .score-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .score-badge {
+            margin-top: 1rem;
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: ${scoreColor};
+            letter-spacing: 0.1em;
+        }
+
+        /* Threat Summary Pills */
+        .threat-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.75rem;
+        }
+
+        .threat-pill {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .threat-pill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .threat-pill.critical::before { background: linear-gradient(90deg, #DC2626, #EF4444); }
+        .threat-pill.high::before { background: linear-gradient(90deg, #EA580C, #F97316); }
+        .threat-pill.medium::before { background: linear-gradient(90deg, #D97706, #F59E0B); }
+        .threat-pill.low::before { background: linear-gradient(90deg, #2563EB, #3B82F6); }
+        .threat-pill.info::before { background: linear-gradient(90deg, #475569, #64748B); }
+        .threat-pill.gas::before { background: linear-gradient(90deg, #0891B2, #06B6D4); }
+
+        .threat-count {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .threat-pill.critical .threat-count { color: #EF4444; }
+        .threat-pill.high .threat-count { color: #F97316; }
+        .threat-pill.medium .threat-count { color: #F59E0B; }
+        .threat-pill.low .threat-count { color: #3B82F6; }
+        .threat-pill.info .threat-count { color: #64748B; }
+        .threat-pill.gas .threat-count { color: #06B6D4; }
+
+        .threat-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Finding Cards */
+        .finding-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .finding-header {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .severity-indicator {
+            width: 4px;
+            border-radius: 2px;
+            align-self: stretch;
+            min-height: 50px;
+        }
+
+        .severity-indicator.critical { background: linear-gradient(180deg, #EF4444, #DC2626); }
+        .severity-indicator.high { background: linear-gradient(180deg, #F97316, #EA580C); }
+        .severity-indicator.medium { background: linear-gradient(180deg, #F59E0B, #D97706); }
+        .severity-indicator.low { background: linear-gradient(180deg, #3B82F6, #2563EB); }
+        .severity-indicator.info { background: linear-gradient(180deg, #64748B, #475569); }
+        .severity-indicator.informational { background: linear-gradient(180deg, #64748B, #475569); }
+        .severity-indicator.gas { background: linear-gradient(180deg, #06B6D4, #0891B2); }
+
+        .severity-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.625rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .severity-badge.critical { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .severity-badge.high { background: rgba(249, 115, 22, 0.15); color: #F97316; border: 1px solid rgba(249, 115, 22, 0.3); }
+        .severity-badge.medium { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .severity-badge.low { background: rgba(59, 130, 246, 0.15); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .severity-badge.info { background: rgba(100, 116, 139, 0.15); color: #94A3B8; border: 1px solid rgba(100, 116, 139, 0.3); }
+        .severity-badge.informational { background: rgba(100, 116, 139, 0.15); color: #94A3B8; border: 1px solid rgba(100, 116, 139, 0.3); }
+        .severity-badge.gas { background: rgba(6, 182, 212, 0.15); color: #06B6D4; border: 1px solid rgba(6, 182, 212, 0.3); }
+
+        .finding-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 0.5rem;
+        }
+
+        .finding-swc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .finding-body {
+            padding: 1rem 1.25rem;
+        }
+
+        .finding-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .finding-lines {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            color: var(--primary-light);
+        }
+
+        /* Detail Row */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Premium Footer */
+        .premium-footer {
+            padding: 0 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .footer-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .footer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .footer-seal {
+            flex-shrink: 0;
+        }
+
+        .seal-image {
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .seal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(248, 244, 66, 0.3));
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        .footer-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-disclaimer {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Download Button - Hidden in IPFS version */
+        .download-section {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Section Title */
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(180deg, var(--primary), #8B5CF6);
+            border-radius: 2px;
+        }
+
+        /* Executive Summary */
+        .executive-summary {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .summary-text {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Print Styles */
+        @media print {
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                color: #1a1a1a !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body::before, body::after {
+                display: none !important;
+            }
+
+            .page-container {
+                background: white !important;
+            }
+
+            .download-section {
+                display: none !important;
+            }
+
+            /* Critical: Prevent page breaks inside cards and findings */
+            .premium-card {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .finding-card {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-bottom: 1rem !important;
+            }
+
+            /* Keep summary with its title */
+            .executive-summary {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Section headers should never break from content below */
+            .section-title {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Keep section headers with at least first item */
+            section {
+                break-inside: auto !important;
+                page-break-inside: auto !important;
+            }
+
+            section > h2 {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+
+            /* Threat grid should stay together if possible */
+            .threat-grid {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Footer can break if needed */
+            .premium-footer {
+                break-inside: auto !important;
+                page-break-inside: auto !important;
+            }
+
+            /* Header should not break */
+            .premium-header {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Orphan/widow control */
+            p, h1, h2, h3, h4, h5, h6 {
+                orphans: 3;
+                widows: 3;
+            }
+
+            /* Make all cards light for print */
+            .premium-card, .finding-card, .executive-summary {
+                background: rgba(248, 249, 250, 0.95) !important;
+                border: 1px solid #e0e0e0 !important;
+            }
+
+            .card-header, .finding-header {
+                background: rgba(248, 249, 250, 0.95) !important;
+                border-bottom: 1px solid #d0d0d0 !important;
+            }
+
+            .card-body, .finding-body {
+                background: rgba(248, 249, 250, 0.95) !important;
+            }
+
+            /* Override all dark backgrounds */
+            main, section, div {
+                background: transparent !important;
+            }
+
+            main.max-w-5xl {
+                background: transparent !important;
+            }
+
+            /* Text colors for print - ensure all text is visible */
+            .card-header h2, .finding-title, .section-title {
+                color: #1a1a1a !important;
+                -webkit-text-fill-color: #1a1a1a !important;
+            }
+
+            .brand-name, .report-type {
+                color: #1a1a1a !important;
+                -webkit-text-fill-color: #1a1a1a !important;
+                background: none !important;
+            }
+
+            .detail-label {
+                color: #666666 !important;
+            }
+
+            .detail-value, .finding-description {
+                color: #1a1a1a !important;
+            }
+
+            .footer-disclaimer, .footer-title {
+                color: #4a4a4a !important;
+            }
+
+            .finding-swc, .threat-label {
+                color: #666666 !important;
+            }
+
+            /* Override all CSS variables and inline styles for print */
+            * {
+                color: inherit !important;
+            }
+
+            p, span, div, strong, em {
+                color: #1a1a1a !important;
+            }
+
+            .score-number, .score-label {
+                color: #1a1a1a !important;
+            }
+
+            .summary-text, .summary-text strong {
+                color: #1a1a1a !important;
+            }
+
+            /* Header adjustments */
+            .premium-header {
+                background: #f0f4ff !important;
+                border-bottom: 2px solid #3B82F6 !important;
+            }
+
+            .premium-header::after {
+                display: none !important;
+            }
+
+            /* Score ring - make visible */
+            .score-ring svg circle[stroke="rgba(255,255,255,0.1)"] {
+                stroke: #e0e0e0 !important;
+            }
+
+            .summary-text {
+                color: #374151 !important;
+            }
+
+            /* Threat pills */
+            .threat-pill {
+                background: #f8f9fa !important;
+                border: 2px solid #e0e0e0 !important;
+            }
+
+            .threat-pill::before {
+                height: 4px !important;
+            }
+
+            /* Footer */
+            .premium-footer {
+                padding: 2rem 0 !important;
+            }
+
+            .footer-card {
+                background: #f8f9fa !important;
+                border: 1px solid #e0e0e0 !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+
+            .footer-card::before {
+                display: none !important;
+            }
+
+            /* Severity badges */
+            .severity-badge.critical {
+                background: #fee2e2 !important;
+                color: #991b1b !important;
+                border: 1px solid #ef4444 !important;
+            }
+
+            .severity-badge.high {
+                background: #fed7aa !important;
+                color: #9a3412 !important;
+                border: 1px solid #f97316 !important;
+            }
+
+            .severity-badge.medium {
+                background: #fef3c7 !important;
+                color: #92400e !important;
+                border: 1px solid #f59e0b !important;
+            }
+
+            .severity-badge.low {
+                background: #dbeafe !important;
+                color: #1e40af !important;
+                border: 1px solid #3b82f6 !important;
+            }
+
+            .severity-badge.info, .severity-badge.informational {
+                background: #f1f5f9 !important;
+                color: #334155 !important;
+                border: 1px solid #64748b !important;
+            }
+
+            .severity-badge.gas {
+                background: #cffafe !important;
+                color: #155e75 !important;
+                border: 1px solid #06b6d4 !important;
+            }
+
+            /* Finding lines indicator */
+            .finding-lines {
+                background: #eff6ff !important;
+                border: 1px solid #bfdbfe !important;
+                color: #1e40af !important;
+            }
+
+            /* Code snippets */
+            code {
+                background: #f1f5f9 !important;
+                color: #1e3a8a !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+
+            .section-title {
+                break-after: avoid;
+                page-break-after: avoid;
+            }
+
+            .threat-grid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .section-title::before {
+                background: linear-gradient(180deg, #3B82F6, #1e40af) !important;
+            }
+
+            /* Ensure proper spacing and no awkward breaks */
+            main {
+                page-break-before: auto !important;
+            }
+
+            /* Individual detail rows should not break */
+            .detail-row {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Score container should stay together */
+            .score-container {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Threat pills should not break individually */
+            .threat-pill {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Allow findings section to span pages naturally */
+            section:has(.finding-card) {
+                break-inside: auto !important;
+                page-break-inside: auto !important;
+            }
+
+            /* But keep individual findings together */
+            .finding-card {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-bottom: 1rem !important;
+            }
+
+            /* Footer card should stay together */
+            .footer-card {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+
+        <!-- Premium Header -->
+        <header class="premium-header">
+            <div class="max-w-5xl mx-auto px-6">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <img src="/ss-icon.svg" alt="SmartSentinels Logo" />
+                    </div>
+                    <div class="brand-text">
+                        <div class="brand-name">SmartSentinels</div>
+                        <div class="report-type">AI Audit Report</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-5xl mx-auto px-6 py-8">
+
+            <!-- Contract Details Card with Score -->
+            <div class="premium-card mb-8">
+                <div class="card-header">
+                    <div class="card-header-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <h2>Contract Details</h2>
+                </div>
+                <div class="card-body">
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <!-- Details Section -->
+                        <div class="flex-1">
+                            <div class="detail-row">
+                                <span class="detail-label">Contract Name</span>
+                                <span class="detail-value">${contractName}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Solidity Version</span>
+                                <span class="detail-value">${version}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Audit Engine</span>
+                                <span class="detail-value">SmartSentinels AI</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Audit Date</span>
+                                <span class="detail-value">${currentDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">TX Hash</span>
+                                <a href="https://bscscan.com/tx/${transactionHash}" target="_blank" class="detail-value" style="font-family: monospace; font-size: 0.875rem; color: var(--primary); text-decoration: none; transition: opacity 0.2s;">${shortTxHash}</a>
+                            </div>
+                        </div>
+                        <!-- Score Section -->
+                        <div class="flex-shrink-0">
+                            <div class="score-container" style="margin: 0;">
+                                <div class="score-ring">
+                                    <svg width="180" height="180" viewBox="0 0 180 180">
+                                        <!-- Background circle -->
+                                        <circle cx="90" cy="90" r="80" stroke="rgba(255,255,255,0.1)" stroke-width="12" fill="none"/>
+                                        <!-- Progress circle -->
+                                        <circle cx="90" cy="90" r="80" stroke="url(#scoreGradient)" stroke-width="12" fill="none"
+                                            stroke-dasharray="502.4" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round"/>
+                                        <defs>
+                                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" stop-color="${scoreColor}"/>
+                                                <stop offset="100%" stop-color="${scoreColor}"/>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <div class="score-value">
+                                        <span class="score-number">${securityScore}</span>
+                                        <span class="score-label">out of 100</span>
+                                    </div>
+                                </div>
+                                <div class="score-badge">${scoreGrade}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Executive Summary Section (Separate) -->
+            <section class="mb-8">
+                <h2 class="section-title">Executive Summary</h2>
+                <div class="executive-summary">
+                    <p class="summary-text">${overallAssessment}</p>
+                </div>
+            </section>
+
+            <!-- Threat Summary Section -->
+            <section class="mb-8">
+                <h2 class="section-title">Vulnerability Summary</h2>
+                <div class="threat-grid">
+                    <div class="threat-pill critical">
+                        <div class="threat-count">${vulnerabilityBreakdown.Critical}</div>
+                        <div class="threat-label">Critical</div>
+                    </div>
+                    <div class="threat-pill high">
+                        <div class="threat-count">${vulnerabilityBreakdown.High}</div>
+                        <div class="threat-label">High</div>
+                    </div>
+                    <div class="threat-pill medium">
+                        <div class="threat-count">${vulnerabilityBreakdown.Medium}</div>
+                        <div class="threat-label">Medium</div>
+                    </div>
+                    <div class="threat-pill low">
+                        <div class="threat-count">${vulnerabilityBreakdown.Low}</div>
+                        <div class="threat-label">Low</div>
+                    </div>
+                    <div class="threat-pill info">
+                        <div class="threat-count">${vulnerabilityBreakdown.Informational}</div>
+                        <div class="threat-label">Info</div>
+                    </div>
+                    <div class="threat-pill gas">
+                        <div class="threat-count">${vulnerabilityBreakdown.Gas}</div>
+                        <div class="threat-label">Gas</div>
+                    </div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 1rem;">
+                    Total of <strong style="color: var(--text-primary);">${totalFindings} findings</strong> identified across all severity levels.
+                </p>
+            </section>
+
+            <!-- Detailed Findings Section -->
+            <section class="mb-8">
+                <h2 class="section-title">Detailed Findings</h2>
+
+                ${sortedVulnerabilities.map(vuln => {
+                  const severityClass = vuln.severity.toLowerCase();
+                  const lineNumbersDisplay = vuln.lineNumbers && vuln.lineNumbers.length > 0 
+                    ? `<div class="finding-lines">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        Lines: ${vuln.lineNumbers.join(', ')}
+                      </div>`
+                    : '';
+
+                  return `<div class="finding-card">
+                    <div class="finding-header">
+                        <div class="severity-indicator ${severityClass}"></div>
+                        <div class="flex-1">
+                            <span class="severity-badge ${severityClass}">${vuln.severity}</span>
+                            <h3 class="finding-title">${vuln.title}</h3>
+                            ${vuln.swcId ? `<span class="finding-swc">${vuln.swcId}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="finding-body">
+                        <p class="finding-description">${vuln.description}</p>
+                        ${lineNumbersDisplay}
+                    </div>
+                </div>`;
+                }).join('')}
+
+            </section>
+
+        </main>
+
+        <!-- Premium Footer -->
+        <footer class="premium-footer">
+            <div class="max-w-5xl mx-auto px-6">
+                <div class="footer-card">
+                    <div class="footer-content">
+                        <div class="footer-seal">
+                            <div class="seal-image">
+                                <img src="/ssHoloNew.svg" alt="SmartSentinels Verified" />
+                            </div>
+                        </div>
+                        <div class="footer-text">
+                            <div class="footer-title">SmartSentinels Verified Audit</div>
+                            <p class="footer-disclaimer">
+                                This report was generated by SmartSentinels AI Audit Engine using deterministic analysis based on the EEA EthTrust Security Levels Specification and Smart Contract Weakness Classification (SWC) Registry. While this analysis provides comprehensive automated security assessment, it is recommended to complement AI findings with additional review approaches for maximum assurance. This report does not constitute financial advice or guarantee of security.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Verification Badge -->
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">
+                                Verify on IPFS: <a href="https://ipfs.io/ipfs/QmX7AbCdEfGhIjKlMnOpQrStUvWxYz1234567890123kF2" target="_blank" style="font-family: monospace; color: var(--primary); text-decoration: none; transition: opacity 0.2s;">QmX7...3kF2</a>
+                            </span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);">Powered by</span>
+                            <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">SmartSentinels</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Download Section -->
+        <div class="download-section">
+            <button class="download-btn" onclick="window.print()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Download PDF Report
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>`;
 };
 
 // --- 6. Main Audit Feature Component ---
@@ -1011,7 +2136,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                         topP: 0.1,           // Restrictive sampling
                         topK: 1,             // Most probable token only
                         candidateCount: 1,
-                        maxOutputTokens: 8192,
+                        maxOutputTokens: 16384,
                         responseMimeType: "application/json",
                         responseSchema: AUDIT_REPORT_SCHEMA,
                     },
@@ -1036,7 +2161,69 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 throw new Error(`AI generated no content. Reason: ${reason}`);
             }
 
-            const auditData = JSON.parse(content.trim());
+            // Try to parse JSON with error recovery
+            let auditData;
+            try {
+                auditData = JSON.parse(content.trim());
+            } catch (parseError) {
+                console.warn('Initial JSON parse failed, attempting repair...', parseError);
+                
+                // Try to extract JSON from markdown code blocks if present
+                let cleanedContent = content.trim();
+                if (cleanedContent.startsWith('```json')) {
+                    cleanedContent = cleanedContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+                } else if (cleanedContent.startsWith('```')) {
+                    cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+                }
+                
+                // Try to fix common JSON issues
+                // 1. Fix truncated line number arrays (most common issue)
+                // Look for incomplete arrays like: [1, 2, 3, 4, 5, 138 (no closing bracket)
+                cleanedContent = cleanedContent.replace(/(\[\s*\d+(?:\s*,\s*\d+)*\s*,?\s*)\d+\s*$/g, '$1]');
+                
+                // 2. Remove trailing commas before closing brackets
+                cleanedContent = cleanedContent.replace(/,(\s*[}\]])/g, '$1');
+                
+                // 3. Fix incomplete string values at the end of JSON
+                // Look for: "description": "some text that got cut (no closing quote)
+                cleanedContent = cleanedContent.replace(/"([^"]+)$/, '"$1"');
+                
+                // 4. Fix unclosed strings at the end (truncation)
+                const lastBrace = cleanedContent.lastIndexOf('}');
+                if (lastBrace > 0) {
+                    // Count quotes before last brace to see if we have unclosed string
+                    const beforeLastBrace = cleanedContent.substring(0, lastBrace);
+                    const quoteCount = (beforeLastBrace.match(/"/g) || []).length;
+                    if (quoteCount % 2 !== 0) {
+                        // Odd number of quotes - add closing quote
+                        cleanedContent = beforeLastBrace + '"' + cleanedContent.substring(lastBrace);
+                    }
+                }
+                
+                // 5. Ensure proper array/object closure
+                const openBraces = (cleanedContent.match(/{/g) || []).length;
+                const closeBraces = (cleanedContent.match(/}/g) || []).length;
+                const openBrackets = (cleanedContent.match(/\[/g) || []).length;
+                const closeBrackets = (cleanedContent.match(/\]/g) || []).length;
+                
+                for (let i = 0; i < openBrackets - closeBrackets; i++) {
+                    cleanedContent += ']';
+                }
+                for (let i = 0; i < openBraces - closeBraces; i++) {
+                    cleanedContent += '}';
+                }
+                
+                try {
+                    auditData = JSON.parse(cleanedContent);
+                    console.log('✅ JSON repair successful');
+                } catch (repairError) {
+                    console.error('❌ JSON repair failed:', repairError);
+                    console.error('Content preview:', content.substring(0, 500));
+                    console.error('Content end:', content.substring(content.length - 500));
+                    throw new Error(`Invalid JSON from AI: ${parseError instanceof Error ? parseError.message : 'Parse failed'}`);
+                }
+            }
+            
             return auditData;
 
         } catch (error) {
@@ -1053,6 +2240,8 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     }
     throw new Error("Max retries reached without successful API call.");
   };
+
+
 
     const handleSimpleAudit = async (paymentTxHash: `0x${string}`) => {
         console.log('🎯 handleSimpleAudit called with payment:', paymentTxHash);
@@ -1261,7 +2450,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         </div>
         <div className="w-fit">
           <input type="file" id="file-upload-ts" accept=".sol" style={{ display: 'none' }} onChange={handleFileUpload} />
-          <label htmlFor="file-upload-ts" className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-input rounded-md bg-background hover:bg-[#f8f422] hover:text-[#1f1f1f] cursor-pointer text-sm sm:text-base font-orbitron transition-colors">
+          <label htmlFor="file-upload-ts" className="flex items-center gap-2 px-3 sm:px-4 py-2 border border-input rounded-md bg-background hover:bg-blue-500 hover:text-white cursor-pointer text-sm sm:text-base font-orbitron transition-colors">
             <Upload size={14} />
             Upload .sol File
           </label>
@@ -1289,6 +2478,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
               `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB & Start Audit`
             }
           </Button>
+          
           <p className="text-sm text-gray-400 text-center">
             Payment of {servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB is required to run the AI Audit.
             <br />

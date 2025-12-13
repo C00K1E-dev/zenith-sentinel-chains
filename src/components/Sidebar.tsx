@@ -59,7 +59,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const myStatsItems: SidebarItem[] = useMemo(() => [
     { name: 'My NFTs', path: '/hub/my-nfts', icon: ImageIcon },
     { name: 'My Agents', path: '/hub/my-agents', icon: Bot },
-    { name: 'My Devices', path: '/hub/my-devices', icon: HardDrive },
+    { name: 'My Devices', path: '/hub/my-devices', icon: HardDrive, badge: 'Soon' },
     { name: 'My Rewards', path: '/hub/my-rewards', icon: Award },
   ], []);
 
@@ -239,6 +239,16 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                 {!collapsed && (
                   <>
                     <span className="flex-1">{item.name}</span>
+                    {item.badge && (
+                      <span className={cn(
+                        "px-2 py-0.5 text-xs rounded-full font-medium",
+                        item.badge === 'New'
+                          ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                          : "bg-primary/20 text-primary border border-primary/30"
+                      )}>
+                        {item.badge}
+                      </span>
+                    )}
                   </>
                 )}
 
@@ -246,6 +256,16 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                 {collapsed && (
                   <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
                     {item.name}
+                    {item.badge && (
+                      <span className={cn(
+                        "ml-2 px-2 py-0.5 text-xs rounded-full font-medium",
+                        item.badge === 'New'
+                          ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                          : "bg-primary/20 text-primary"
+                      )}>
+                        {item.badge}
+                      </span>
+                    )}
                   </div>
                 )}
               </Link>

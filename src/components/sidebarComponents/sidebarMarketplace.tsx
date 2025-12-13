@@ -133,11 +133,21 @@ const SidebarMarketplace = () => {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
             <ShoppingCart size={24} className="text-primary" />
           </div>
-          <h2 className="text-2xl font-orbitron font-bold">
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              AI Agent Marketplace
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-orbitron font-bold">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                AI Agent Marketplace
+              </span>
+            </h2>
+            <span className="px-3 py-1 text-xs font-orbitron font-bold bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 rounded-full text-primary">
+              SOON
             </span>
-          </h2>
+          </div>
+        </div>
+        <div className="glass-card p-4 mb-6 bg-blue-500/5 border-blue-500/20">
+          <p className="text-sm text-foreground">
+            <span className="font-semibold text-blue-400">Preview Mode:</span> These are example agents showing how this feature will look like. AI Agent Marketplace will be available in Q2/Q3 2026. Subject to change in accordance to development.
+          </p>
         </div>
       </motion.div>
 

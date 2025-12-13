@@ -97,9 +97,19 @@ const SidebarMyDevices = () => {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
             <HardDrive size={24} className="text-secondary" />
           </div>
-          <h2 className="text-2xl font-orbitron font-bold">
-            <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">My Devices</span>
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-orbitron font-bold">
+              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">My Devices</span>
+            </h2>
+            <span className="px-3 py-1 text-xs font-orbitron font-bold bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 rounded-full text-primary">
+              SOON
+            </span>
+          </div>
+        </div>
+        <div className="glass-card p-4 mb-6 bg-blue-500/5 border-blue-500/20">
+          <p className="text-sm text-foreground">
+            <span className="font-semibold text-blue-400">Preview Mode:</span> These are example devices showing how this feature will look like. Device registration and management will be available in Q2/Q3 2026. Subject to change in accordance to development.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>
@@ -206,7 +216,7 @@ const SidebarMyDevices = () => {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
                 <Sparkles size={16} className="text-primary" />
               </div>
-              <span className="text-sm text-foreground">Coming Q4 2025</span>
+              <span className="text-sm text-foreground">Coming Q2/Q3 2026</span>
             </div>
           </div>
         </motion.div>

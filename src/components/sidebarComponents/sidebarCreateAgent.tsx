@@ -349,12 +349,22 @@ PARAMETER custom_instructions """
 
             {/* Traditional AI Models Section */}
             <div className="glass-card p-6">
-              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2 text-foreground">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
-                  <Settings size={20} className="text-secondary" />
-                </div>
-                Custom AI Models
-              </h3>
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-xl font-semibold flex items-center gap-2 text-foreground">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center">
+                    <Settings size={20} className="text-secondary" />
+                  </div>
+                  Custom AI Models
+                </h3>
+                <span className="px-3 py-1 text-xs font-orbitron font-bold bg-gradient-to-r from-primary/20 to-secondary/20 border border-primary/30 rounded-full text-primary">
+                  SOON
+                </span>
+              </div>
+              <div className="glass-card p-4 mb-4 bg-blue-500/5 border-blue-500/20">
+                <p className="text-sm text-foreground">
+                  <span className="font-semibold text-blue-400">Preview Mode:</span> These are example AI models showing how this feature will look like. Custom AI model deployment will be available in Q2/Q3 2026. Subject to change in accordance to development.
+                </p>
+              </div>
               <p className="text-muted-foreground mb-6">
                 Select the AI model that best fits your agent's requirements. Each model has unique capabilities and performance characteristics.
               </p>

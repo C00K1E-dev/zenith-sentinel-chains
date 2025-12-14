@@ -144,7 +144,7 @@ const SecurityTicker = () => {
 
   if (dismissed) return null;
 
-  const tickerText = "� TIP: For best experience, use desktop devices when creating agents or managing transactions • 🛡️ SECURITY NOTICE: Make sure you're on the official SmartSentinels website → Check your URL bar shows smartsentinels.net ← Always verify before connecting your wallet. Beware of fake sites like .xyz .io .org .com — Only trust smartsentinels.net";
+  const tickerText = "� TIP: For best experience, use desktop devices • 🛡️ SECURITY NOTICE: Make sure you're on the official SmartSentinels website → Check your URL bar shows smartsentinels.net ← Always verify before connecting your wallet. Beware of fake sites like .xyz .io .org .com — Only trust smartsentinels.net";
 
   return (
     <motion.div

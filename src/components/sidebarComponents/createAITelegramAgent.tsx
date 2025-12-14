@@ -209,27 +209,19 @@ async function buildKnowledgeBase(
 }
 
 const CreateAITelegramAgent = () => {
-  // Thirdweb wallet connection (primary - works on mobile & desktop)
-  const thirdwebAccount = useActiveAccount();
-  const thirdwebAddress = thirdwebAccount?.address;
-  const thirdwebConnected = !!thirdwebAccount;
-  
-  // Wagmi wallet connection (fallback for desktop-only wallets)
-  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
-  
   const navigate = useNavigate();
   
-  // Unified wallet detection - prioritize thirdweb (works everywhere)
-  const isWalletConnected = React.useMemo(() => {
-    const connected = thirdwebConnected || wagmiConnected;
-    console.log('[WALLET] Recalculating connection:', connected, { thirdwebConnected, wagmiConnected });
-    return connected;
-  }, [thirdwebConnected, wagmiConnected]);
+  // Thirdweb wallet connection (primary - same as GenesisMint)
+  const account = useActiveAccount();
+  const isConnected = !!account;
+  const address = account?.address;
   
-  // Get wallet address - prioritize thirdweb
-  const walletAddress = React.useMemo(() => {
-    return thirdwebAddress || wagmiAddress;
-  }, [thirdwebAddress, wagmiAddress]);
+  // Wagmi wallet connection (fallback)
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+  
+  // Use thirdweb first (works on mobile), fallback to wagmi
+  const isWalletConnected = isConnected || wagmiConnected;
+  const walletAddress = address || wagmiAddress;
   
   const [step, setStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
@@ -274,14 +266,14 @@ const CreateAITelegramAgent = () => {
   // Debug wallet connection state
   React.useEffect(() => {
     console.log('[WALLET] Connection state:', {
-      thirdweb_connected: thirdwebConnected,
-      thirdweb_address: thirdwebAddress,
+      thirdweb_connected: isConnected,
+      thirdweb_address: address,
       wagmi_connected: wagmiConnected,
       wagmi_address: wagmiAddress,
       final_isWalletConnected: isWalletConnected,
       final_walletAddress: walletAddress
     });
-  }, [thirdwebConnected, thirdwebAddress, wagmiConnected, wagmiAddress, isWalletConnected, walletAddress]);
+  }, [isConnected, address, wagmiConnected, wagmiAddress, isWalletConnected, walletAddress]);
 
   const pricingOptions: PricingOption[] = [
     {
@@ -377,13 +369,13 @@ const CreateAITelegramAgent = () => {
         billingCycle, 
         amountWei: amountWei.toString(), 
         treasury: TREASURY_WALLET,
-        wallet: thirdwebConnected ? 'thirdweb' : 'wagmi',
-        thirdwebConnected,
-        wagmiConnected
+        wallet: isConnected ? 'thirdweb' : 'wagmi',
+        thirdweb_connected: isConnected,
+        wagmi_connected: wagmiConnected
       });
 
       // Prioritize thirdweb (works on mobile & desktop with WalletConnect)
-      if (thirdwebConnected && thirdwebAccount) {
+      if (isConnected && account) {
         console.log('[PAYMENT] Using thirdweb transaction (mobile/WalletConnect)');
         
         const usdtContract = getContract({
@@ -455,7 +447,7 @@ const CreateAITelegramAgent = () => {
       }
 
       console.log('[SUPABASE] Creating records for wallet:', walletAddress.substring(0, 10) + '...', 
-                  'via', thirdwebConnected ? 'thirdweb' : 'wagmi');
+                  'via', isConnected ? 'thirdweb' : 'wagmi');
 
       // 1. Get or create user in Supabase
       let user;
@@ -700,7 +692,7 @@ const CreateAITelegramAgent = () => {
         subscription_id: subscription.id,
         wallet: walletAddress,
         tx_hash: transactionHash,
-        wallet_type: thirdwebConnected ? 'thirdweb' : 'wagmi'
+        wallet_type: isConnected ? 'thirdweb' : 'wagmi'
       });
 
       // 6. Move to Step 4 (success)
@@ -1128,7 +1120,7 @@ const CreateAITelegramAgent = () => {
               <Wallet size={14} />
               <span className="font-mono">{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
               <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 rounded">
-                {thirdwebConnected ? '📱 Thirdweb' : '🖥️ Wagmi'}
+                {isConnected ? '📱 Thirdweb' : '🖥️ Wagmi'}
               </span>
             </div>
           )}

@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Upload, AlertCircle, Check, Loader, ChevronRight, Copy, Rocket, FileText, Palette, DollarSign, Eye, Wallet, ExternalLink } from 'lucide-react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useActiveAccount, useSendTransaction } from 'thirdweb/react';
+import { getContract, prepareContractCall, createThirdwebClient } from 'thirdweb';
 import { useNavigate } from 'react-router-dom';
 import { parseUnits } from 'viem';
 import { bsc } from 'wagmi/chains';
+import { bsc as bscThirdweb } from 'thirdweb/chains';
 import {
   USDT_CONTRACT_ADDRESS,
   TREASURY_WALLET,
@@ -24,6 +27,11 @@ import {
 } from '@/lib/supabase';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { toast } from 'sonner';
+
+// Initialize thirdweb client for mobile wallet support
+const thirdwebClient = createThirdwebClient({
+  clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
+});
 
 interface AgentConfig {
   email: string;
@@ -202,10 +210,16 @@ async function buildKnowledgeBase(
 
 const CreateAITelegramAgent = () => {
   const { address, isConnected, connector } = useAccount();
+  const thirdwebAccount = useActiveAccount(); // For mobile wallet support via thirdweb
   const navigate = useNavigate();
   
-  // Better connection detection for mobile wallets
-  const isWalletConnected = isConnected || (address && address.length > 0);
+  // Better connection detection for mobile wallets - check both wagmi AND thirdweb
+  const isWalletConnected = isConnected || 
+                           (address && address.length > 0) || 
+                           (thirdwebAccount && thirdwebAccount.address);
+  
+  // Get the actual wallet address from either wagmi or thirdweb
+  const walletAddress = address || thirdwebAccount?.address;
   
   const [step, setStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
@@ -235,12 +249,17 @@ const CreateAITelegramAgent = () => {
   const [agentId, setAgentId] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
-  // Wagmi hooks for payment
+  // Wagmi hooks for payment (desktop wallets)
   const { writeContract, data: hash, isPending: isTransferring } = useWriteContract();
   const { isSuccess: isTransferConfirmed, isLoading: isConfirming } = useWaitForTransactionReceipt({
     hash: hash as `0x${string}` | undefined,
     chainId: bsc.id,
   });
+
+  // Thirdweb hooks for payment (mobile wallets)
+  const { mutateAsync: sendThirdwebTx, data: thirdwebTxResult, isPending: isThirdwebPending } = useSendTransaction();
+  const [thirdwebTxHash, setThirdwebTxHash] = useState<string | null>(null);
+  const [isThirdwebConfirmed, setIsThirdwebConfirmed] = useState(false);
 
   const pricingOptions: PricingOption[] = [
     {
@@ -312,33 +331,67 @@ const CreateAITelegramAgent = () => {
   /**
    * Handle USDT payment - THE GATEKEEPER
    * This is the critical payment flow that gates agent deployment
+   * Supports both wagmi (desktop) and thirdweb (mobile) wallet connections
    */
   const handlePayment = async () => {
-    if (!isWalletConnected || !address) {
+    if (!isWalletConnected || !walletAddress) {
       setPaymentError('Please connect your wallet first');
       return;
     }
 
     try {
       setPaymentError(null);
-      setTxHash(null); // Clear old transaction
+      setTxHash(null);
+      setThirdwebTxHash(null);
+      setIsThirdwebConfirmed(false);
       setPaymentStep(PaymentStep.TRANSFERRING);
 
       // Get payment amount for selected tier and billing cycle
       const amountUSDT = PRICING_TIERS[config.pricingTier].usd.toString();
       const amountWei = parseUnits(amountUSDT, 18);
 
-      console.log('[PAYMENT] Initiating transfer:', { amountUSDT, billingCycle, amountWei: amountWei.toString(), treasury: TREASURY_WALLET });
-
-      // Initiate USDT transfer to treasury
-      writeContract({
-        address: USDT_CONTRACT_ADDRESS,
-        abi: ERC20_ABI,
-        functionName: 'transfer',
-        args: [TREASURY_WALLET, amountWei],
-        chain: bsc,
-        account: address,
+      console.log('[PAYMENT] Initiating transfer:', { 
+        amountUSDT, 
+        billingCycle, 
+        amountWei: amountWei.toString(), 
+        treasury: TREASURY_WALLET,
+        wallet: thirdwebAccount ? 'thirdweb' : 'wagmi'
       });
+
+      // Use thirdweb transaction if connected via thirdweb (mobile wallets)
+      if (thirdwebAccount) {
+        console.log('[PAYMENT] Using thirdweb transaction (mobile/WalletConnect)');
+        
+        const usdtContract = getContract({
+          client: thirdwebClient,
+          chain: bscThirdweb,
+          address: USDT_CONTRACT_ADDRESS,
+        });
+
+        const transferTx = prepareContractCall({
+          contract: usdtContract,
+          method: 'function transfer(address,uint256) returns (bool)',
+          params: [TREASURY_WALLET, amountWei],
+        } as any);
+
+        const result = await sendThirdwebTx(transferTx);
+        console.log('[PAYMENT] Thirdweb transaction sent:', result.transactionHash);
+        setThirdwebTxHash(result.transactionHash);
+        setIsThirdwebConfirmed(true);
+        setTxHash(result.transactionHash);
+        
+      } else {
+        // Use wagmi transaction if connected via wagmi (desktop wallets)
+        console.log('[PAYMENT] Using wagmi transaction (desktop/MetaMask)');
+        writeContract({
+          address: USDT_CONTRACT_ADDRESS,
+          abi: ERC20_ABI,
+          functionName: 'transfer',
+          args: [TREASURY_WALLET, amountWei],
+          chain: bsc,
+          account: walletAddress as `0x${string}`,
+        });
+      }
     } catch (error: any) {
       console.error('Payment error:', error);
       setPaymentError(error.message || 'Payment failed. Please try again.');
@@ -347,38 +400,47 @@ const CreateAITelegramAgent = () => {
   };
 
   /**
-   * Listen for payment confirmation and create agent + subscription
+   * Listen for payment confirmation (wagmi or thirdweb) and create agent + subscription
    */
   React.useEffect(() => {
-    console.log('[PAYMENT] Confirmation check:', { 
-      isTransferConfirmed, 
-      isConfirming,
-      hash: hash ? hash.substring(0, 10) + '...' : null,
-      address: address ? address.substring(0, 10) + '...' : null,
-      paymentStep 
-    });
-    
-    if (isTransferConfirmed && hash && address && paymentStep !== PaymentStep.TRANSFER_CONFIRMED) {
-      console.log('[PAYMENT] Payment confirmed! Hash:', hash);
+    // Check wagmi confirmation (desktop wallets)
+    if (isTransferConfirmed && hash && walletAddress && paymentStep !== PaymentStep.TRANSFER_CONFIRMED) {
+      console.log('[PAYMENT] Wagmi payment confirmed! Hash:', hash);
       handlePaymentConfirmed(hash);
     }
-  }, [isTransferConfirmed, hash, address, paymentStep]);
+    
+    // Check thirdweb confirmation (mobile wallets)
+    if (isThirdwebConfirmed && thirdwebTxHash && walletAddress && paymentStep !== PaymentStep.TRANSFER_CONFIRMED) {
+      console.log('[PAYMENT] Thirdweb payment confirmed! Hash:', thirdwebTxHash);
+      handlePaymentConfirmed(thirdwebTxHash as `0x${string}`);
+    }
+  }, [isTransferConfirmed, hash, isThirdwebConfirmed, thirdwebTxHash, walletAddress, paymentStep]);
 
   /**
    * After payment confirmed, create agent and subscription
+   * Works with both wagmi (desktop) and thirdweb (mobile) wallet addresses
    */
   const handlePaymentConfirmed = async (transactionHash: `0x${string}`) => {
     try {
       setPaymentStep(PaymentStep.TRANSFER_CONFIRMED);
       setTxHash(transactionHash);
 
+      // Verify wallet address is available
+      if (!walletAddress) {
+        throw new Error('Wallet address not available. Please reconnect your wallet.');
+      }
+
+      console.log('[SUPABASE] Creating records for wallet:', walletAddress.substring(0, 10) + '...', 
+                  'via', thirdwebAccount ? 'thirdweb (mobile)' : 'wagmi (desktop)');
+
       // 1. Get or create user in Supabase
       let user;
       try {
-        user = await getOrCreateUser(address!);
+        user = await getOrCreateUser(walletAddress);
         if (!user) {
           throw new Error('Failed to create user account - RLS policy may be blocking. Check Supabase dashboard.');
         }
+        console.log('[SUPABASE] User record confirmed:', user.id);
         
         // Update user email if provided
         if (config.email) {
@@ -471,6 +533,7 @@ const CreateAITelegramAgent = () => {
         if (!subscription) {
           throw new Error('Failed to create subscription record');
         }
+        console.log('[SUPABASE] Subscription created:', subscription.id, 'expires:', subscription.expiry_date);
       } catch (error: any) {
         console.error('[SUBSCRIPTION] Error:', error);
         throw new Error(`Subscription creation failed: ${error.message || 'Unknown error'}`);
@@ -605,6 +668,16 @@ const CreateAITelegramAgent = () => {
         console.error('[WEBHOOK] Failed to register webhook:', error);
         throw new Error('Failed to deploy bot. Please contact support.');
       }
+
+      // Final verification: Confirm all database records were created successfully
+      console.log('[SUPABASE] ✅ Deployment complete:', {
+        user_id: user.id,
+        agent_id: agent.id,
+        subscription_id: subscription.id,
+        wallet: walletAddress,
+        tx_hash: transactionHash,
+        wallet_type: thirdwebAccount ? 'thirdweb (mobile)' : 'wagmi (desktop)'
+      });
 
       // 6. Move to Step 4 (success)
       setStep(4);
@@ -962,7 +1035,7 @@ const CreateAITelegramAgent = () => {
           {isWalletConnected && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Wallet size={14} />
-              <span className="font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+              <span className="font-mono">{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
             </div>
           )}
         </div>
@@ -1011,13 +1084,13 @@ const CreateAITelegramAgent = () => {
         {/* Payment Button */}
         <button
           onClick={paymentStep === PaymentStep.ERROR ? resetPaymentState : handlePayment}
-          disabled={!isWalletConnected || isTransferring || isConfirming || paymentStep === PaymentStep.TRANSFER_CONFIRMED}
+          disabled={!isWalletConnected || isTransferring || isConfirming || isThirdwebPending || paymentStep === PaymentStep.TRANSFER_CONFIRMED}
           className="w-full px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
         >
-          {isTransferring || isConfirming ? (
+          {isTransferring || isConfirming || isThirdwebPending ? (
             <>
               <Loader size={18} className="animate-spin" />
-              {isTransferring ? 'Confirm in Wallet...' : 'Confirming Payment...'}
+              {(isTransferring || isThirdwebPending) ? 'Confirm in Wallet...' : 'Confirming Payment...'}
             </>
           ) : paymentStep === PaymentStep.TRANSFER_CONFIRMED ? (
             <>

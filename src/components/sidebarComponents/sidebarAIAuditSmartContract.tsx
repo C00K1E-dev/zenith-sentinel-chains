@@ -4,6 +4,8 @@ import { Textarea } from '../ui/textarea';
 import { Button } from '../ui/button';
 import styles from './sidebarAIAuditSmartContract.module.css';
 import auditReportStyles from './auditReportStyles.css?raw';
+import { ContractAddressInput } from '../ContractAddressInput';
+import type { ContractSourceCode } from '../../services/etherscan';
 
 // --- IMPORTS FOR WALLET AND TOKEN TRANSFER ---
 import { useActiveAccount, useReadContract, useSendTransaction } from 'thirdweb/react';
@@ -1085,11 +1087,15 @@ const generateAuditHTML = (auditData: AuditData): string => {
             line-height: 1.7;
         }
 
-        /* Download Button - Hidden in IPFS version */
+        /* Download Button - Visible by default, hidden in IPFS via class */
         .download-section {
-            display: none;
             text-align: center;
             padding: 2rem;
+        }
+
+        /* Hide download button when IPFS class is present */
+        .ipfs-version .download-section {
+            display: none;
         }
 
         .download-btn {
@@ -1135,7 +1141,7 @@ const generateAuditHTML = (auditData: AuditData): string => {
 
         /* Executive Summary */
         .executive-summary {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 1.5rem;
@@ -1696,6 +1702,9 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
     const [statusMessage, setStatusMessage] = useState("SmartSentinels AI Audit Agent is here for you! Paste your Solidity code and run the audit.");
     const [remediation, setRemediation] = useState<RemediationState>({ title: '', code: '', loading: false });
     
+    // TEST MODE - No payments, no blockchain transactions, no token minting
+    const [testMode, setTestMode] = useState(false);
+    
     // Processing states
     const [isProcessing, setIsProcessing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -2066,12 +2075,15 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
             setIpfsUploading(true);
             setIpfsUploadResult(null);
 
+            // Generate HTML with IPFS-specific class to hide download button
             const htmlContent = generateAuditHTML(auditData);
+            // Add ipfs-version class to body tag
+            const ipfsHtmlContent = htmlContent.replace('<body>', '<body class="ipfs-version">');
             const contractName = auditData.contractName || 'Contract';
 
             console.log('🔄 Starting IPFS upload for audit report...');
             
-            const result = await uploadAuditReportToIPFS(htmlContent, contractName, auditData);
+            const result = await uploadAuditReportToIPFS(ipfsHtmlContent, contractName, auditData);
             
             setIpfsUploadResult(result);
 
@@ -2113,6 +2125,81 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
                 }
             };
             reader.readAsText(file);
+        }
+    };
+
+    // Handler for contract address fetch
+    const handleContractCodeFetched = (sourceCode: string, contractInfo: ContractSourceCode) => {
+        setCode(sourceCode);
+        setAuditData(null);
+        setApprovalTxHash(undefined);
+        setPaymentTxHash(undefined);
+        setIsProcessing(false);
+        setCurrentTransactionType(null);
+        setRemediation({ title: '', code: '', loading: false });
+        setStatusMessage(`✅ Loaded ${contractInfo.contractName} (${contractInfo.compilerVersion}) from blockchain. Ready for audit.`);
+    };
+
+    // TEST MODE HANDLER - Run audit without payment or minting
+    const handleTestModeAudit = async () => {
+        if (!code.trim()) {
+            setStatusMessage('Please upload or fetch a smart contract first');
+            return;
+        }
+
+        setIsProcessing(true);
+        setAuditData(null);
+        setAuditCompletedTxHash(null);
+        setStatusMessage('🧪 TEST MODE: AI Agent analyzing contract (No payment, No minting)...');
+
+        try {
+            const payload = {
+                contents: [{ parts: [{ text: `Analyze: \n${code}` }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const structuredData = await callGeminiApi(payload);
+            
+            // Use a test transaction hash
+            const testTxHash = `0x${'0'.repeat(64)}` as `0x${string}`; // All zeros = test mode
+            structuredData.transactionHash = testTxHash;
+
+            // Calculate vulnerability breakdown from vulnerabilities array
+            const breakdown = {
+                Critical: 0,
+                High: 0,
+                Medium: 0,
+                Low: 0,
+                Informational: 0,
+                Gas: 0
+            };
+
+            if (structuredData.vulnerabilities && Array.isArray(structuredData.vulnerabilities)) {
+                structuredData.vulnerabilities.forEach((vuln: any) => {
+                    const severityLower = vuln.severity?.toLowerCase();
+                    if (severityLower === 'critical') breakdown.Critical++;
+                    else if (severityLower === 'high') breakdown.High++;
+                    else if (severityLower === 'medium') breakdown.Medium++;
+                    else if (severityLower === 'low') breakdown.Low++;
+                    else if (severityLower === 'informational') breakdown.Informational++;
+                    else if (severityLower === 'gas') breakdown.Gas++;
+                });
+            }
+
+            const correctedData = {
+                ...structuredData,
+                vulnerabilityBreakdown: { ...breakdown }
+            };
+
+            setAuditData(correctedData);
+            setIsProcessing(false);
+            setStatusMessage("🧪 TEST MODE: Audit completed successfully! (No tokens minted)");
+            setAuditCompletedTxHash(testTxHash);
+        } catch (error: any) {
+            console.error('❌ Test audit failed:', error);
+            setStatusMessage('Test audit failed: ' + error.message);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -2413,32 +2500,146 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
         </span>
       </h1>
       <div className="space-y-4 sm:space-y-6">
-        {/* AI Training Information */}
-        <div className="audit-training-info bg-[#1f1f1f] border border-yellow-300/30 rounded-lg p-4 sm:p-6 md:p-8 mb-6 text-center shadow-lg shadow-yellow-500/10">
-          <h4 className="text-primary mb-3 sm:mb-4 text-lg sm:text-xl font-semibold flex items-center justify-center gap-2 sm:gap-3">
-            <Brain size={20} className="text-primary" />
-            SmartSentinels AI Training
-          </h4>
-          <div className="text-white text-sm sm:text-base leading-relaxed max-w-4xl mx-auto">
-            <p className="mb-3 sm:mb-4">
-              <strong className="text-primary">Research-Driven Training:</strong> <span>This AI agent was trained on comprehensive security research from the</span>
-              <a href="https://entethalliance.github.io/eta-registry/security-levels-spec.html#sec-2-unicode"
-                 target="_blank"
-                 rel="noopener noreferrer"
-                 className="text-primary underline hover:text-yellow-300 ml-1">
-                Ethereum Technical Alliance (ETA) Registry
+        {/* Premium AI Audit Service Banner */}
+        <div className="glass-card p-6 sm:p-8 mb-6 relative overflow-hidden">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
+              <Brain size={28} className="text-primary" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-xl sm:text-2xl font-semibold font-orbitron mb-2 text-white">
+                SmartSentinels AI Audit Engine
+              </h4>
+              <p className="text-sm text-muted-foreground">
+                Enterprise-grade security analysis powered by advanced AI
+              </p>
+            </div>
+          </div>
+
+          {/* Key Features Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            {/* Multi-Chain Support */}
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h5 className="font-semibold text-foreground">36 Chains Supported</h5>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Audit contracts across <strong className="text-primary">36 EVM-compatible blockchains</strong> including Ethereum, Polygon, Arbitrum, Base, and more. All mainnets ready for production audits.
+              </p>
+            </div>
+
+            {/* ETA Registry Training */}
+            <div className="bg-secondary/5 border border-secondary/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-secondary/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <h5 className="font-semibold text-foreground">Industry Standards</h5>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Trained on <a href="https://entethalliance.github.io/eta-registry/security-levels-spec.html" target="_blank" rel="noopener noreferrer" className="text-secondary hover:underline">ETA Registry</a> security specifications and <strong className="text-secondary">37 SWC vulnerabilities</strong> for comprehensive analysis.
+              </p>
+            </div>
+
+            {/* IPFS Storage */}
+            <div className="bg-accent/5 border border-accent/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <h5 className="font-semibold text-foreground">Decentralized Reports</h5>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Permanently store audit reports on <strong className="text-accent">IPFS</strong> for immutable, verifiable proof. Download professional PDF reports anytime.
+              </p>
+            </div>
+
+            {/* Automated Analysis */}
+            <div className="bg-success/5 border border-success/20 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-success/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                </div>
+                <h5 className="font-semibold text-foreground">Detailed Analysis</h5>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Comprehensive <strong className="text-success">vulnerability breakdown</strong> with severity levels, line numbers, and security scores based on industry standards.
+              </p>
+            </div>
+          </div>
+
+          {/* Launchpad Partnership CTA */}
+          <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-lg p-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3 flex-1">
+                <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <div className="text-sm text-foreground leading-relaxed">
+                  <strong className="text-primary">Partner with SmartSentinels:</strong> We're looking to collaborate with launchpads and development teams to integrate our AI audit service. Offer automated security audits to your projects before launch.
+                </div>
+              </div>
+              <a
+                href="mailto:contact@smartsentinels.io?subject=Launchpad%20Partnership%20Inquiry&body=Hello%20SmartSentinels%20Team,%0D%0A%0D%0AI'm%20interested%20in%20partnering%20to%20integrate%20your%20AI%20audit%20service.%0D%0A%0D%0AName:%0D%0AProject/Company:%0D%0AWebsite:%0D%0A%0D%0ABest%20regards"
+                className="flex-shrink-0 px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded-lg font-medium text-sm transition-colors flex items-center gap-2 shadow-lg"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Contact Us
               </a>
-              <span>, ensuring industry-standard vulnerability detection.</span>
-            </p>
-            <p className="mb-3 sm:mb-4">
-              <strong className="text-primary">SWC Registry Integration:</strong> <span>Trained on all <span className="text-primary">37 Smart Contract Weakness Classification</span> (SWC) vulnerabilities
-              with detailed analysis patterns and remediation strategies.</span>
-            </p>
-            <p className="mb-0">
-              <strong className="text-primary">Report Features:</strong> <span>After audit completion, download your comprehensive PDF report or upload it to IPFS for permanent, decentralized storage with verifiable proof of audit.</span>
-            </p>
+            </div>
           </div>
         </div>
+
+        {/* TEST MODE TOGGLE - HIDDEN FOR PRODUCTION (Uncomment to enable testing) */}
+        {false && (
+          <div className="p-4 bg-gradient-to-r from-orange-900/30 to-red-900/30 border-2 border-orange-500/50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="h-6 w-6 text-orange-400" />
+                <div>
+                  <h3 className="text-base font-semibold font-orbitron text-orange-300">Test Mode</h3>
+                  <p className="text-xs text-orange-200/80">Run audits without payment or token minting</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTestMode(!testMode)}
+                className={`
+                  relative inline-flex h-8 w-14 items-center rounded-full transition-colors
+                  ${testMode ? 'bg-orange-500' : 'bg-gray-600'}
+                `}
+              >
+                <span
+                  className={`
+                    inline-block h-6 w-6 transform rounded-full bg-white transition-transform
+                    ${testMode ? 'translate-x-7' : 'translate-x-1'}
+                  `}
+                />
+              </button>
+            </div>
+            {testMode && (
+              <div className="mt-3 p-3 bg-orange-950/50 rounded border border-orange-500/30">
+                <p className="text-xs text-orange-200">
+                  ⚠️ <strong>TEST MODE ACTIVE:</strong> Audits will run without blockchain transactions.
+                  No BNB payment required. No SSTL tokens will be minted. Reports are still generated.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div>
           <label className="block text-sm sm:text-base font-medium mb-2 font-orbitron">Paste Solidity Code:</label>
           <Textarea
@@ -2456,33 +2657,79 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
           </label>
         </div>
 
+        {/* Contract Address Input Section */}
+        <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-700">
+          <div className="flex items-center gap-2 mb-3">
+            <Search className="h-5 w-5 text-blue-400" />
+            <h3 className="text-sm sm:text-base font-semibold font-orbitron">Or Audit by Contract Address</h3>
+          </div>
+          <ContractAddressInput 
+            onCodeFetched={handleContractCodeFetched}
+            disabled={isProcessing || isLoading}
+          />
+        </div>
+
         {/* Payment Method Display */}
         <div className="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
           <p className="text-sm text-gray-300 font-orbitron mb-2">
-            💳 Payment Method: <span className="text-neon font-bold">BNB (Native)</span>
+            💳 Payment Method: <span className="text-neon font-bold">{testMode ? 'TEST MODE' : 'BNB (Native)'}</span>
           </p>
           <p className="text-xs text-gray-400">
-            Pay {servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB to run the audit
+            {testMode 
+              ? '🧪 Test mode enabled - No payment required, no tokens minted'
+              : `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB to run the audit`
+            }
           </p>
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          {/* Always show BNB payment button */}
-          <Button 
-            variant="hero" 
-            className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
-            onClick={handlePayAndRunAudit} 
-            disabled={isProcessing || !code.trim()}
-          >
-            {isProcessing && currentTransactionType === 'payAndRunAudit' ? 'Processing Payment...' : 
-              `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB & Start Audit`
-            }
-          </Button>
+          {/* TEST MODE BUTTON or PAYMENT BUTTON */}
+          {testMode ? (
+            <Button 
+              variant="hero" 
+              className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600" 
+              onClick={handleTestModeAudit} 
+              disabled={isProcessing || !code.trim()}
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Running Test Audit...
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2" />
+                  Run Test Audit (No Payment)
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button 
+              variant="hero" 
+              className="font-orbitron text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3" 
+              onClick={handlePayAndRunAudit} 
+              disabled={isProcessing || !code.trim()}
+            >
+              {isProcessing && currentTransactionType === 'payAndRunAudit' ? 'Processing Payment...' : 
+                `Pay ${servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB & Start Audit`
+              }
+            </Button>
+          )}
           
           <p className="text-sm text-gray-400 text-center">
-            Payment of {servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB is required to run the AI Audit.
-            <br />
-            67 SSTL tokens will be minted to the PoUW pool upon successful payment.
+            {testMode ? (
+              <>
+                🧪 <strong>TEST MODE:</strong> Audit runs without blockchain payment.
+                <br />
+                No SSTL tokens will be minted. Perfect for testing contract address feature.
+              </>
+            ) : (
+              <>
+                Payment of {servicePriceBNB ? Number(formatUnits(BigInt(servicePriceBNB.toString()), 18)).toFixed(3) : AUDIT_COST_BNB} BNB is required to run the AI Audit.
+                <br />
+                67 SSTL tokens will be minted to the PoUW pool upon successful payment.
+              </>
+            )}
           </p>
         </div>
 

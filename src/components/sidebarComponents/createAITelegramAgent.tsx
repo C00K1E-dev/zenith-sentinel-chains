@@ -1096,49 +1096,15 @@ const CreateAITelegramAgent = () => {
           </div>
         )}
 
-        {/* Wallet Connection Status - Debug & User Info */}
-        <div className="mb-3 p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
-          <div className="flex items-center justify-between text-sm mb-3">
-            <span className="font-semibold">Wallet Status:</span>
-            <div className="flex items-center gap-2">
-              {isWalletConnected ? (
-                <>
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-green-500">Connected</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                  <span className="text-red-500">Not Connected</span>
-                </>
-              )}
-            </div>
-          </div>
-          {/* Debug info - VISIBLE IN UI without needing dev console */}
-          <div className="bg-slate-800/50 border border-slate-600 rounded p-2 space-y-1">
-            <div className="text-xs font-semibold text-slate-400 mb-1">🔍 Debug (for troubleshooting):</div>
-            <div className="text-xs text-slate-300 space-y-1 font-mono">
-              <div>Status: <span className="text-blue-400">{connectionStatus}</span></div>
-              <div>Thirdweb: {thirdwebConnected ? '✅' : '❌'} {thirdwebAddress && <span className="text-slate-500">{thirdwebAddress.slice(0, 6)}...{thirdwebAddress.slice(-4)}</span>}</div>
-              <div>Wagmi: {wagmiConnected ? '✅' : '❌'} {wagmiAddress && <span className="text-slate-500">{wagmiAddress.slice(0, 6)}...{wagmiAddress.slice(-4)}</span>}</div>
-              <div className="font-bold">Final: {isWalletConnected ? '✅ CONNECTED' : '❌ NOT CONNECTED'}</div>
-            </div>
-          </div>
-          {walletAddress && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-              <Wallet size={14} />
-              <span className="font-mono">{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
-              <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 rounded">
-                {thirdwebConnected ? '📱 Thirdweb' : '🖥️ Wagmi'}
-              </span>
-            </div>
-          )}
-          {!isWalletConnected && (
-            <p className="text-xs text-amber-500 mt-2">
-              ⚠️ Please connect your wallet using the button in the sidebar
+        {/* Wallet Connection Status */}
+        {!isWalletConnected && (
+          <div className="mb-3 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+            <p className="text-sm text-amber-500 flex items-center gap-2">
+              <Wallet size={16} />
+              Please connect your wallet using the button in the sidebar
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Payment Button */}
         <button

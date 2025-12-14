@@ -209,17 +209,27 @@ async function buildKnowledgeBase(
 }
 
 const CreateAITelegramAgent = () => {
-  const { address, isConnected, connector } = useAccount();
-  const thirdwebAccount = useActiveAccount(); // For mobile wallet support via thirdweb
+  // Thirdweb wallet connection (primary - works on mobile & desktop)
+  const thirdwebAccount = useActiveAccount();
+  const thirdwebAddress = thirdwebAccount?.address;
+  const thirdwebConnected = !!thirdwebAccount;
+  
+  // Wagmi wallet connection (fallback for desktop-only wallets)
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+  
   const navigate = useNavigate();
   
-  // Better connection detection for mobile wallets - check both wagmi AND thirdweb
-  const isWalletConnected = isConnected || 
-                           (address && address.length > 0) || 
-                           (thirdwebAccount && thirdwebAccount.address);
+  // Unified wallet detection - prioritize thirdweb (works everywhere)
+  const isWalletConnected = React.useMemo(() => {
+    const connected = thirdwebConnected || wagmiConnected;
+    console.log('[WALLET] Recalculating connection:', connected, { thirdwebConnected, wagmiConnected });
+    return connected;
+  }, [thirdwebConnected, wagmiConnected]);
   
-  // Get the actual wallet address from either wagmi or thirdweb
-  const walletAddress = address || thirdwebAccount?.address;
+  // Get wallet address - prioritize thirdweb
+  const walletAddress = React.useMemo(() => {
+    return thirdwebAddress || wagmiAddress;
+  }, [thirdwebAddress, wagmiAddress]);
   
   const [step, setStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
@@ -260,6 +270,18 @@ const CreateAITelegramAgent = () => {
   const { mutateAsync: sendThirdwebTx, data: thirdwebTxResult, isPending: isThirdwebPending } = useSendTransaction();
   const [thirdwebTxHash, setThirdwebTxHash] = useState<string | null>(null);
   const [isThirdwebConfirmed, setIsThirdwebConfirmed] = useState(false);
+
+  // Debug wallet connection state
+  React.useEffect(() => {
+    console.log('[WALLET] Connection state:', {
+      thirdweb_connected: thirdwebConnected,
+      thirdweb_address: thirdwebAddress,
+      wagmi_connected: wagmiConnected,
+      wagmi_address: wagmiAddress,
+      final_isWalletConnected: isWalletConnected,
+      final_walletAddress: walletAddress
+    });
+  }, [thirdwebConnected, thirdwebAddress, wagmiConnected, wagmiAddress, isWalletConnected, walletAddress]);
 
   const pricingOptions: PricingOption[] = [
     {
@@ -355,11 +377,13 @@ const CreateAITelegramAgent = () => {
         billingCycle, 
         amountWei: amountWei.toString(), 
         treasury: TREASURY_WALLET,
-        wallet: thirdwebAccount ? 'thirdweb' : 'wagmi'
+        wallet: thirdwebConnected ? 'thirdweb' : 'wagmi',
+        thirdwebConnected,
+        wagmiConnected
       });
 
-      // Use thirdweb transaction if connected via thirdweb (mobile wallets)
-      if (thirdwebAccount) {
+      // Prioritize thirdweb (works on mobile & desktop with WalletConnect)
+      if (thirdwebConnected && thirdwebAccount) {
         console.log('[PAYMENT] Using thirdweb transaction (mobile/WalletConnect)');
         
         const usdtContract = getContract({
@@ -431,7 +455,7 @@ const CreateAITelegramAgent = () => {
       }
 
       console.log('[SUPABASE] Creating records for wallet:', walletAddress.substring(0, 10) + '...', 
-                  'via', thirdwebAccount ? 'thirdweb (mobile)' : 'wagmi (desktop)');
+                  'via', thirdwebConnected ? 'thirdweb' : 'wagmi');
 
       // 1. Get or create user in Supabase
       let user;
@@ -676,7 +700,7 @@ const CreateAITelegramAgent = () => {
         subscription_id: subscription.id,
         wallet: walletAddress,
         tx_hash: transactionHash,
-        wallet_type: thirdwebAccount ? 'thirdweb (mobile)' : 'wagmi (desktop)'
+        wallet_type: thirdwebConnected ? 'thirdweb' : 'wagmi'
       });
 
       // 6. Move to Step 4 (success)
@@ -1080,6 +1104,40 @@ const CreateAITelegramAgent = () => {
             </div>
           </div>
         )}
+
+        {/* Wallet Connection Status - Debug & User Info */}
+        <div className="mb-3 p-3 bg-secondary/20 border border-border rounded-lg">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-semibold">Wallet Status:</span>
+            <div className="flex items-center gap-2">
+              {isWalletConnected ? (
+                <>
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-green-500">Connected</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-red-500">Not Connected</span>
+                </>
+              )}
+            </div>
+          </div>
+          {walletAddress && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+              <Wallet size={14} />
+              <span className="font-mono">{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 rounded">
+                {thirdwebConnected ? '📱 Thirdweb' : '🖥️ Wagmi'}
+              </span>
+            </div>
+          )}
+          {!isWalletConnected && (
+            <p className="text-xs text-amber-500 mt-2">
+              ⚠️ Please connect your wallet using the button in the sidebar
+            </p>
+          )}
+        </div>
 
         {/* Payment Button */}
         <button

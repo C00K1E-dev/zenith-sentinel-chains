@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Bot, Cpu, Zap, Brain, Rocket, Settings, FileText, ChevronDown, ChevronUp, MessageCircle, Clock, Users, TrendingUp, Check, Wallet, ExternalLink } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { useNavigate } from 'react-router-dom';
-import { useAccount } from 'wagmi';
+import { useActiveAccount } from 'thirdweb/react';
 import CreateAITelegramAgent from './createAITelegramAgent';
 
 const AIModelCard = ({ 
@@ -56,7 +56,9 @@ const AIModelCard = ({
 
 const SidebarCreateAgent = () => {
   const navigate = useNavigate();
-  const { address, isConnected } = useAccount();
+  const account = useActiveAccount();
+  const isConnected = !!account;
+  const address = account?.address;
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [showModelFile, setShowModelFile] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);

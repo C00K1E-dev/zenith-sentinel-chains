@@ -1097,8 +1097,8 @@ const CreateAITelegramAgent = () => {
         )}
 
         {/* Wallet Connection Status - Debug & User Info */}
-        <div className="mb-3 p-3 bg-secondary/20 border border-border rounded-lg">
-          <div className="flex items-center justify-between text-sm">
+        <div className="mb-3 p-4 bg-slate-900/50 border border-slate-700 rounded-lg">
+          <div className="flex items-center justify-between text-sm mb-3">
             <span className="font-semibold">Wallet Status:</span>
             <div className="flex items-center gap-2">
               {isWalletConnected ? (
@@ -1114,11 +1114,15 @@ const CreateAITelegramAgent = () => {
               )}
             </div>
           </div>
-          {/* Debug info - shows exactly what the hooks are returning */}
-          <div className="text-[10px] text-muted-foreground mt-2 space-y-0.5 font-mono">
-            <div>status: {connectionStatus}</div>
-            <div>thirdweb: {thirdwebConnected ? '✅' : '❌'} {thirdwebAddress ? thirdwebAddress.slice(0, 8) + '...' : 'null'}</div>
-            <div>wagmi: {wagmiConnected ? '✅' : '❌'} {wagmiAddress ? wagmiAddress.slice(0, 8) + '...' : 'null'}</div>
+          {/* Debug info - VISIBLE IN UI without needing dev console */}
+          <div className="bg-slate-800/50 border border-slate-600 rounded p-2 space-y-1">
+            <div className="text-xs font-semibold text-slate-400 mb-1">🔍 Debug (for troubleshooting):</div>
+            <div className="text-xs text-slate-300 space-y-1 font-mono">
+              <div>Status: <span className="text-blue-400">{connectionStatus}</span></div>
+              <div>Thirdweb: {thirdwebConnected ? '✅' : '❌'} {thirdwebAddress && <span className="text-slate-500">{thirdwebAddress.slice(0, 6)}...{thirdwebAddress.slice(-4)}</span>}</div>
+              <div>Wagmi: {wagmiConnected ? '✅' : '❌'} {wagmiAddress && <span className="text-slate-500">{wagmiAddress.slice(0, 6)}...{wagmiAddress.slice(-4)}</span>}</div>
+              <div className="font-bold">Final: {isWalletConnected ? '✅ CONNECTED' : '❌ NOT CONNECTED'}</div>
+            </div>
           </div>
           {walletAddress && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, X, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, X, ShieldAlert, ShieldCheck, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // List of known copycat/scam domains
@@ -144,7 +144,7 @@ const SecurityTicker = () => {
 
   if (dismissed) return null;
 
-  const tickerText = "� TIP: For best experience, use desktop devices • 🛡️ SECURITY NOTICE: Make sure you're on the official SmartSentinels website → Check your URL bar shows smartsentinels.net ← Always verify before connecting your wallet. Beware of fake sites like .xyz .io .org .com — Only trust smartsentinels.net";
+  const tickerText = "TIP: For best experience, use desktop devices • SECURITY NOTICE: Make sure you're on the official SmartSentinels website → Check your URL bar shows smartsentinels.net ← Always verify before connecting your wallet. Beware of fake sites like .xyz .io .org .com — Only trust smartsentinels.net";
 
   return (
     <motion.div
@@ -171,16 +171,18 @@ const SecurityTicker = () => {
               x: {
                 repeat: Infinity,
                 repeatType: 'loop',
-                duration: 30,
+                duration: window.innerWidth < 768 ? 20 : 30,
                 ease: 'linear',
               },
             }}
           >
             {/* Duplicate the text for seamless loop */}
-            <span className="text-green-100 text-xs sm:text-sm px-4 inline-flex items-center">
+            <span className="text-green-100 text-xs sm:text-sm px-4 inline-flex items-center gap-2">
+              <Monitor className="w-3 h-3 sm:w-4 sm:h-4" />
               {tickerText}
             </span>
-            <span className="text-green-100 text-xs sm:text-sm px-4 inline-flex items-center">
+            <span className="text-green-100 text-xs sm:text-sm px-4 inline-flex items-center gap-2">
+              <Monitor className="w-3 h-3 sm:w-4 sm:h-4" />
               {tickerText}
             </span>
           </motion.div>

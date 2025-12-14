@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Upload, AlertCircle, Check, Loader, ChevronRight, Copy, Rocket, FileText, Palette, DollarSign, Eye, Wallet, ExternalLink } from 'lucide-react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { useActiveAccount, useSendTransaction } from 'thirdweb/react';
+import { useActiveAccount, useSendTransaction, useActiveWalletConnectionStatus } from 'thirdweb/react';
 import { getContract, prepareContractCall, createThirdwebClient } from 'thirdweb';
 import { useNavigate } from 'react-router-dom';
 import { parseUnits } from 'viem';
@@ -211,17 +211,28 @@ async function buildKnowledgeBase(
 const CreateAITelegramAgent = () => {
   const navigate = useNavigate();
   
-  // Thirdweb wallet connection (primary - same as GenesisMint)
+  // Thirdweb wallet connection - using connection status hook for more reliable detection
   const account = useActiveAccount();
-  const isConnected = !!account;
-  const address = account?.address;
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const thirdwebConnected = connectionStatus === 'connected' && !!account;
+  const thirdwebAddress = account?.address;
   
-  // Wagmi wallet connection (fallback)
+  // Wagmi wallet connection (fallback for desktop wallets not using thirdweb)
   const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
   
-  // Use thirdweb first (works on mobile), fallback to wagmi
-  const isWalletConnected = isConnected || wagmiConnected;
-  const walletAddress = address || wagmiAddress;
+  // Combined wallet state - prioritize thirdweb, fallback to wagmi
+  const isWalletConnected = thirdwebConnected || wagmiConnected;
+  const walletAddress = thirdwebAddress || wagmiAddress;
+  
+  // Debug: Log wallet state on every render
+  console.log('[WALLET_RENDER]', {
+    connectionStatus,
+    account: account ? account.address : null,
+    thirdwebConnected,
+    wagmiConnected,
+    isWalletConnected,
+    walletAddress
+  });
   
   const [step, setStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
@@ -262,18 +273,6 @@ const CreateAITelegramAgent = () => {
   const { mutateAsync: sendThirdwebTx, data: thirdwebTxResult, isPending: isThirdwebPending } = useSendTransaction();
   const [thirdwebTxHash, setThirdwebTxHash] = useState<string | null>(null);
   const [isThirdwebConfirmed, setIsThirdwebConfirmed] = useState(false);
-
-  // Debug wallet connection state
-  React.useEffect(() => {
-    console.log('[WALLET] Connection state:', {
-      thirdweb_connected: isConnected,
-      thirdweb_address: address,
-      wagmi_connected: wagmiConnected,
-      wagmi_address: wagmiAddress,
-      final_isWalletConnected: isWalletConnected,
-      final_walletAddress: walletAddress
-    });
-  }, [isConnected, address, wagmiConnected, wagmiAddress, isWalletConnected, walletAddress]);
 
   const pricingOptions: PricingOption[] = [
     {
@@ -369,13 +368,13 @@ const CreateAITelegramAgent = () => {
         billingCycle, 
         amountWei: amountWei.toString(), 
         treasury: TREASURY_WALLET,
-        wallet: isConnected ? 'thirdweb' : 'wagmi',
-        thirdweb_connected: isConnected,
+        wallet: thirdwebConnected ? 'thirdweb' : 'wagmi',
+        thirdweb_connected: thirdwebConnected,
         wagmi_connected: wagmiConnected
       });
 
       // Prioritize thirdweb (works on mobile & desktop with WalletConnect)
-      if (isConnected && account) {
+      if (thirdwebConnected && account) {
         console.log('[PAYMENT] Using thirdweb transaction (mobile/WalletConnect)');
         
         const usdtContract = getContract({
@@ -447,7 +446,7 @@ const CreateAITelegramAgent = () => {
       }
 
       console.log('[SUPABASE] Creating records for wallet:', walletAddress.substring(0, 10) + '...', 
-                  'via', isConnected ? 'thirdweb' : 'wagmi');
+                  'via', thirdwebConnected ? 'thirdweb' : 'wagmi');
 
       // 1. Get or create user in Supabase
       let user;
@@ -692,7 +691,7 @@ const CreateAITelegramAgent = () => {
         subscription_id: subscription.id,
         wallet: walletAddress,
         tx_hash: transactionHash,
-        wallet_type: isConnected ? 'thirdweb' : 'wagmi'
+        wallet_type: thirdwebConnected ? 'thirdweb' : 'wagmi'
       });
 
       // 6. Move to Step 4 (success)
@@ -1115,12 +1114,18 @@ const CreateAITelegramAgent = () => {
               )}
             </div>
           </div>
+          {/* Debug info - shows exactly what the hooks are returning */}
+          <div className="text-[10px] text-muted-foreground mt-2 space-y-0.5 font-mono">
+            <div>status: {connectionStatus}</div>
+            <div>thirdweb: {thirdwebConnected ? '✅' : '❌'} {thirdwebAddress ? thirdwebAddress.slice(0, 8) + '...' : 'null'}</div>
+            <div>wagmi: {wagmiConnected ? '✅' : '❌'} {wagmiAddress ? wagmiAddress.slice(0, 8) + '...' : 'null'}</div>
+          </div>
           {walletAddress && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
               <Wallet size={14} />
               <span className="font-mono">{walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}</span>
               <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 rounded">
-                {isConnected ? '📱 Thirdweb' : '🖥️ Wagmi'}
+                {thirdwebConnected ? '📱 Thirdweb' : '🖥️ Wagmi'}
               </span>
             </div>
           )}

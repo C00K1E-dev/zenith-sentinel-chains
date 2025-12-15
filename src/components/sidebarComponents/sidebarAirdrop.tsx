@@ -1292,7 +1292,7 @@ const SidebarAirdrop = memo(() => {
                                 ) : (
                                   <>
                                     <Button
-                                      onClick={() => window.location.href = '/hub?tab=nfts'}
+                                      onClick={() => window.location.href = '/hub/nfts'}
                                       size="sm"
                                       className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
                                     >
@@ -1318,7 +1318,7 @@ const SidebarAirdrop = memo(() => {
                                 ) : (
                                   <>
                                     <Button
-                                      onClick={() => window.location.href = '/hub?tab=nfts'}
+                                      onClick={() => window.location.href = '/hub/nfts'}
                                       size="sm"
                                       className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
                                     >

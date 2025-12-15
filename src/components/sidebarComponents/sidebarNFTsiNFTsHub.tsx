@@ -7,9 +7,6 @@ import StatCard from '@/components/StatCard';
 import GenesisMint from '@/components/GenesisMint';
 import AIAuditMint from '@/components/AIAuditMint';
 import MintSuccessOverlay from '@/components/MintSuccessOverlay';
-import genesisNFT from '@/assets/genesisNFT.svg';
-import aiAuditNFT from '@/assets/AIAuditNFT.svg';
-import aidaNFT from '@/assets/aida.svg';
 
 const SidebarNFTsiNFTsHub = () => {
   const [mintSuccessData, setMintSuccessData] = useState<{tokenId?: bigint, txHash?: string, imageUrl?: string, collectionName?: string} | null>(null);
@@ -144,8 +141,9 @@ const SidebarNFTsiNFTsHub = () => {
               {/* Image Section */}
               <div className="relative flex items-center justify-start min-h-[300px] md:min-h-[400px]">
                 <img
-                  src={genesisNFT}
+                  src="/assets/genesisNFT.svg"
                   alt="Genesis NFT"
+                  loading="lazy"
                   className="w-full h-full object-contain max-w-xs"
                 />
               </div>
@@ -268,8 +266,9 @@ const SidebarNFTsiNFTsHub = () => {
               {/* Image Section */}
               <div className="relative flex items-center justify-start min-h-[300px] md:min-h-[400px]">
                 <img
-                  src={aiAuditNFT}
+                  src="/assets/AIAuditNFT.svg"
                   alt="AI Audit NFT"
+                  loading="lazy"
                   className="w-full h-full object-contain max-w-xs"
                 />
               </div>
@@ -359,8 +358,9 @@ const SidebarNFTsiNFTsHub = () => {
                 <div className="aspect-square lg:aspect-auto lg:h-full relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/20"></div>
                   <img 
-                    src={aidaNFT} 
+                    src="/assets/aida.svg" 
                     alt="AIDA Collection" 
+                    loading="lazy"
                     className="absolute inset-0 w-full h-full object-cover opacity-60"
                   />
                   {/* Coming Soon Badge */}

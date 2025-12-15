@@ -3,10 +3,6 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink, X, CheckCircle, Loader } from 'lucide-react';
 
-// Import collection-specific fallback images (SVG)
-import AIAuditNFTImage from '../assets/AIAuditNFT.svg';
-import GenesisNFTImage from '../assets/genesisNFT.svg';
-
 interface MintSuccessOverlayProps {
   isOpen: boolean;
   onClose: () => void;
@@ -39,20 +35,20 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
   ];
 
   const getFallbackImage = (collection: string) => {
-    // Use collection-specific PNG images as fallbacks
+    // Use collection-specific SVG paths as fallbacks
     switch (collection.toLowerCase()) {
       case 'genesis':
       case 'genesis nft':
       case 'genesis collection':
-        return GenesisNFTImage;
+        return '/assets/genesisNFT.svg';
       case 'ai audit':
       case 'ai audit nft':
       case 'ai audit collection':
-        return AIAuditNFTImage;
+        return '/assets/AIAuditNFT.svg';
       case 'aida':
       case 'aida nft':
       case 'aida collection':
-        return '/placeholder.svg';
+        return '/assets/aida.svg';
       default:
         return '/placeholder.svg';
     }

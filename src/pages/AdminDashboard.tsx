@@ -37,6 +37,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ total: 0, uniqueTelegrams: 0, uniqueXHandles: 0 });
   const [activeTab, setActiveTab] = useState<'registrations' | 'verifications' | 'telegram' | 'likes' | 'tags' | 'telegram-agents'>('registrations');
   const [resetWallet, setResetWallet] = useState('');
+  const [deleteWallet, setDeleteWallet] = useState('');
   const [nftHolders, setNftHolders] = useState<any[]>([]);
   const [manualCheckWallet, setManualCheckWallet] = useState('');
   const [isCheckingNFT, setIsCheckingNFT] = useState(false);
@@ -413,6 +414,56 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!deleteWallet.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a wallet address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!window.confirm(`PERMANENTLY DELETE user ${deleteWallet} from the database? This will remove all their data and cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/${deleteWallet}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({
+          title: "Success",
+          description: `User ${deleteWallet} permanently deleted`,
+        });
+        setDeleteWallet('');
+        // Refresh the registrations list
+        await fetchRegistrations();
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || 'Failed to delete user',
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive"
+      });
+    }
+  };
+
   const downloadCSV = () => {
     const headers = ['Wallet', 'X Handle', 'Telegram', 'Registered'];
     const rows = registrations.map(r => [
@@ -665,6 +716,36 @@ export default function AdminDashboard() {
             </div>
             <p className="text-sm text-gray-500 mt-2">
               ⚠️ This will clear all points, completed tasks, pending verifications, and registration data for the specified wallet. This action cannot be undone.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Delete User Section - Permanent Deletion */}
+        <Card className="mb-6 border-destructive/30">
+          <CardHeader>
+            <CardTitle className="text-destructive">Delete User Permanently</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <label className="block text-sm font-medium mb-2">Wallet Address</label>
+                <Input
+                  placeholder="Paste wallet address to delete permanently"
+                  value={deleteWallet}
+                  onChange={(e) => setDeleteWallet(e.target.value)}
+                  className="font-mono"
+                />
+              </div>
+              <Button 
+                onClick={handleDeleteUser}
+                variant="destructive"
+                disabled={!deleteWallet.trim()}
+              >
+                🗑️ Delete User
+              </Button>
+            </div>
+            <p className="text-sm text-destructive mt-2 font-medium">
+              🚨 DANGER: This will PERMANENTLY DELETE the user from the database. All their data will be removed and cannot be recovered. Use with extreme caution.
             </p>
           </CardContent>
         </Card>

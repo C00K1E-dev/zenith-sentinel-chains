@@ -159,7 +159,7 @@ const SidebarAirdrop = memo(() => {
       icon: Heart,
       completed: false,
       type: 'social',
-      actionUrl: 'https://x.com/SmartSentinels_/status/1989335438243275029',
+      actionUrl: 'https://x.com/SmartSentinels_/status/2000594304646222122?s=20',
       requiresVerification: true,
     },
     {
@@ -170,7 +170,7 @@ const SidebarAirdrop = memo(() => {
       icon: Users,
       completed: false,
       type: 'engagement',
-      actionUrl: 'https://twitter.com/SmartSentinels_',
+      actionUrl: 'https://x.com/SmartSentinels_/status/2000594304646222122?s=20',
       requiresVerification: true,
     },
     {
@@ -1024,7 +1024,7 @@ const SidebarAirdrop = memo(() => {
             <Gift className="text-primary" size={32} />
           </div>
           <div>
-            <h1 className="text-2xl font-orbitron font-bold">
+            <h1 className="text-2xl font-bold">
               <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
                 SSTL Airdrop Campaign
               </span>
@@ -1042,7 +1042,7 @@ const SidebarAirdrop = memo(() => {
       >
         <Card className={styles.infoCard}>
           <CardContent className="pt-6">
-            <div className={styles.metamaskInfo} style={{ padding: '1rem', backgroundColor: 'rgba(255, 127, 80, 0.1)', borderRadius: '8px', border: '1px solid rgba(255, 127, 80, 0.3)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+            <div className={styles.metamaskInfo} style={{ padding: '1rem', background: 'linear-gradient(to right, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1), hsl(var(--accent) / 0.1))', borderRadius: '8px', border: '1px solid hsl(var(--primary) / 0.3)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
               <img 
                 src="/assets/MetaMask-icon-fox.svg" 
                 alt="MetaMask" 
@@ -1058,13 +1058,13 @@ const SidebarAirdrop = memo(() => {
                     className={styles.infoLink}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
                   >
-                    Miracle
+                    theMiracle
                     <ExternalLink size={12} />
                   </a>
                   . Complete tasks to earn points and claim SSTL tokens at the end of the campaign!
                 </p>
                 <p className={styles.infoText} style={{ marginBottom: 0 }}>
-                  <strong style={{ color: '#ff7f50' }}>MetaMask Bonus:</strong> Connect with MetaMask to receive{' '}
+                  <strong>MetaMask Bonus:</strong> Connect with MetaMask to receive{' '}
                   <strong>instant +10 bonus points</strong>! The more points you earn, the more tokens you can claim.
                 </p>
               </div>
@@ -1157,8 +1157,8 @@ const SidebarAirdrop = memo(() => {
               {isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
             </Button>
 
-            <div className="mt-4 p-3 sm:p-4 bg-blue-50/50 border border-blue-200 rounded-lg">
-              <p className="text-xs sm:text-sm text-blue-700 text-center leading-relaxed">
+            <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-lg">
+              <p className="text-xs sm:text-sm text-foreground text-center leading-relaxed">
                 ℹ️ Tokens will be available to claim at the end of this campaign. Your points determine your token allocation.
               </p>
             </div>
@@ -1360,7 +1360,7 @@ const SidebarAirdrop = memo(() => {
             </div>
 
             {/* How It Works - Informative Card - Moved under tasks */}
-            <Card className={styles.infoCard} style={{ borderColor: 'hsl(220, 90%, 56%, 0.3)', backgroundColor: 'hsl(220, 90%, 56%, 0.05)', marginTop: '1.5rem' }}>
+            <Card className={styles.infoCard} style={{ marginTop: '1.5rem' }}>
               <CardHeader>
                 <CardTitle style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.25rem' }}>
                   <Award className="text-primary" size={24} />

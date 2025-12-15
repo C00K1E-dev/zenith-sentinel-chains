@@ -429,7 +429,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/user/${deleteWallet}/delete`, {
+      const response = await fetch(`${API_BASE_URL}/user-delete/${deleteWallet}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

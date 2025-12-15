@@ -34,6 +34,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const alphaBot = createTelegramBot(alphaToken, geminiApiKey);
     const betaBot = createTelegramBotBeta(betaToken, geminiApiKey);
     
+    // Initialize bots to get their usernames
+    await Promise.all([
+      alphaBot.initialize(),
+      betaBot.initialize()
+    ]);
+    
+    // Handle the update with both bots
     await Promise.all([
       alphaBot.handleUpdate(update),
       betaBot.handleUpdate(update)

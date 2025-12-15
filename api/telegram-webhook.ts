@@ -34,17 +34,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const alphaBot = createTelegramBot(alphaToken, geminiApiKey);
     const betaBot = createTelegramBotBeta(betaToken, geminiApiKey);
     
-    // Initialize bots to get their usernames
-    await Promise.all([
-      alphaBot.initialize(),
-      betaBot.initialize()
-    ]);
+    // Initialize bots to get their usernames (catch errors to prevent webhook failure)
+    try {
+      await Promise.all([
+        alphaBot.initialize().catch(e => console.error('[ALPHA] Init error:', e)),
+        betaBot.initialize().catch(e => console.error('[BETA] Init error:', e))
+      ]);
+    } catch (e) {
+      console.error('[SMARTSENTINELS-BOTS] Initialization error:', e);
+    }
     
-    // Handle the update with both bots
-    await Promise.all([
-      alphaBot.handleUpdate(update),
-      betaBot.handleUpdate(update)
-    ]);
+    // Handle the update with both bots (catch errors to prevent webhook failure)
+    try {
+      await Promise.all([
+        alphaBot.handleUpdate(update).catch(e => console.error('[ALPHA] Update error:', e)),
+        betaBot.handleUpdate(update).catch(e => console.error('[BETA] Update error:', e))
+      ]);
+    } catch (e) {
+      console.error('[SMARTSENTINELS-BOTS] Update handling error:', e);
+    }
 
     return res.status(200).json({ ok: true });
     

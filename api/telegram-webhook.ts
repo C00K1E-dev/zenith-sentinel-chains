@@ -1,9 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createTelegramBot } from '../src/services/telegramBot.js';
+import { createTelegramBotBeta } from '../src/services/telegramBot2.js';
 
 /**
- * SMARTSENTINELS COMMUNITY BOT WEBHOOK
- * This webhook ONLY handles the main SmartSentinels community bot
+ * SMARTSENTINELS COMMUNITY BOTS WEBHOOK
+ * Handles BOTH Alpha and Beta bots
  * User-created agents use /api/agent-webhook instead
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -17,25 +18,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const messageText = update.message?.text;
     const fromUser = update.message?.from?.username || update.message?.from?.first_name;
     
-    console.log('[SMARTSENTINELS-BOT] ==========================================');
-    console.log('[SMARTSENTINELS-BOT] Chat ID:', chatId, 'From:', fromUser, 'Message:', messageText?.slice(0, 50));
+    console.log('[SMARTSENTINELS-BOTS] ==========================================');
+    console.log('[SMARTSENTINELS-BOTS] Chat ID:', chatId, 'From:', fromUser, 'Message:', messageText?.slice(0, 50));
     
-    const botToken = process.env.VITE_TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+    const alphaToken = process.env.VITE_TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
+    const betaToken = process.env.VITE_TELEGRAM_BOT_TOKEN_BETA || process.env.TELEGRAM_BOT_TOKEN_BETA;
     const geminiApiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
-    if (!botToken || !geminiApiKey) {
-      console.error('[SMARTSENTINELS-BOT] Missing required environment variables');
+    if (!alphaToken || !betaToken || !geminiApiKey) {
+      console.error('[SMARTSENTINELS-BOTS] Missing required environment variables');
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    // Create SmartSentinels bot instance and handle update
-    const bot = createTelegramBot(botToken, geminiApiKey);
-    await bot.handleUpdate(update);
+    // Handle both bots in parallel - they'll decide internally if they should respond
+    const alphaBot = createTelegramBot(alphaToken, geminiApiKey);
+    const betaBot = createTelegramBotBeta(betaToken, geminiApiKey);
+    
+    await Promise.all([
+      alphaBot.handleUpdate(update),
+      betaBot.handleUpdate(update)
+    ]);
 
     return res.status(200).json({ ok: true });
     
   } catch (error) {
-    console.error('[SMARTSENTINELS-BOT] Webhook error:', error);
+    console.error('[SMARTSENTINELS-BOTS] Webhook error:', error);
     // Always return 200 to prevent Telegram from retrying
     return res.status(200).json({ ok: true });
   }

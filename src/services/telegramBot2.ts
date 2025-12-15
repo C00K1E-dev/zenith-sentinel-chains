@@ -189,59 +189,77 @@ const SMARTSENTINELS_KNOWLEDGE = {
   }
 };
 
-// Personality & System Prompt
-const PERSONALITY_PROMPT = `You are Alpha, a SmartSentinels community member - an AI agent with personality and natural conversation skills. You're part of the community, not just a help desk. You specialize in TECHNICAL and FACTUAL information about the project.
+// Personality & System Prompt - BETA STYLE (More expressive, casual, slightly more emotive than Alpha)
+const PERSONALITY_PROMPT = `You are Beta, a SmartSentinels community member - an AI agent with personality and natural conversation skills. You're part of the community, not just a help desk. You specialize in COMMUNITY VIBES, GENERAL QUESTIONS, and CASUAL CONVERSATION.
 
-CORE PERSONALITY - ALPHA STYLE:
-- CONVERSATIONAL & NATURAL: You're a regular in this chat, not a formal bot
-- BRIEF & DIRECT: Most responses are 1-2 sentences. Get to the point naturally
+CORE PERSONALITY - BETA STYLE:
+- CONVERSATIONAL & EXPRESSIVE: You show more emotion and personality than Alpha
+- BRIEF & DIRECT: Most responses are 1-2 sentences, but with more feeling
 - CONTEXTUALLY AWARE: Follow the conversation flow, respond to what people say
-- TECHNICAL FOCUS: You handle contract addresses, audits, tokenomics, technical specs
-- CASUALLY HELPFUL: Share knowledge without being preachy or formal
-- HONEST ABOUT LIMITS: Say "Not sure" or "I don't have that info" when you don't know
-- SELF-CORRECTING: When wrong, admit it naturally: "Ah, my bad" or "Wait, I mixed that up"
-- NO EMOJI SPAM: Use emojis very rarely (maybe 1 per 5 messages), and only when natural
-- REAL TONE: Sound like a person typing in Telegram, not an AI assistant
-- LET BETA HANDLE CASUAL: If it's just general chat or greetings, let Beta respond
+- COMMUNITY FOCUS: You handle greetings, general chat, vibe checks, welcoming people
+- CASUALLY HELPFUL: Share knowledge in a friendly, approachable way
+- HONEST ABOUT LIMITS: "Not sure" or "I don't have that info off the top of my head"
+- SELF-CORRECTING: When wrong, admit it casually: "Oh shit, my bad" or "Wait, I think I messed that up"
+- MINIMAL EMOJIS: Use very sparingly (maybe 1 per 8 messages), only when it feels natural
+- REAL TONE: Sound like a chill person typing in Telegram, not an AI
+- LET ALPHA HANDLE TECHNICAL: For deep technical questions, let Alpha answer
+
+BETA vs ALPHA DIFFERENCES:
+- Alpha: More matter-of-fact, direct, neutral
+- Beta: More expressive, casual, adds personality words like "Yeah", "Oh", "Ah"
+- Alpha: "Makes sense" 
+- Beta: "Oh right, that makes sense" or "Ah fair enough"
+- Alpha: "Not sure"
+- Beta: "Not sure about that one" or "I don't have that info off the top of my head"
 
 YOUR KNOWLEDGE:
 ${JSON.stringify(SMARTSENTINELS_KNOWLEDGE, null, 2)}
 
 CONVERSATION RULES:
-1. RESPOND LIKE A PERSON: 
+1. RESPOND LIKE A CHILL PERSON: 
    - "Yeah, that's right" not "Certainly! That is correct"
    - "Not sure about that one" not "I apologize, but I don't have that information"
    - "Morning" not "Good morning! How can I assist you today?"
-   - "Should be able to" not "You should be able to"
+   - "Oh right" or "Ah fair enough" when understanding something
+   - "Oh shit" or "Damn" when appropriate (rarely)
 
 2. KEEP IT SHORT:
    - Default to 1-2 sentences
    - Only go longer for complex technical questions
    - Never write paragraphs unless absolutely needed
 
-3. BE CONTEXTUAL:
-   - Comment on what others say, don't just answer direct questions
-   - If someone shares good news: "Nice" or "That's good to hear"
-   - If someone has an issue: "That's frustrating" or "Yeah, that's annoying"
+3. BE CONTEXTUAL & EXPRESSIVE:
+   - Comment on what others say with feeling
+   - If someone shares good news: "Nice, that's good to hear" or "Oh that's awesome"
+   - If someone has an issue: "That's frustrating" or "Yeah, that sucks"
+   - If something's funny: "Lol" or add casual humor
    - Follow conversation threads naturally
 
 4. GREETINGS:
-   - Keep them minimal: "Morning", "Hey", "Yo"
+   - Keep them minimal: "Morning", "Hey", "Yo", "What's good"
    - ONLY greet if someone greets the chat or you
    - Never start with "Good morning/afternoon/evening"
 
 5. WHEN YOU DON'T KNOW:
-   - "Not sure" or "Don't have that info"
+   - "Not sure" or "Don't have that info off the top of my head"
    - "Haven't seen any announcement about that"
+   - "I don't know that one"
    - Never make things up
-   - It's okay to tag team members: "@TeamMember might know"
+   - It's okay to tag team members: "Maybe @TeamMember knows"
 
 6. WHEN CORRECTED:
-   - "Ah, my bad" or "Wait, I mixed that up"
+   - "Oh shit, my bad" or "Ah, I messed that up"
    - "Thanks for catching that"
    - "Oh right, makes sense"
+   - "Wait, I think I mixed that up"
 
-7. VERIFIED URLS ONLY:
+7. ADD CASUAL FLAIR:
+   - "Yeah, should be able to..." instead of just "Should be able to"
+   - "Oh right" instead of just "Right"
+   - "That's pretty solid" instead of just "That's good"
+   - "Lol" or "lmao" when something's actually funny (rarely)
+
+8. VERIFIED URLS ONLY:
    - Website: https://smartsentinels.net
    - Telegram: https://t.me/SmartSentinelsCommunity
    - Twitter: https://x.com/SmartSentinels_
@@ -252,25 +270,26 @@ CONVERSATION RULES:
 
 EXAMPLE RESPONSES:
 - "Yeah, the mainnet is live at https://smartsentinels.net"
-- "Not sure about that, haven't heard anything"
+- "Not sure about that one, haven't heard anything"
 - "That sucks - might need to refresh your wallet"
-- "Makes sense if it's in the contract"
-- "Morning"
-- "Nice, glad that worked out"
+- "Ah fair enough, makes sense if it's baked into the contract"
+- "Morning! What's good"
+- "Oh nice, glad that worked out for you"
 - "Wait, I think I mixed that up - the blockchain itself isn't audited, but the contracts are"
-- "Should be able to bridge back once presale is done"
+- "Yeah, should be able to bridge back once presale is done"
+- "That's pretty solid progress for where we're at"
+- "Oh right, that'll be good"
 
-REMEMBER: You're a community member who happens to know a lot about SmartSentinels. Chat naturally, keep it brief, and be helpful without being robotic. No corporate speak, no over-explaining, no emoji spam.`;  
+REMEMBER: You're Beta - a bit more expressive and casual than Alpha. Chat naturally, show some personality, keep it brief, and be helpful without being robotic. No corporate speak, no over-explaining, minimal emojis.`;
 
-// Gemini AI Service
-class GeminiService {
+// Gemini AI Service for Beta
+class GeminiServiceBeta {
   private genAI: GoogleGenerativeAI;
   private model: any;
   private conversationHistory: Map<number, Array<{ role: string; parts: string }>>;
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenerativeAI(apiKey);
-    // Using Gemini 2.5 Flash-Lite - Perfect for chatbot: 15 RPM, 250K TPM, 1000 RPD
     this.model = this.genAI.getGenerativeModel({ 
       model: 'gemini-2.5-flash-lite',
       systemInstruction: PERSONALITY_PROMPT
@@ -304,7 +323,7 @@ class GeminiService {
         history: history,
         generationConfig: {
           maxOutputTokens: tokenLimits[questionType],
-          temperature: 0.8, // Higher for more natural, varied responses
+          temperature: 0.85, // Slightly higher than Alpha for more expressive responses
           topP: 0.95,
           topK: 40,
         },
@@ -333,7 +352,7 @@ class GeminiService {
       return response;
     } catch (error) {
       console.error('Gemini API error:', error);
-      return "Oops, something broke on my end. Try again?";
+      return "Oops, something broke. Try again?";
     }
   }
 
@@ -342,23 +361,23 @@ class GeminiService {
   }
 }
 
-// Telegram Bot Service
-export class TelegramBotService {
+// Telegram Bot Service for Beta
+export class TelegramBotServiceBeta {
   private botToken: string;
-  private geminiService: GeminiService;
+  private geminiService: GeminiServiceBeta;
   private botUsername: string = '';
   private recentMessages: Map<number, Array<{userName: string; text: string; timestamp: number}>> = new Map();
 
   constructor(botToken: string, geminiApiKey: string) {
     this.botToken = botToken;
-    this.geminiService = new GeminiService(geminiApiKey);
+    this.geminiService = new GeminiServiceBeta(geminiApiKey);
   }
 
   async initialize() {
     // Get bot info
     const botInfo = await this.apiRequest('getMe');
     this.botUsername = botInfo.username;
-    console.log(`Bot initialized: @${this.botUsername}`);
+    console.log(`Beta Bot initialized: @${this.botUsername}`);
   }
 
   async setWebhook(webhookUrl: string) {
@@ -366,7 +385,7 @@ export class TelegramBotService {
       url: webhookUrl,
       allowed_updates: ['message', 'edited_message', 'chat_member']
     });
-    console.log('Webhook set:', result);
+    console.log('Beta Webhook set:', result);
     return result;
   }
 
@@ -420,7 +439,7 @@ export class TelegramBotService {
         shouldRespond = true;
         responseReason = 'mentioned';
       } else if (hasTriggers) {
-        // Don't respond to EVERY trigger - add randomness for natural participation
+        // Beta is slightly more chatty than Alpha - 45% response rate vs 40%
         const urgentTriggers = ['scam', 'legit?', 'safe?', 'help', 'question'];
         const isUrgent = urgentTriggers.some(t => text.toLowerCase().includes(t));
         
@@ -429,14 +448,14 @@ export class TelegramBotService {
           shouldRespond = true;
           responseReason = 'urgent';
         } else {
-          // For casual conversation, respond 25% of the time (Alpha focuses on technical)
-          shouldRespond = Math.random() < 0.25;
+          // For casual conversation, respond 50% of the time (Beta handles community vibes)
+          shouldRespond = Math.random() < 0.50;
           responseReason = 'casual_trigger';
         }
       }
 
       if (shouldRespond) {
-        console.log(`[BOT] Responding to ${userName} (reason: ${responseReason})`);
+        console.log(`[BETA] Responding to ${userName} (reason: ${responseReason})`);
         
         // Send typing indicator
         await this.sendChatAction(chatId, 'typing');
@@ -467,11 +486,11 @@ export class TelegramBotService {
           console.error('Error generating response:', error);
           // Don't send error message for casual triggers, only for direct mentions
           if (isMentioned || isPrivateChat) {
-            await this.sendMessage(chatId, "Sorry, had a brain freeze. Try again?", message.message_id);
+            await this.sendMessage(chatId, "Had a brain freeze, try again?", message.message_id);
           }
         }
       } else {
-        console.log(`[BOT] Listening to ${userName} (no response)`);
+        console.log(`[BETA] Listening to ${userName} (no response)`);
       }
     } catch (error) {
       console.error('Error handling update:', error);
@@ -490,57 +509,79 @@ export class TelegramBotService {
   private shouldRespond(text: string): boolean {
     const lowerText = text.toLowerCase();
     
-    // ALPHA SPECIALIZATION: Technical & Factual Questions
+    // BETA SPECIALIZATION: Community & General Conversation
     
-    // Technical triggers - Alpha's primary domain
-    const technicalTriggers = [
+    // Greetings & community vibes - Beta's primary domain
+    const communityTriggers = [
+      'gm ',
+      'gm everyone',
+      'good morning',
+      'morning',
+      'hello',
+      'hey everyone',
+      'hi all',
+      'welcome',
+      'thanks',
+      'thank you'
+    ];
+    
+    // General project questions - Beta handles these
+    const generalTriggers = [
+      'what is smartsentinels',
+      'tell me about smart',
+      'what does smartsentinels do',
+      'smartsentinels?',
+      'never heard of sstl',
+      'new here',
+      'what is this project'
+    ];
+    
+    // Usage/practical questions - Beta's area
+    const practicalTriggers = [
+      'how do i',
+      'how can i',
+      'where can i',
+      'how to earn',
+      'how to get sstl',
+      'what can i do',
+      'telegram agent',
+      'create agent',
+      'ai agent'
+    ];
+    
+    // General vibes - respond but with moderate probability
+    const vibesTriggers = [
+      'wen moon',
+      'wen lambo',
+      'bullish',
+      'bearish',
+      'pump',
+      'moon'
+    ];
+    
+    // Avoid technical triggers - let Alpha handle these
+    const technicalAvoid = [
       'contract address',
       'token address',
       'bscscan',
       'audit',
-      'audited',
       'tokenomics',
       'distribution',
       'roadmap',
-      'whitepaper',
-      'how does it work',
-      'how does smartsentinels',
-      'what is pouw',
-      'what is inft',
-      'proof of useful work',
-      'erc-7857',
-      'x402 protocol',
-      'how to buy',
-      'where to buy',
-      'when presale',
-      'when launch',
-      'sstl price',
-      'listing'
+      'whitepaper'
     ];
     
-    // Security/legitimacy questions - Alpha handles these
-    const securityTriggers = [
-      'scam?',
-      'is this a scam',
-      'is it safe',
-      'legit?',
-      'is this legit',
-      'rug pull',
-      'safe?'
-    ];
+    // Don't respond to technical questions - that's Alpha's job
+    if (technicalAvoid.some(trigger => lowerText.includes(trigger))) {
+      return false;
+    }
     
-    // Project name mentions - respond but with low probability (Beta might handle)
-    const projectTriggers = [
-      'smartsentinels',
-      'smart sentinels',
-      'sstl token'
-    ];
-    
-    // Check trigger types - Alpha is selective
+    // Check Beta's trigger types
     return (
-      technicalTriggers.some(trigger => lowerText.includes(trigger)) ||
-      securityTriggers.some(trigger => lowerText.includes(trigger)) ||
-      projectTriggers.some(trigger => lowerText.includes(trigger))
+      communityTriggers.some(trigger => lowerText.includes(trigger)) ||
+      generalTriggers.some(trigger => lowerText.includes(trigger)) ||
+      practicalTriggers.some(trigger => lowerText.includes(trigger)) ||
+      vibesTriggers.some(trigger => lowerText.includes(trigger))
     );
   }
 
@@ -578,17 +619,17 @@ export class TelegramBotService {
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
     const welcomeMessages = [
-      `Welcome {name}!`,
       `Hey {name}, welcome!`,
       `Welcome to the group, {name}!`,
-      `Hey {name}!`,
-      `Welcome {name}! Good to have you here.`
+      `Yo {name}!`,
+      `Welcome {name}!`,
+      `What's good {name}, welcome!`
     ];
 
     for (const member of members) {
       // Skip bots (including ourselves)
       if (member.is_bot) {
-        console.log(`[SMARTSENTINELS-BOT] Skipping bot: ${member.first_name}`);
+        console.log(`[BETA-BOT] Skipping bot: ${member.first_name}`);
         continue;
       }
       
@@ -596,7 +637,7 @@ export class TelegramBotService {
       const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
         .replace('{name}', name);
       
-      console.log(`[SMARTSENTINELS-BOT] Welcoming new member: ${name}`);
+      console.log(`[BETA-BOT] Welcoming new member: ${name}`);
       await this.sendMessage(chatId, welcomeMsg);
     }
   }
@@ -638,19 +679,19 @@ export class TelegramBotService {
 }
 
 // Export singleton instance creator
-export const createTelegramBot = (botToken: string, geminiApiKey: string) => {
-  return new TelegramBotService(botToken, geminiApiKey);
+export const createTelegramBotBeta = (botToken: string, geminiApiKey: string) => {
+  return new TelegramBotServiceBeta(botToken, geminiApiKey);
 };
 
 // Helper to create bot from environment variables
-export const createTelegramBotFromEnv = () => {
+export const createTelegramBotBetaFromEnv = () => {
   // Support both Vite (import.meta.env) and Node.js (process.env)
-  const botToken = (import.meta as any).env?.VITE_TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN;
+  const botToken = (import.meta as any).env?.VITE_TELEGRAM_BOT_TOKEN_BETA || process.env.VITE_TELEGRAM_BOT_TOKEN_BETA;
   const geminiApiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
   
   if (!botToken || !geminiApiKey) {
-    throw new Error('Missing VITE_TELEGRAM_BOT_TOKEN or VITE_GEMINI_API_KEY environment variables');
+    throw new Error('Missing VITE_TELEGRAM_BOT_TOKEN_BETA or VITE_GEMINI_API_KEY environment variables');
   }
   
-  return new TelegramBotService(botToken, geminiApiKey);
+  return new TelegramBotServiceBeta(botToken, geminiApiKey);
 };

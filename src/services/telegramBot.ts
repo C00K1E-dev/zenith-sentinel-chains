@@ -106,6 +106,78 @@ const SMARTSENTINELS_KNOWLEDGE = {
     deflationary: "10% burn per emission cycle"
   },
   
+  aiAuditTool: {
+    name: "SmartSentinels AI Audit Engine",
+    description: "Enterprise-grade smart contract security analysis powered by AI",
+    url: "https://smartsentinels.net/hub/audit",
+    price: "0.45 BNB per audit",
+    pouwReward: "67 SSTL tokens minted to PoUW pool per audit",
+    features: [
+      "36 EVM Chains Supported - Ethereum, Polygon, Arbitrum, Base, BSC, and more",
+      "Industry Standards - Trained on ETA Registry security specs and 37 SWC vulnerabilities",
+      "Decentralized Reports - Audit reports stored permanently on IPFS",
+      "Professional PDF Reports - Downloadable detailed analysis",
+      "Paste Code or Contract Address - Audit verified contracts directly",
+      "Severity Levels - Comprehensive vulnerability breakdown with line numbers"
+    ],
+    howItWorks: "Paste Solidity code OR enter contract address → Pay 0.45 BNB → Get comprehensive AI audit report with vulnerabilities, severity levels, and security scores"
+  },
+  
+  nftCollections: {
+    genesis: {
+      name: "Genesis Collection",
+      description: "The foundation of SmartSentinels ecosystem. Limited to 1,000 exclusive members with lifetime rewards.",
+      totalSupply: "1,000 NFTs",
+      mintPrice: "0.1 BNB",
+      contract: "0x6427f3C265E47BABCde870bcC4F71d1c4A12779b",
+      benefits: [
+        "Revenue Share - 10% from sales of future NFT collections",
+        "Staking Boost - 100% yield boost on upcoming staking",
+        "Priority Access - Early feature releases",
+        "Lifetime Rewards - Perpetual revenue sharing"
+      ]
+    },
+    aiAudit: {
+      name: "AI Audit Collection",
+      description: "Own an NFT and generate passive income from AI-powered smart contract audits",
+      totalSupply: "1,000 NFTs",
+      mintPrice: "0.074 BNB",
+      contract: "0x17669c3803CC6549d5D0bA8d8Fe56AF555630887",
+      benefits: [
+        "PoUW Rewards Share - Earn from every AI audit completed on the network",
+        "40.2 SSTL distributed per audit to NFT holders"
+      ]
+    },
+    aida: {
+      name: "AIDA Collection",
+      fullName: "Artificial Intelligence for Doctors and Assistants",
+      description: "A STANDALONE PROJECT under the SmartSentinels umbrella. AIDA is a complete AI medical receptionist solution targeting Romanian medical offices - handling appointments, reminders, emergency filtering, and 24/7 patient support via phone and WhatsApp.",
+      website: "https://aida-lac.vercel.app",
+      status: "Live - 500+ Active Clinics, 1M+ Monthly Interactions",
+      pricing: {
+        basic: "199€/month - 24/7 reception, appointment management, SMS reminders",
+        professional: "299€/month - WhatsApp Business, emergency filtering, detailed reports",
+        enterprise: "Custom - HL7/FHIR integration, dedicated manager, 99.9% SLA"
+      },
+      features: [
+        "24/7 Reception (Voice & Text) - Never miss a call or message, handles phone and WhatsApp non-stop",
+        "Smart Appointment Management - Patients can book, reschedule, or cancel via AI conversation",
+        "Automatic Reminders - Reduces no-shows with WhatsApp/SMS appointment reminders",
+        "Instant Information - Quick answers about services, prices, schedules, doctor availability",
+        "Emergency Filtering - Recognizes medical emergencies and redirects to human operators immediately",
+        "Natural Romanian Voice - State-of-the-art TTS/STT for natural conversation experience",
+        "GDPR Compliant - All data encrypted end-to-end, no external storage"
+      ],
+      pouwIntegration: "Every time AIDA processes a patient interaction, SSTL tokens are minted via Proof of Useful Work. AIDA NFT holders earn passive income from real-world medical AI services!",
+      stats: {
+        activeClinics: "500+",
+        monthlyInteractions: "1M+",
+        patientSatisfaction: "99.5%",
+        availability: "24/7"
+      }
+    }
+  },
+  
   iNFTs: {
     standard: "ERC-7857 - Intelligent NFTs",
     protocol: "x402 Protocol",
@@ -190,8 +262,13 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "How do I create a Telegram AI agent?": "Visit https://smartsentinels.net/hub/create-agent! Connect your wallet, choose your subscription tier ($99/$249/$499), enter your bot token, add your website URL for the knowledge base, select a personality, and pay with USDT. Your AI agent will be live in minutes! 🤖",
     "What are Telegram AI agents?": "Custom AI bots for your Telegram community! They answer questions 24/7 based on YOUR project's knowledge base (scraped from your website). Choose from 4 personality presets or create a custom one. Powered by Google's Gemini AI. Perfect for crypto projects, businesses, or communities!",
     "How much does an AI agent cost?": "Starter: $99/month, Pro: $249/month, Enterprise: $499/month. Paid in USDT on BNB Chain. Cancel anytime. Manage your agents at https://smartsentinels.net/hub/my-agents",
+    "What is the AI Audit tool?": "Our AI-powered smart contract security scanner! Go to https://smartsentinels.net/hub/audit - paste your Solidity code or enter a contract address, pay 0.45 BNB, and get a comprehensive security audit. Supports 36 EVM chains, trained on ETA Registry standards and 37 SWC vulnerabilities. Reports stored on IPFS forever!",
+    "How much does an AI audit cost?": "0.45 BNB per audit. Each audit mints 67 SSTL tokens to the PoUW pool - 60% goes to NFT holders, 20% to treasury, 10% to burn. Real utility generating real rewards!",
+    "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Already LIVE with 500+ clinics and 1M+ monthly interactions! Every patient interaction mints SSTL via PoUW - AIDA NFT holders earn from real healthcare AI! https://aida-lac.vercel.app",
+    "What NFT collections are there?": "3 collections: 1) Genesis Collection (0.1 BNB) - 1000 max, lifetime rewards + 10% revenue share from future collections + 100% staking boost. 2) AI Audit Collection (0.074 BNB) - earn from every audit. 3) AIDA Collection - coming soon, medical AI rewards!",
+    "What is the Genesis NFT?": "The foundation of SmartSentinels! Limited to 1,000 NFTs at 0.1 BNB. Benefits: 10% revenue share from ALL future NFT sales, 100% staking boost, priority access to new features, and LIFETIME perpetual rewards. OG status forever!",
     "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply goes to PoUW rewards, 10% gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
-    "Is this a scam?": "If we were a scam, would we: Build actual AI agents? Get audited? Partner with BNB Chain, NVIDIA? Have a real team on LinkedIn? Launch a working MVP? Nah fam, we're here to revolutionize how AI creates value. DYOR and join us! 🛡️"
+    "Is this a scam?": "If we were a scam, would we: Build actual AI agents? Get audited? Partner with BNB Chain, NVIDIA? Have a real team on LinkedIn? Launch a working MVP? Deploy AI in Romanian medical clinics? Nah fam, we're here to revolutionize how AI creates value. DYOR and join us! 🛡️"
   }
 };
 

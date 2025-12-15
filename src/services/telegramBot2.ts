@@ -669,27 +669,30 @@ export class TelegramBotServiceBeta {
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
-    const welcomeMessages = [
-      `Hey {name}, welcome!`,
-      `Welcome to the group, {name}!`,
-      `Yo {name}!`,
-      `Welcome {name}!`,
-      `What's good {name}, welcome!`
+    // Beta: Follow up Alpha's greeting with project info
+    const introMessages = [
+      `{name}, you're in the right place! We're building AI agents that actually do useful work and earn you crypto. Not your typical mining - real AI services 🤖💰`,
+      `Ayy {name}! SmartSentinels = AI agents doing real work on BNB Chain. Hold our iNFTs, earn from AI services. No cap, actual utility 🔥`,
+      `{name} let's gooo! Quick rundown: AI agents perform real tasks (audits, services), you earn SSTL tokens. 40% supply to rewards, 10% burned. Deflationary + useful 📈`,
+      `Good timing {name}! We're not another memecoin - our AI agents do actual work and mint tokens as rewards. Check out https://smartsentinels.net for the full breakdown 🛡️`
     ];
+
+    // Small delay so Alpha greets first
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
     for (const member of members) {
       // Skip bots (including ourselves)
       if (member.is_bot) {
-        console.log(`[BETA-BOT] Skipping bot: ${member.first_name}`);
+        console.log(`[BETA] Skipping bot: ${member.first_name}`);
         continue;
       }
       
       const name = member.username ? `@${member.username}` : member.first_name;
-      const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
+      const introMsg = introMessages[Math.floor(Math.random() * introMessages.length)]
         .replace('{name}', name);
       
-      console.log(`[BETA-BOT] Welcoming new member: ${name}`);
-      await this.sendMessage(chatId, welcomeMsg);
+      console.log(`[BETA] Project intro for: ${name}`);
+      await this.sendMessage(chatId, introMsg);
     }
   }
 

@@ -353,7 +353,7 @@ export class TelegramBotService {
       const userName = message.from.username || message.from.first_name;
       const userId = message.from.id;
 
-      // Handle new members
+      // Handle new members - Alpha greets first (short)
       if (message.new_chat_members && message.new_chat_members.length > 0) {
         await this.handleNewMembers(chatId, message.new_chat_members);
         return;
@@ -562,18 +562,18 @@ export class TelegramBotService {
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
+    // Alpha: Short welcome only
     const welcomeMessages = [
-      `Welcome {name}!`,
-      `Hey {name}, welcome!`,
-      `Welcome to the group, {name}!`,
-      `Hey {name}!`,
-      `Welcome {name}! Good to have you here.`
+      `Welcome {name} 👋`,
+      `{name} just joined 🛡️`,
+      `Welcome {name}`,
+      `Yo {name} 👋`
     ];
 
     for (const member of members) {
       // Skip bots (including ourselves)
       if (member.is_bot) {
-        console.log(`[SMARTSENTINELS-BOT] Skipping bot: ${member.first_name}`);
+        console.log(`[ALPHA] Skipping bot: ${member.first_name}`);
         continue;
       }
       
@@ -581,7 +581,7 @@ export class TelegramBotService {
       const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
         .replace('{name}', name);
       
-      console.log(`[SMARTSENTINELS-BOT] Welcoming new member: ${name}`);
+      console.log(`[ALPHA] Short welcome for: ${name}`);
       await this.sendMessage(chatId, welcomeMsg);
     }
   }

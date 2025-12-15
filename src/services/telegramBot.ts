@@ -22,6 +22,12 @@ interface TelegramMessage {
     username?: string;
     is_bot?: boolean;
   }>;
+  left_chat_member?: {
+    id: number;
+    first_name: string;
+    username?: string;
+    is_bot?: boolean;
+  };
 }
 
 interface TelegramUpdate {
@@ -320,7 +326,18 @@ export class TelegramBotService {
   private botToken: string;
   private geminiService: GeminiService;
   private botUsername: string = '';
+  private botUserId: number = 0;
   private recentMessages: Map<number, Array<{userName: string; text: string; timestamp: number}>> = new Map();
+  
+  // Rate limiting & cooldown
+  private userCooldowns: Map<number, number> = new Map(); // userId -> last response timestamp
+  private userMessageCounts: Map<number, { count: number; firstMessage: number }> = new Map(); // spam detection
+  private readonly COOLDOWN_MS = 5000; // 5 second cooldown per user
+  private readonly SPAM_THRESHOLD = 5; // 5 messages in 30 seconds = spam
+  private readonly SPAM_WINDOW_MS = 30000;
+  
+  // Other bot IDs to skip
+  private readonly BETA_BOT_ID = 8580335193; // @SSTL_BETA_BOT
 
   constructor(botToken: string, geminiApiKey: string) {
     this.botToken = botToken;
@@ -331,7 +348,8 @@ export class TelegramBotService {
     // Get bot info
     const botInfo = await this.apiRequest('getMe');
     this.botUsername = botInfo.username;
-    console.log(`Bot initialized: @${this.botUsername}`);
+    this.botUserId = botInfo.id;
+    console.log(`Alpha Bot initialized: @${this.botUsername} (ID: ${this.botUserId})`);
   }
 
   async setWebhook(webhookUrl: string) {
@@ -359,8 +377,45 @@ export class TelegramBotService {
         return;
       }
 
-      // Ignore empty messages or bot's own messages
+      // Handle members who left - Alpha roasts them 💀
+      if (message.left_chat_member && !message.left_chat_member.is_bot) {
+        await this.handleMemberLeft(chatId, message.left_chat_member);
+        return;
+      }
+
+      // Skip messages from Beta bot (avoid talking over each other)
+      if (userId === this.BETA_BOT_ID) {
+        // Occasionally banter with Beta (5% chance)
+        if (Math.random() < 0.05 && text.length > 10) {
+          await this.banterWithBeta(chatId, text, message.message_id);
+        }
+        return;
+      }
+
+      // Ignore empty messages or any bot messages
       if (!text.trim() || message.from.is_bot) return;
+
+      // Spam detection - track message frequency
+      const now = Date.now();
+      const userSpamData = this.userMessageCounts.get(userId);
+      if (userSpamData) {
+        if (now - userSpamData.firstMessage < this.SPAM_WINDOW_MS) {
+          userSpamData.count++;
+          if (userSpamData.count > this.SPAM_THRESHOLD) {
+            console.log(`[ALPHA] Spam detected from ${userName}, ignoring`);
+            return;
+          }
+        } else {
+          // Reset window
+          this.userMessageCounts.set(userId, { count: 1, firstMessage: now });
+        }
+      } else {
+        this.userMessageCounts.set(userId, { count: 1, firstMessage: now });
+      }
+
+      // Check cooldown (skip if we responded to this user recently)
+      const lastResponse = this.userCooldowns.get(userId);
+      const isOnCooldown = lastResponse && (now - lastResponse) < this.COOLDOWN_MS;
 
       // Track recent messages for context (keep last 10 messages per chat)
       if (!this.recentMessages.has(chatId)) {
@@ -370,12 +425,15 @@ export class TelegramBotService {
       chatHistory.push({
         userName: userName,
         text: text,
-        timestamp: Date.now()
+        timestamp: now
       });
       // Keep only last 10 messages and messages from last 5 minutes
-      const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+      const fiveMinutesAgo = now - (5 * 60 * 1000);
       const filtered = chatHistory.filter(m => m.timestamp > fiveMinutesAgo).slice(-10);
       this.recentMessages.set(chatId, filtered);
+
+      // Check if this is a reply to Alpha's message
+      const isReplyToAlpha = (message as any).reply_to_message?.from?.id === this.botUserId;
 
       // Check if bot is mentioned or it's a private chat
       const isPrivateChat = message.chat.type === 'private';
@@ -387,23 +445,26 @@ export class TelegramBotService {
       let responseReason = '';
       
       if (isPrivateChat) {
-        shouldRespond = true;
+        shouldRespond = !isOnCooldown;
         responseReason = 'private_chat';
+      } else if (isReplyToAlpha) {
+        // Always respond to replies to our messages
+        shouldRespond = !isOnCooldown;
+        responseReason = 'reply_to_alpha';
       } else if (isMentioned) {
-        shouldRespond = true;
+        shouldRespond = !isOnCooldown;
         responseReason = 'mentioned';
-      } else if (hasTriggers) {
-        // Don't respond to EVERY trigger - add randomness for natural participation
-        const urgentTriggers = ['scam', 'legit?', 'safe?', 'help', 'question'];
-        const isUrgent = urgentTriggers.some(t => text.toLowerCase().includes(t));
+      } else if (hasTriggers && !isOnCooldown) {
+        // Alpha OWNS security/legitimacy questions - always respond
+        const securityTriggers = ['scam', 'legit', 'safe', 'rug', 'audit'];
+        const isSecurityQuestion = securityTriggers.some(t => text.toLowerCase().includes(t));
         
-        if (isUrgent) {
-          // Always respond to urgent questions
+        if (isSecurityQuestion) {
           shouldRespond = true;
-          responseReason = 'urgent';
+          responseReason = 'security_question';
         } else {
-          // For casual conversation, respond 25% of the time (Alpha focuses on technical)
-          shouldRespond = Math.random() < 0.25;
+          // For other triggers, respond 30% of the time
+          shouldRespond = Math.random() < 0.30;
           responseReason = 'casual_trigger';
         }
       }
@@ -436,6 +497,9 @@ export class TelegramBotService {
           );
 
           await this.sendMessage(chatId, response, message.message_id);
+          
+          // Update cooldown after successful response
+          this.userCooldowns.set(userId, Date.now());
         } catch (error) {
           console.error('Error generating response:', error);
           // Don't send error message for casual triggers, only for direct mentions
@@ -584,6 +648,49 @@ export class TelegramBotService {
       console.log(`[ALPHA] Short welcome for: ${name}`);
       await this.sendMessage(chatId, welcomeMsg);
     }
+  }
+
+  private async handleMemberLeft(chatId: number, member: { first_name: string; username?: string; is_bot?: boolean }) {
+    // Alpha roasts people who leave 💀
+    const roastMessages = [
+      `Another one with paper hands 📄🙌 Bye {name}`,
+      `{name} couldn't handle the alpha energy 💀`,
+      `Look who paperhanded out... {name} didn't see the potential smh`,
+      `{name} left already? We barely started cooking 🍳`,
+      `Skill issue. Bye {name} 👋`,
+      `{name} rage quit before the pump. Classic.`,
+      `Paper hands detected: {name} has left the building 🚪`,
+      `{name} said "I'm out" like we needed them anyway 😂`,
+      `One less weak hand. Later {name} ✌️`,
+      `{name} folded faster than a lawn chair. NGMI`,
+      `Andddd {name} is gone. Couldn't even wait for mainnet lmao`,
+      `{name} will be back at ATH asking "is it too late?" 📈`
+    ];
+
+    const name = member.username ? `@${member.username}` : member.first_name;
+    const roastMsg = roastMessages[Math.floor(Math.random() * roastMessages.length)]
+      .replace(/{name}/g, name);
+    
+    console.log(`[ALPHA] Roasting departed member: ${name}`);
+    await this.sendMessage(chatId, roastMsg);
+  }
+
+  // Banter with Beta occasionally
+  private async banterWithBeta(chatId: number, betaMessage: string, messageId: number) {
+    const banterResponses = [
+      "Beta out here writing essays again 📝",
+      "Calm down Beta, save some emojis for the rest of us 😂",
+      "Beta being the hype man as usual 💀",
+      "Facts though ^",
+      "What he said ^",
+      "Beta woke up and chose positivity today 🌟",
+      "The optimism is crazy 😂",
+      "Beta cooking 🔥"
+    ];
+    
+    const response = banterResponses[Math.floor(Math.random() * banterResponses.length)];
+    console.log(`[ALPHA] Bantering with Beta`);
+    await this.sendMessage(chatId, response, messageId);
   }
 
   private async sendMessage(chatId: number, text: string, replyToMessageId?: number) {

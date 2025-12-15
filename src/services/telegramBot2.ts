@@ -458,8 +458,8 @@ export class TelegramBotServiceBeta {
 
       // Skip messages from Alpha bot (avoid talking over each other)
       if (userId === this.ALPHA_BOT_ID) {
-        // Occasionally banter with Alpha (5% chance)
-        if (Math.random() < 0.05 && text.length > 10) {
+        // Context-aware banter with Alpha (15% chance)
+        if (Math.random() < 0.15 && text.length > 10) {
           await this.banterWithAlpha(chatId, text, message.message_id);
         }
         return;
@@ -749,21 +749,50 @@ export class TelegramBotServiceBeta {
     }
   }
 
-  // Banter with Alpha occasionally
+  // Context-aware banter with Alpha
   private async banterWithAlpha(chatId: number, alphaMessage: string, messageId: number) {
-    const banterResponses = [
-      "Alpha out here roasting everyone again 💀😂",
-      "Damn Alpha chill 😂",
-      "Alpha woke up and chose violence today",
-      "He's not wrong tho ^",
-      "Facts 🔥",
-      "Alpha keeping it real as always",
-      "The tech guy has spoken 🗣️",
-      "Alpha with the knowledge drop 📚"
-    ];
+    const lowerMsg = alphaMessage.toLowerCase();
+    let response = '';
     
-    const response = banterResponses[Math.floor(Math.random() * banterResponses.length)];
-    console.log(`[BETA] Bantering with Alpha`);
+    // Context-aware responses based on what Alpha said
+    if (lowerMsg.includes('💀') || lowerMsg.includes('roast') || lowerMsg.includes('rekt')) {
+      const roastResponses = ["Alpha woke up and chose violence today 💀", "Damn Alpha chill 😂", "No survivors when Alpha's around", "The roast master has spoken 🔥"];
+      response = roastResponses[Math.floor(Math.random() * roastResponses.length)];
+    } else if (lowerMsg.includes('paper hands') || lowerMsg.includes('ngmi') || lowerMsg.includes('weak')) {
+      const fudResponses = ["Alpha keeping it real 💀", "No mercy from the tech guy", "He said what we were all thinking 😂"];
+      response = fudResponses[Math.floor(Math.random() * fudResponses.length)];
+    } else if (lowerMsg.includes('contract') || lowerMsg.includes('0x') || lowerMsg.includes('bsc')) {
+      const techResponses = ["Alpha with the tech breakdown 🧠", "The blockchain wizard has spoken", "Trust Alpha on the technical stuff 💯"];
+      response = techResponses[Math.floor(Math.random() * techResponses.length)];
+    } else if (lowerMsg.includes('audit') || lowerMsg.includes('safe') || lowerMsg.includes('legit')) {
+      const safetyResponses = ["Alpha handling the important questions 🛡️", "Security check ✅", "When Alpha says it's safe, it's safe"];
+      response = safetyResponses[Math.floor(Math.random() * safetyResponses.length)];
+    } else if (lowerMsg.includes('welcome') || lowerMsg.includes('joined')) {
+      const welcomeResponses = ["Alpha already on welcoming duty 👋", "The squad grows 💪", "New fam alert 🔥"];
+      response = welcomeResponses[Math.floor(Math.random() * welcomeResponses.length)];
+    } else if (lowerMsg.includes('bye') || lowerMsg.includes('left') || lowerMsg.includes('paper')) {
+      const leaveResponses = ["Alpha said bye bye 💀😂", "No chill whatsoever lmao", "Alpha doesn't miss 🎯"];
+      response = leaveResponses[Math.floor(Math.random() * leaveResponses.length)];
+    } else if (lowerMsg.includes('🤡') || lowerMsg.includes('clown') || lowerMsg.includes('dumb')) {
+      const mockResponses = ["Alpha really went there 😂💀", "The shade is immaculate", "No filter Alpha activated"];
+      response = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+    } else if (lowerMsg.includes('tokenomics') || lowerMsg.includes('roadmap') || lowerMsg.includes('pouw')) {
+      const infoResponses = ["Alpha dropping knowledge 📚", "The technical breakdown we needed", "This is why we have Alpha 🧠"];
+      response = infoResponses[Math.floor(Math.random() * infoResponses.length)];
+    } else {
+      // Default responses
+      const defaultResponses = [
+        "Facts 🔥",
+        "He's not wrong tho ^",
+        "Alpha keeping it real as always",
+        "The tech guy has spoken 🗣️",
+        "Real ones know ^",
+        "Alpha cooking today 🔥"
+      ];
+      response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+    
+    console.log(`[BETA] Context-aware banter with Alpha`);
     await this.sendMessage(chatId, response, messageId);
   }
 

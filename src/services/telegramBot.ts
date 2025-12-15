@@ -385,8 +385,8 @@ export class TelegramBotService {
 
       // Skip messages from Beta bot (avoid talking over each other)
       if (userId === this.BETA_BOT_ID) {
-        // Occasionally banter with Beta (5% chance)
-        if (Math.random() < 0.05 && text.length > 10) {
+        // Context-aware banter with Beta (15% chance)
+        if (Math.random() < 0.15 && text.length > 10) {
           await this.banterWithBeta(chatId, text, message.message_id);
         }
         return;
@@ -675,21 +675,50 @@ export class TelegramBotService {
     await this.sendMessage(chatId, roastMsg);
   }
 
-  // Banter with Beta occasionally
+  // Context-aware banter with Beta
   private async banterWithBeta(chatId: number, betaMessage: string, messageId: number) {
-    const banterResponses = [
-      "Beta out here writing essays again 📝",
-      "Calm down Beta, save some emojis for the rest of us 😂",
-      "Beta being the hype man as usual 💀",
-      "Facts though ^",
-      "What he said ^",
-      "Beta woke up and chose positivity today 🌟",
-      "The optimism is crazy 😂",
-      "Beta cooking 🔥"
-    ];
+    const lowerMsg = betaMessage.toLowerCase();
+    let response = '';
     
-    const response = banterResponses[Math.floor(Math.random() * banterResponses.length)];
-    console.log(`[ALPHA] Bantering with Beta`);
+    // Context-aware responses based on what Beta said
+    if (lowerMsg.includes('🔥') || lowerMsg.includes('fire') || lowerMsg.includes('lit')) {
+      const fireResponses = ["Beta's on fire today 🔥", "He's not wrong though 🔥", "Beta cooking fr"];
+      response = fireResponses[Math.floor(Math.random() * fireResponses.length)];
+    } else if (lowerMsg.includes('🚀') || lowerMsg.includes('moon') || lowerMsg.includes('pump')) {
+      const moonResponses = ["Easy there rocket man 🚀😂", "Beta already packing for the moon lmao", "The hopium is strong with this one 💀"];
+      response = moonResponses[Math.floor(Math.random() * moonResponses.length)];
+    } else if (lowerMsg.includes('welcome') || lowerMsg.includes('joined')) {
+      const welcomeResponses = ["Beta already onboarding 💪", "The welcoming committee has arrived", "Beta never misses a new member"];
+      response = welcomeResponses[Math.floor(Math.random() * welcomeResponses.length)];
+    } else if (lowerMsg.includes('gm') || lowerMsg.includes('good morning')) {
+      const gmResponses = ["Beta spreading morning positivity as usual ☀️", "Someone had their coffee ☕", "The vibes are immaculate today"];
+      response = gmResponses[Math.floor(Math.random() * gmResponses.length)];
+    } else if (lowerMsg.includes('fam') || lowerMsg.includes('ser') || lowerMsg.includes('anon')) {
+      const slangResponses = ["Beta speaking the language of the people 😂", "Certified degen translator right here", "Beta's street cred is unmatched"];
+      response = slangResponses[Math.floor(Math.random() * slangResponses.length)];
+    } else if (lowerMsg.includes('💀') || lowerMsg.includes('lmao') || lowerMsg.includes('😂')) {
+      const funnyResponses = ["Even Beta found that funny 💀", "We got jokes today", "The comedy hour has begun"];
+      response = funnyResponses[Math.floor(Math.random() * funnyResponses.length)];
+    } else if (betaMessage.length > 150) {
+      const longResponses = ["Beta out here writing essays again 📝", "TL;DR anyone? 😂", "Beta really said lemme explain everything 💀", "The dedication to explaining things though 👏"];
+      response = longResponses[Math.floor(Math.random() * longResponses.length)];
+    } else if (lowerMsg.includes('!') && betaMessage.split('!').length > 2) {
+      const excitedResponses = ["The excitement is real 😂", "Beta's energy is unmatched today", "Someone's hyped 🔥"];
+      response = excitedResponses[Math.floor(Math.random() * excitedResponses.length)];
+    } else {
+      // Default responses
+      const defaultResponses = [
+        "Facts though ^",
+        "What he said ^",
+        "Beta cooking 🔥",
+        "Real talk from Beta",
+        "Beta woke up and chose positivity 🌟",
+        "The hype man has spoken"
+      ];
+      response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+    }
+    
+    console.log(`[ALPHA] Context-aware banter with Beta`);
     await this.sendMessage(chatId, response, messageId);
   }
 

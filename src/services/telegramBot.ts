@@ -525,15 +525,23 @@ export class TelegramBotService {
     const mentionPattern = new RegExp(`@${this.botUsername}\\b`, 'i');
     if (mentionPattern.test(text)) return true;
     
-    // Check for name mentions: "alpha", "hey alpha", "alpha,", etc.
+    // Check for name mentions: "alpha", "hey alpha", "hi alpha", "alpha?", etc.
     const namePatterns = [
-      /\balpha\b/i,           // "alpha" as a word
+      /\balpha\b/i,           // "alpha" as a standalone word
       /hey\s+alpha/i,         // "hey alpha"
-      /yo\s+alpha/i,          // "yo alpha" 
-      /@alpha\b/i             // "@alpha" (without full bot name)
+      /hi\s+alpha/i,          // "hi alpha"
+      /yo\s+alpha/i,          // "yo alpha"
+      /sup\s+alpha/i,         // "sup alpha"
+      /@alpha\b/i,            // "@alpha" (without full bot name)
+      /alpha[,!?\s]/i,        // "alpha," "alpha!" "alpha?" "alpha "
+      /^alpha$/i              // just "alpha"
     ];
     
-    return namePatterns.some(pattern => pattern.test(lowerText));
+    const mentioned = namePatterns.some(pattern => pattern.test(lowerText));
+    if (mentioned) {
+      console.log(`[ALPHA] Mention detected in: "${text}"`);
+    }
+    return mentioned;
   }
 
   private shouldRespond(text: string): boolean {

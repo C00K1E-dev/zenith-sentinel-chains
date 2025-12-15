@@ -404,8 +404,9 @@ class GeminiServiceBeta {
 export class TelegramBotServiceBeta {
   private botToken: string;
   private geminiService: GeminiServiceBeta;
-  private botUsername: string = '';
-  private botUserId: number = 0;
+  // HARDCODED - no initialize() needed for serverless
+  private botUsername: string = 'SSTL_BETA_BOT';
+  private botUserId: number = 8580335193;
   private recentMessages: Map<number, Array<{userName: string; text: string; timestamp: number}>> = new Map();
   
   // Rate limiting & cooldown
@@ -421,6 +422,7 @@ export class TelegramBotServiceBeta {
   constructor(botToken: string, geminiApiKey: string) {
     this.botToken = botToken;
     this.geminiService = new GeminiServiceBeta(geminiApiKey);
+    console.log(`[BETA] Bot ready: @${this.botUsername} (ID: ${this.botUserId})`);
   }
 
   async initialize() {

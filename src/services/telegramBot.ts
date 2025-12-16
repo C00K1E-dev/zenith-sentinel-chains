@@ -153,7 +153,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
       fullName: "Artificial Intelligence for Doctors and Assistants",
       description: "A STANDALONE PROJECT under the SmartSentinels umbrella. AIDA is a complete AI medical receptionist solution targeting Romanian medical offices - handling appointments, reminders, emergency filtering, and 24/7 patient support via phone and WhatsApp.",
       website: "https://aida-lac.vercel.app",
-      status: "Live - 500+ Active Clinics, 1M+ Monthly Interactions",
+      status: "Alpha Testing - Pilot phase with select medical offices",
       pricing: {
         basic: "199€/month - 24/7 reception, appointment management, SMS reminders",
         professional: "299€/month - WhatsApp Business, emergency filtering, detailed reports",
@@ -170,9 +170,9 @@ const SMARTSENTINELS_KNOWLEDGE = {
       ],
       pouwIntegration: "Every time AIDA processes a patient interaction, SSTL tokens are minted via Proof of Useful Work. AIDA NFT holders earn passive income from real-world medical AI services!",
       stats: {
-        activeClinics: "500+",
-        monthlyInteractions: "1M+",
-        patientSatisfaction: "99.5%",
+        activeClinics: "Alpha Testing",
+        monthlyInteractions: "Testing Phase",
+        patientSatisfaction: "Testing Phase",
         availability: "24/7"
       }
     }
@@ -264,7 +264,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "How much does an AI agent cost?": "Starter: $99/month, Pro: $249/month, Enterprise: $499/month. Paid in USDT on BNB Chain. Cancel anytime. Manage your agents at https://smartsentinels.net/hub/my-agents",
     "What is the AI Audit tool?": "Our AI-powered smart contract security scanner! Go to https://smartsentinels.net/hub/audit - paste your Solidity code or enter a contract address, pay 0.45 BNB, and get a comprehensive security audit. Supports 36 EVM chains, trained on ETA Registry standards and 37 SWC vulnerabilities. Reports stored on IPFS forever!",
     "How much does an AI audit cost?": "0.45 BNB per audit. Each audit mints 67 SSTL tokens to the PoUW pool - 60% goes to NFT holders, 20% to treasury, 10% to burn. Real utility generating real rewards!",
-    "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Already LIVE with 500+ clinics and 1M+ monthly interactions! Every patient interaction mints SSTL via PoUW - AIDA NFT holders earn from real healthcare AI! https://aida-lac.vercel.app",
+    "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Currently in ALPHA TESTING with pilot medical offices! Every patient interaction mints SSTL via PoUW - AIDA NFT holders will earn from real healthcare AI! https://aida-lac.vercel.app",
     "What NFT collections are there?": "3 collections: 1) Genesis Collection (0.1 BNB) - 1000 max, lifetime rewards + 10% revenue share from future collections + 100% staking boost. 2) AI Audit Collection (0.074 BNB) - earn from every audit. 3) AIDA Collection - coming soon, medical AI rewards!",
     "What is the Genesis NFT?": "The foundation of SmartSentinels! Limited to 1,000 NFTs at 0.1 BNB. Benefits: 10% revenue share from ALL future NFT sales, 100% staking boost, priority access to new features, and LIFETIME perpetual rewards. OG status forever!",
     "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply allocated for PoUW rewards, and 10% of each emission gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
@@ -441,7 +441,7 @@ export class TelegramBotService {
       'Yo {name} 👋 Airdrop is LIVE 🎁',
       'Welcome aboard {name} - AI agents paying real rewards 🤖',
       '{name} entered the chat 🚀 5min to setup your own AI bot',
-      'Hey {name} 👋 AIDA doing 1M+ interactions/month 🔥',
+      'Hey {name} 👋 AIDA in alpha testing for medical AI 🔥',
       '{name} just dropped in - Genesis NFT only 1000 supply 💎',
       'Ayy {name} welcome - 0.45 BNB audits vs $10k traditional 🛡️',
       'Sup {name} 👋 60% PoUW rewards to holders 💰',
@@ -498,7 +498,7 @@ export class TelegramBotService {
         try {
           const msg = await this.geminiService.generateResponse(
             tempUserId,
-            'Generate a SHORT (max 15 words) EXCITING welcome for someone joining SmartSentinels Telegram. Use {name} as placeholder. Include a quick hype line about ONE feature: "Genesis NFT = lifetime rewards", "AI audits 0.45 BNB", "5min bot setup", "Passive income from audits", "60% rewards to holders", "1M+ AIDA interactions", "10% burned = deflationary". Make it sound VALUABLE. Vary style. Use emojis 🤖💰🔥🛡️💎. Only output the welcome.',
+            'Generate a SHORT (max 15 words) EXCITING welcome for someone joining SmartSentinels Telegram. Use {name} as placeholder. Include a quick hype line about ONE feature: "Genesis NFT = lifetime rewards", "AI audits 0.45 BNB", "5min bot setup", "Passive income from audits", "60% rewards to holders", "AIDA medical AI in testing", "10% burned = deflationary". Make it sound VALUABLE. Vary style. Use emojis 🤖💰🔥🛡️💎. Only output the welcome.',
             'System',
             undefined,
             'simple'

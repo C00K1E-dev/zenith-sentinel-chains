@@ -153,8 +153,8 @@ const SidebarAirdrop = memo(() => {
     },
     {
       id: 'like-post',
-      name: 'Like Post on X',
-      description: 'Like our announcement post on X and submit for verification',
+      name: 'Like and Repost on X',
+      description: 'Like our recent post on X and submit for verification',
       points: 5,
       icon: Heart,
       completed: false,

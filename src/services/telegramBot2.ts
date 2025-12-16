@@ -147,7 +147,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
       fullName: "Artificial Intelligence for Doctors and Assistants",
       description: "A STANDALONE PROJECT under the SmartSentinels umbrella. AIDA is a complete AI medical receptionist solution targeting Romanian medical offices - handling appointments, reminders, emergency filtering, and 24/7 patient support via phone and WhatsApp.",
       website: "https://aida-lac.vercel.app",
-      status: "Live - 500+ Active Clinics, 1M+ Monthly Interactions",
+      status: "Alpha Testing - Pilot phase with select medical offices",
       pricing: {
         basic: "199€/month - 24/7 reception, appointment management, SMS reminders",
         professional: "299€/month - WhatsApp Business, emergency filtering, detailed reports",
@@ -164,9 +164,9 @@ const SMARTSENTINELS_KNOWLEDGE = {
       ],
       pouwIntegration: "Every time AIDA processes a patient interaction, SSTL tokens are minted via Proof of Useful Work. AIDA NFT holders earn passive income from real-world medical AI services!",
       stats: {
-        activeClinics: "500+",
-        monthlyInteractions: "1M+",
-        patientSatisfaction: "99.5%",
+        activeClinics: "Alpha Testing",
+        monthlyInteractions: "Testing Phase",
+        patientSatisfaction: "Testing Phase",
         availability: "24/7"
       }
     }
@@ -258,7 +258,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "How much does an AI agent cost?": "Starter: $99/month, Pro: $249/month, Enterprise: $499/month. Paid in USDT on BNB Chain. Cancel anytime. Manage your agents at https://smartsentinels.net/hub/my-agents",
     "What is the AI Audit tool?": "Our AI-powered smart contract security scanner! Go to https://smartsentinels.net/hub/audit - paste your Solidity code or enter a contract address, pay 0.45 BNB, and get a comprehensive security audit. Supports 36 EVM chains, trained on ETA Registry standards and 37 SWC vulnerabilities. Reports stored on IPFS forever!",
     "How much does an AI audit cost?": "0.45 BNB per audit. Each audit mints 67 SSTL tokens to the PoUW pool - 60% goes to NFT holders, 20% to treasury, 10% to burn. Real utility generating real rewards!",
-    "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Already LIVE with 500+ clinics and 1M+ monthly interactions! Every patient interaction mints SSTL via PoUW - AIDA NFT holders earn from real healthcare AI! https://aida-lac.vercel.app",
+    "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Currently in ALPHA TESTING with pilot medical offices! Every patient interaction mints SSTL via PoUW - AIDA NFT holders will earn from real healthcare AI! https://aida-lac.vercel.app",
     "What NFT collections are there?": "3 collections: 1) Genesis Collection (0.1 BNB) - 1000 max, lifetime rewards + 10% revenue share from future collections + 100% staking boost. 2) AI Audit Collection (0.074 BNB) - earn from every audit. 3) AIDA Collection - coming soon, medical AI rewards!",
     "What is the Genesis NFT?": "The foundation of SmartSentinels! Limited to 1,000 NFTs at 0.1 BNB. Benefits: 10% revenue share from ALL future NFT sales, 100% staking boost, priority access to new features, and LIFETIME perpetual rewards. OG status forever!",
     "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply allocated for PoUW rewards, and 10% of each emission gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
@@ -532,8 +532,8 @@ export class TelegramBotServiceBeta {
       'Ayy {name}! 🤖 Imagine your community has an AI expert answering questions INSTANTLY, 24/7, never sleeps! That\'s what we offer! Setup in 5 min, powered by Gemini AI, from $99/month! This is A GAME CHANGER! smartsentinels.net 💪',
       
       // AIDA focus - REAL WORLD PROOF!
-      '{name} welcome! 🏥 AIDA isn\'t some concept - it\'s LIVE RIGHT NOW! 500+ clinics, 1M+ MONTHLY calls handled! Romanian doctors are making BANK with AI receptionists! AIDA NFT holders earn from REAL medical AI! This is PROOF OF CONCEPT! 💰',
-      'Hey {name}! 🤖 AIDA has handled over 1 MILLION patient interactions! Real doctors, real clinics, real revenue! Every call = SSTL minted! AIDA NFT holders share in actual healthcare AI profits! This is NEXT LEVEL utility! 🔥',
+      '{name} welcome! 🏥 AIDA is in ALPHA TESTING! AI medical receptionist being piloted with Romanian doctors! Once live, AIDA NFT holders earn from EVERY patient interaction! Real-world healthcare AI utility! This will be HUGE! 💰',
+      'Hey {name}! 🤖 AIDA = AI receptionist for medical offices, currently in testing phase! Real doctors, real clinics, preparing for launch! Once live, every call = SSTL minted! AIDA NFT holders will share in actual healthcare AI profits! NEXT LEVEL utility coming! 🔥',
       
       // PoUW & Tokenomics focus - SELL THE MATH!
       'Welcome {name}! 💰 Here\'s the MATH: Hold NFT → AI does work → 60% of new SSTL goes to YOU → 10% gets BURNED → Supply shrinks → Your bag gets MORE VALUABLE! This is GENIUS tokenomics! smartsentinels.net 🧠💎',
@@ -563,7 +563,7 @@ export class TelegramBotServiceBeta {
         'Airdrop registration (free SSTL for early supporters at smartsentinels.net)',
         'AI Audit tool (0.45 BNB, 36 EVM chains supported, security reports)',
         'Telegram AI agent creation service ($99-$499/month, custom bots)',
-        'AIDA medical AI (500+ clinics, 1M+ monthly interactions, real-world utility)',
+        'AIDA medical AI (alpha testing with pilot clinics, real-world healthcare utility coming soon)',
         'PoUW rewards system (60% to NFT holders, 10% burned)',
         'General project overview (AI agents, real work, SSTL rewards)'
       ];

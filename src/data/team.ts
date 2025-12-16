@@ -26,7 +26,7 @@ const founder_data: DataType[] = [
     title: "Darius Galea",
     designasion: "Co-Founder",
     linkedin: "https://www.linkedin.com/in/darius-galea-a3072418b/",
-    twitter: ""
+    twitter: "https://x.com/TommyKHN?s=20"
   },
   {
     id: 3,

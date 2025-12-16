@@ -635,6 +635,8 @@ export class TelegramBotServiceBeta {
 
       // Skip messages from Alpha bot (avoid talking over each other)
       if (userId === this.ALPHA_BOT_ID) {
+        console.log('[BETA] Detected message from Alpha bot, checking for roasts...');
+        console.log('[BETA] Message text:', text);
         // Check if Alpha is roasting someone hard - Beta DEFENDS!
         const lowerText = text.toLowerCase();
         

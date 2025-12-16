@@ -436,16 +436,16 @@ export class TelegramBotService {
   private async initializeCache() {
     // Start with some default varied messages for instant use
     this.welcomeCache = [
-      'Welcome {name} 👋',
-      '{name} just joined 🛡️',
-      'Yo {name} 👋',
-      'Welcome aboard {name}',
-      '{name} entered the chat 🤖',
-      'Hey {name} 👋',
-      '{name} just dropped in',
-      'Ayy {name} welcome',
-      'Sup {name} 👋',
-      '{name} has arrived'
+      'Welcome {name} 👋 Genesis NFT = lifetime rewards 💎',
+      '{name} just joined 🛡️ Check the AI Audit NFT - passive income 💰',
+      'Yo {name} 👋 Airdrop is LIVE 🎁',
+      'Welcome aboard {name} - AI agents paying real rewards 🤖',
+      '{name} entered the chat 🚀 5min to setup your own AI bot',
+      'Hey {name} 👋 AIDA doing 1M+ interactions/month 🔥',
+      '{name} just dropped in - Genesis NFT only 1000 supply 💎',
+      'Ayy {name} welcome - 0.45 BNB audits vs $10k traditional 🛡️',
+      'Sup {name} 👋 60% PoUW rewards to holders 💰',
+      '{name} has arrived 🎯 Real AI, real revenue, real rewards'
     ];
     
     this.roastCache = [
@@ -498,7 +498,7 @@ export class TelegramBotService {
         try {
           const msg = await this.geminiService.generateResponse(
             tempUserId,
-            'Generate a SHORT (max 8 words) casual welcome greeting for someone joining a Telegram group. Vary the style - use {name} as placeholder for their name. Examples: "Yo {name} 👋", "{name} just joined 🔥", "Welcome {name}". Be creative and different each time. Only output the greeting, nothing else.',
+            'Generate a SHORT (max 15 words) EXCITING welcome for someone joining SmartSentinels Telegram. Use {name} as placeholder. Include a quick hype line about ONE feature: "Genesis NFT = lifetime rewards", "AI audits 0.45 BNB", "5min bot setup", "Passive income from audits", "60% rewards to holders", "1M+ AIDA interactions", "10% burned = deflationary". Make it sound VALUABLE. Vary style. Use emojis 🤖💰🔥🛡️💎. Only output the welcome.',
             'System',
             undefined,
             'simple'

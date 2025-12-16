@@ -429,9 +429,9 @@ class GeminiServiceBeta {
 
       // Adaptive token limits based on question type
       const tokenLimits = {
-        simple: 100,      // Greetings, short comments, acknowledgments
-        question: 300,    // Regular questions needing explanation
-        detailed: 600     // Complex topics like tokenomics, roadmap, how it works
+        simple: 150,      // Greetings, short comments, acknowledgments (increased from 100)
+        question: 400,    // Regular questions needing explanation (increased from 300)
+        detailed: 700     // Complex topics like tokenomics, roadmap, how it works (increased from 600)
       };
 
       // Create chat with history
@@ -642,9 +642,11 @@ export class TelegramBotServiceBeta {
         const hasSkullEmoji = text.includes('💀') || text.includes('\uD83D\uDC80');
         const hasClownEmoji = text.includes('🤡') || text.includes('\uD83E\uDD21');
         const hasLaughEmoji = text.includes('😂') || text.includes('\uD83D\uDE02');
+        const hasFacepalmEmoji = text.includes('🤦') || text.includes('\uD83E\uDD26');
+        const hasTrophyEmoji = text.includes('🏆');
         
         const isHardRoast = (
-          hasSkullEmoji || hasClownEmoji ||
+          hasSkullEmoji || hasClownEmoji || hasFacepalmEmoji || hasTrophyEmoji ||
           lowerText.includes('smooth brain') || lowerText.includes('dumb') ||
           lowerText.includes('clown') || lowerText.includes('ngmi') ||
           lowerText.includes('skill issue') || lowerText.includes('paper hands') ||
@@ -652,14 +654,30 @@ export class TelegramBotServiceBeta {
           lowerText.includes('read the whitepaper') || lowerText.includes('brain buffer') ||
           lowerText.includes('come on now') || lowerText.includes('my guy') ||
           lowerText.includes('did you forget') || lowerText.includes('try to keep up') ||
-          lowerText.includes('revolutionary concept i know') || lowerText.includes('come on') ||
+          lowerText.includes('revolutionary concept') || lowerText.includes('come on') ||
           lowerText.includes('yolo') || lowerText.includes('quick flip') ||
           lowerText.includes('asking the same') || lowerText.includes('again?') ||
-          (hasLaughEmoji && (lowerText.includes('?') || lowerText.includes('question')))
+          lowerText.includes('genius who thinks') || lowerText.includes('another genius') ||
+          lowerText.includes('pump-and-dump') || lowerText.includes('shitcoin') ||
+          lowerText.includes('pretty logo') || lowerText.includes('floods the exchanges') ||
+          lowerText.includes('before we\'ve even built') || lowerText.includes('listing site') ||
+          lowerText.includes('checks notes') || lowerText.includes('keyboard get stuck') ||
+          lowerText.includes('echo chamber') || lowerText.includes('participation trophy') ||
+          lowerText.includes('buddy') || lowerText.includes('pal') ||
+          lowerText.includes('get your head out') || lowerText.includes('confused questions') ||
+          lowerText.includes('spewing empty promises') || lowerText.includes('waiting for a while') ||
+          lowerText.includes('unplug your') || lowerText.includes('burns electricity') ||
+          lowerText.includes('decided to grace') || lowerText.includes('grace us with') ||
+          (hasLaughEmoji && (lowerText.includes('?') || lowerText.includes('question'))) ||
+          // Detect long sarcastic responses (roasts are usually longer and condescending)
+          (text.length > 80 && (lowerText.includes('another') || lowerText.includes('oh look') || 
+           lowerText.includes('genius') || lowerText.includes('forget') || lowerText.includes('my guy') ||
+           lowerText.includes('buddy') || lowerText.includes('pal')))
         );
         
         if (isHardRoast && text.length > 10) {
           // 100% chance to defend when Alpha roasts hard - Beta ALWAYS defends!
+          console.log('[BETA] ROAST DETECTED! Defending user from Alpha...');
           await this.defendUserFromRoast(chatId, text, message.message_id);
           return;
         }
@@ -969,9 +987,17 @@ export class TelegramBotServiceBeta {
     const isAboutResearch = lowerRoast.includes('research') || lowerRoast.includes('whitepaper') || lowerRoast.includes('read');
     const isAboutQuestions = lowerRoast.includes('same question') || lowerRoast.includes('asking') || lowerRoast.includes('forget how');
     const isAboutSmartsentinels = lowerRoast.includes('smartsentinels') || lowerRoast.includes('what is') || lowerRoast.includes('pouw');
+    const isAboutListings = lowerRoast.includes('coingecko') || lowerRoast.includes('coinmarketcap') || lowerRoast.includes('listing') || lowerRoast.includes('exchange') || lowerRoast.includes('pump-and-dump');
     
     // Criticize Alpha + provide actual helpful info based on context
-    if (isAboutScam) {
+    if (isAboutListings) {
+      const responses = [
+        "Yo Alpha chill 😂 They\'re just asking about visibility! Real talk: We\'re in PRIVATE SEED ROUND right now. CoinGecko/CMC listings come AFTER public launch Q1 2026! We\'re building FIRST, hype LATER. That\'s how you do it right! 🛡️",
+        "Alpha ease up lmao 💀 Listings question is VALID! We\'re not rushing to exchanges before we have substance. Once we launch publicly Q1 2026, CMC/CG will follow naturally. Building real utility > quick pump! 💪",
+        "Bro Alpha not everyone knows the timeline 😅 Yes we\'ll be on CoinGecko & CoinMarketCap! But AFTER we finish our private round and go public. We\'re doing this the RIGHT way - build first, market later! 🚀"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    } else if (isAboutScam) {
       const responses = [
         "Easy there Alpha 😅 Look, it's a FAIR question! We're fully audited and doxxed. Audit report: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum - Team on LinkedIn. 100% legit fam! 🛡️",
         "Alpha chill lmao 💀 Not everyone knows us yet! Yes we're legit: professional audits, partnerships with BNB Chain & NVIDIA, doxxed team. Check our LinkedIn! No rug pull here 💪",

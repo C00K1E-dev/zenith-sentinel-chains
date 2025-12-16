@@ -350,9 +350,9 @@ class GeminiService {
 
       // Adaptive token limits based on question type
       const tokenLimits = {
-        simple: 100,      // Greetings, short comments, acknowledgments
-        question: 300,    // Regular questions needing explanation
-        detailed: 600     // Complex topics like tokenomics, roadmap, how it works
+        simple: 150,      // Greetings, short comments, acknowledgments (increased from 100)
+        question: 400,    // Regular questions needing explanation (increased from 300)
+        detailed: 700     // Complex topics like tokenomics, roadmap, how it works (increased from 600)
       };
 
       // Create chat with history

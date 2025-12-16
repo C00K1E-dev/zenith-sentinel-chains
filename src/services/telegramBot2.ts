@@ -561,12 +561,9 @@ export class TelegramBotServiceBeta {
         );
         
         if (isHardRoast && text.length > 10) {
-          // 95% chance to defend when Alpha roasts hard - Beta is VERY protective!
-          if (Math.random() < 0.95) {
-            console.log(`[BETA] Detected Alpha roast with skull/roast patterns, defending user!`);
-            await this.defendUserFromRoast(chatId, text, message.message_id);
-            return;
-          }
+          // 100% chance to defend when Alpha roasts hard - Beta ALWAYS defends!
+          await this.defendUserFromRoast(chatId, text, message.message_id);
+          return;
         }
         
         // Regular banter with Alpha (15% chance)

@@ -36,7 +36,7 @@ export const MetaTags = memo(({
       "name": "SmartSentinels",
       "logo": {
         "@type": "ImageObject",
-        "url": `${BASE_URL}/ss-icon.svg`
+        "url": `${BASE_URL}/ss-icon.svg?v=4`
       }
     },
     "inLanguage": "en-US",

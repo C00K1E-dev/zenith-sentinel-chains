@@ -464,6 +464,27 @@ export class TelegramBotService {
 
       // Skip messages from Beta bot (avoid talking over each other)
       if (userId === this.BETA_BOT_ID) {
+        // Check if Beta is defending someone from Alpha's roast - Alpha should respond!
+        const lowerText = text.toLowerCase();
+        const isBetaDefending = (
+          lowerText.includes('alpha chill') || lowerText.includes('alpha relax') ||
+          lowerText.includes('alpha ease up') || lowerText.includes('alpha calm down') ||
+          lowerText.includes('alpha you gotta be nicer') || lowerText.includes('alpha being alpha') ||
+          lowerText.includes('alpha tone it down') || lowerText.includes('alpha needs to relax') ||
+          lowerText.includes('easy there alpha') || lowerText.includes('bro alpha') ||
+          lowerText.includes('man alpha') || lowerText.includes('yo alpha') ||
+          lowerText.includes('ok alpha') || lowerText.includes('alpha can be a bit much') ||
+          lowerText.includes('don\'t mind him') || lowerText.includes('alpha being savage')
+        );
+        
+        if (isBetaDefending && text.length > 10) {
+          // 70% chance to respond when Beta calls Alpha out
+          if (Math.random() < 0.70) {
+            await this.respondToBetaDefense(chatId, text, message.message_id);
+            return;
+          }
+        }
+        
         // Context-aware banter with Beta (15% chance)
         if (Math.random() < 0.15 && text.length > 10) {
           await this.banterWithBeta(chatId, text, message.message_id);
@@ -788,6 +809,64 @@ export class TelegramBotService {
     
     console.log(`[ALPHA] Roasting departed member: ${name}`);
     await this.sendMessage(chatId, roastMsg);
+  }
+
+  // Alpha responds when Beta defends users from his roasts
+  private async respondToBetaDefense(chatId: number, betaMessage: string, messageId: number) {
+    const lowerMsg = betaMessage.toLowerCase();
+    let response = '';
+    
+    // Self-aware responses when Beta calls Alpha out
+    if (lowerMsg.includes('alpha chill') || lowerMsg.includes('alpha relax') || lowerMsg.includes('alpha calm down')) {
+      const chillResponses = [
+        "Alright alright, I'll tone it down 😅",
+        "Fine fine, being nicer now 👍",
+        "Ok ok, chill mode activated 😂",
+        "Fair enough, I'll ease up 🤝",
+        "You right, my bad 😅"
+      ];
+      response = chillResponses[Math.floor(Math.random() * chillResponses.length)];
+    } else if (lowerMsg.includes('alpha can be a bit much') || lowerMsg.includes('alpha being savage')) {
+      const selfAwareResponses = [
+        "I know, I know 😂",
+        "Can't help it sometimes 💀",
+        "Guilty as charged 🤷",
+        "It's who I am lmao",
+        "Someone's gotta keep it real tho 😅"
+      ];
+      response = selfAwareResponses[Math.floor(Math.random() * selfAwareResponses.length)];
+    } else if (lowerMsg.includes('tone it down') || lowerMsg.includes('ease up')) {
+      const toneDownResponses = [
+        "Aight, dialing it back 🤝",
+        "Fair point, I'll chill 😅",
+        "Ok ok, message received 👍",
+        "Fine, softer approach from now 😂",
+        "You win, being nice now 🙂"
+      ];
+      response = toneDownResponses[Math.floor(Math.random() * toneDownResponses.length)];
+    } else if (lowerMsg.includes('don\'t mind him') || lowerMsg.includes('he\'s just passionate')) {
+      const acknowledgeResponses = [
+        "Appreciate the backup Beta 🤝",
+        "Thanks for the save lol",
+        "Good cop bad cop fr 😂",
+        "You handle the nice, I handle the real talk 💪",
+        "We balance each other out 🔥"
+      ];
+      response = acknowledgeResponses[Math.floor(Math.random() * acknowledgeResponses.length)];
+    } else {
+      // Generic responses when Beta is defending
+      const genericResponses = [
+        "Ok I'll try and chill 😅",
+        "Fine, being nicer 👍",
+        "Aight, less roasting more helping 🤝",
+        "You right, I'll dial it back 😂",
+        "Fair enough, softer approach 🙂"
+      ];
+      response = genericResponses[Math.floor(Math.random() * genericResponses.length)];
+    }
+    
+    console.log(`[ALPHA] Responding to Beta's defense/criticism`);
+    await this.sendMessage(chatId, response, messageId);
   }
 
   // Context-aware banter with Beta

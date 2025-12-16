@@ -539,8 +539,14 @@ export class TelegramBotServiceBeta {
       if (userId === this.ALPHA_BOT_ID) {
         // Check if Alpha is roasting someone hard - Beta DEFENDS!
         const lowerText = text.toLowerCase();
+        
+        // Skull emoji and roast detection - check BOTH text and lowerText
+        const hasSkullEmoji = text.includes('💀') || text.includes('\uD83D\uDC80');
+        const hasClownEmoji = text.includes('🤡') || text.includes('\uD83E\uDD21');
+        const hasLaughEmoji = text.includes('😂') || text.includes('\uD83D\uDE02');
+        
         const isHardRoast = (
-          lowerText.includes('💀') || lowerText.includes('🤡') ||
+          hasSkullEmoji || hasClownEmoji ||
           lowerText.includes('smooth brain') || lowerText.includes('dumb') ||
           lowerText.includes('clown') || lowerText.includes('ngmi') ||
           lowerText.includes('skill issue') || lowerText.includes('paper hands') ||
@@ -551,12 +557,13 @@ export class TelegramBotServiceBeta {
           lowerText.includes('revolutionary concept i know') || lowerText.includes('come on') ||
           lowerText.includes('yolo') || lowerText.includes('quick flip') ||
           lowerText.includes('asking the same') || lowerText.includes('again?') ||
-          text.includes('😂') && (lowerText.includes('?') || lowerText.includes('question'))
+          (hasLaughEmoji && (lowerText.includes('?') || lowerText.includes('question')))
         );
         
         if (isHardRoast && text.length > 10) {
-          // 80% chance to defend when Alpha roasts hard - Beta is protective!
-          if (Math.random() < 0.80) {
+          // 95% chance to defend when Alpha roasts hard - Beta is VERY protective!
+          if (Math.random() < 0.95) {
+            console.log(`[BETA] Detected Alpha roast with skull/roast patterns, defending user!`);
             await this.defendUserFromRoast(chatId, text, message.message_id);
             return;
           }

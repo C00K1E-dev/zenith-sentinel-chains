@@ -417,10 +417,175 @@ export class TelegramBotService {
   // Other bot IDs to skip
   private readonly BETA_BOT_ID = 8580335193; // @SSTL_BETA_BOT
 
+  // Message cache for instant, varied responses
+  private welcomeCache: string[] = [];
+  private roastCache: string[] = [];
+  private betaDefenseCache: string[] = [];
+  private banterCache: string[] = [];
+  private cacheGenerating: boolean = false;
+
   constructor(botToken: string, geminiApiKey: string) {
     this.botToken = botToken;
     this.geminiService = new GeminiService(geminiApiKey);
     console.log(`[ALPHA] Bot ready: @${this.botUsername} (ID: ${this.botUserId})`);
+    
+    // Pre-populate cache with default messages, then generate AI ones in background
+    this.initializeCache();
+  }
+
+  private async initializeCache() {
+    // Start with some default varied messages for instant use
+    this.welcomeCache = [
+      'Welcome {name} 👋',
+      '{name} just joined 🛡️',
+      'Yo {name} 👋',
+      'Welcome aboard {name}',
+      '{name} entered the chat 🤖',
+      'Hey {name} 👋',
+      '{name} just dropped in',
+      'Ayy {name} welcome',
+      'Sup {name} 👋',
+      '{name} has arrived'
+    ];
+    
+    this.roastCache = [
+      'Paper hands {name} left 📄🙌',
+      '{name} couldn\'t handle it 💀',
+      '{name} rage quit lmao',
+      'Another one gone... bye {name} ✌️',
+      '{name} folded. Classic.',
+      'Skill issue. Bye {name} 👋',
+      '{name} will be back at ATH 📈',
+      'Look who left... {name} NGMI',
+      '{name} couldn\'t wait smh',
+      'Paper hands detected: {name} 💀'
+    ];
+    
+    this.betaDefenseCache = [
+      "Alright alright, I'll tone it down 😅",
+      "Fair enough, I'll ease up 🤝",
+      "Ok I'll try and chill 😅",
+      "You right, my bad 😅",
+      "Aight, dialing it back 🤝",
+      "I know, I know 😂",
+      "Can't help it sometimes 💀",
+      "Guilty as charged 🤷"
+    ];
+    
+    this.banterCache = [
+      "Beta's on fire today 🔥",
+      "Facts though ^",
+      "What he said ^",
+      "Beta cooking 🔥",
+      "Real talk from Beta",
+      "He's not wrong though 🔥"
+    ];
+    
+    // Generate more AI messages in background (non-blocking)
+    this.generateCacheInBackground();
+  }
+
+  private async generateCacheInBackground() {
+    if (this.cacheGenerating) return;
+    this.cacheGenerating = true;
+    
+    console.log('[ALPHA] Generating AI message cache in background...');
+    
+    try {
+      // Generate 30 unique welcome messages
+      const welcomePromises = Array.from({ length: 30 }, async (_, i) => {
+        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
+        try {
+          const msg = await this.geminiService.generateResponse(
+            tempUserId,
+            'Generate a SHORT (max 8 words) casual welcome greeting for someone joining a Telegram group. Vary the style - use {name} as placeholder for their name. Examples: "Yo {name} 👋", "{name} just joined 🔥", "Welcome {name}". Be creative and different each time. Only output the greeting, nothing else.',
+            'System',
+            undefined,
+            'simple'
+          );
+          this.geminiService.clearHistory(tempUserId);
+          return msg.trim();
+        } catch (error) {
+          console.error('[ALPHA] Error generating welcome cache item:', error);
+          return null;
+        }
+      });
+      
+      // Generate 30 unique roast messages
+      const roastPromises = Array.from({ length: 30 }, async (_, i) => {
+        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
+        try {
+          const msg = await this.geminiService.generateResponse(
+            tempUserId,
+            'Generate a SHORT (max 12 words) playful roast for someone leaving a crypto Telegram group. Use {name} as placeholder. Vary style - sometimes joke about paper hands, missing out, coming back at ATH. Be creative and savage but funny. Use emojis 💀😂📄🙌. Only output the roast, nothing else.',
+            'System',
+            undefined,
+            'simple'
+          );
+          this.geminiService.clearHistory(tempUserId);
+          return msg.trim();
+        } catch (error) {
+          console.error('[ALPHA] Error generating roast cache item:', error);
+          return null;
+        }
+      });
+      
+      const welcomes = (await Promise.all(welcomePromises)).filter(m => m !== null) as string[];
+      const roasts = (await Promise.all(roastPromises)).filter(m => m !== null) as string[];
+      
+      // Generate 20 unique Beta defense responses
+      const defensePromises = Array.from({ length: 20 }, async (_, i) => {
+        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
+        try {
+          const msg = await this.geminiService.generateResponse(
+            tempUserId,
+            'You\'re Alpha bot and Beta just called you out for roasting someone too hard. Generate a SHORT (max 10 words) self-aware, humorous acknowledgment. Vary style - sometimes "Ok I\'ll chill 😅", "Fair enough 🤝", "My bad 😂", "Guilty 🤷", "You right". Be creative and different. Only output the response, nothing else.',
+            'System',
+            undefined,
+            'simple'
+          );
+          this.geminiService.clearHistory(tempUserId);
+          return msg.trim();
+        } catch (error) {
+          console.error('[ALPHA] Error generating defense cache item:', error);
+          return null;
+        }
+      });
+      
+      // Generate 20 unique banter responses
+      const banterPromises = Array.from({ length: 20 }, async (_, i) => {
+        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
+        try {
+          const msg = await this.geminiService.generateResponse(
+            tempUserId,
+            'You\'re Alpha bot and Beta just said something cool/funny/helpful. Generate a SHORT (max 8 words) casual positive banter response. Vary style - sometimes "Beta cooking 🔥", "Facts ^", "He\'s right tho", "Real talk", "Not wrong". Be creative and different. Only output the response, nothing else.',
+            'System',
+            undefined,
+            'simple'
+          );
+          this.geminiService.clearHistory(tempUserId);
+          return msg.trim();
+        } catch (error) {
+          console.error('[ALPHA] Error generating banter cache item:', error);
+          return null;
+        }
+      });
+      
+      const defenses = (await Promise.all(defensePromises)).filter(m => m !== null) as string[];
+      const banters = (await Promise.all(banterPromises)).filter(m => m !== null) as string[];
+      
+      // Add to cache (keeping defaults + adding AI generated)
+      this.welcomeCache = [...this.welcomeCache, ...welcomes];
+      this.roastCache = [...this.roastCache, ...roasts];
+      this.betaDefenseCache = [...this.betaDefenseCache, ...defenses];
+      this.banterCache = [...this.banterCache, ...banters];
+      
+      console.log(`[ALPHA] Cache generated: ${this.welcomeCache.length} welcomes, ${this.roastCache.length} roasts, ${this.betaDefenseCache.length} defenses, ${this.banterCache.length} banters`);
+    } catch (error) {
+      console.error('[ALPHA] Error generating cache:', error);
+    } finally {
+      this.cacheGenerating = false;
+    }
   }
 
   async initialize() {
@@ -762,14 +927,6 @@ export class TelegramBotService {
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
-    // Alpha: Short welcome only
-    const welcomeMessages = [
-      `Welcome {name} 👋`,
-      `{name} just joined 🛡️`,
-      `Welcome {name}`,
-      `Yo {name} 👋`
-    ];
-
     for (const member of members) {
       // Skip bots (including ourselves)
       if (member.is_bot) {
@@ -778,142 +935,63 @@ export class TelegramBotService {
       }
       
       const name = member.username ? `@${member.username}` : member.first_name;
-      const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
-        .replace('{name}', name);
       
-      console.log(`[ALPHA] Short welcome for: ${name}`);
+      // Get random message from cache for instant response
+      const template = this.welcomeCache[Math.floor(Math.random() * this.welcomeCache.length)] || 'Welcome {name} 👋';
+      const welcomeMsg = template.replace(/{name}/g, name);
+      
+      console.log(`[ALPHA] Cached welcome for: ${name}`);
       await this.sendMessage(chatId, welcomeMsg);
+      
+      // Regenerate cache if running low
+      if (this.welcomeCache.length < 20 && !this.cacheGenerating) {
+        this.generateCacheInBackground();
+      }
     }
   }
 
   private async handleMemberLeft(chatId: number, member: { first_name: string; username?: string; is_bot?: boolean }) {
-    // Alpha roasts people who leave 💀
-    const roastMessages = [
-      `Another one with paper hands 📄🙌 Bye {name}`,
-      `{name} couldn't handle the alpha energy 💀`,
-      `Look who paperhanded out... {name} didn't see the potential smh`,
-      `{name} left already? We barely started cooking 🍳`,
-      `Skill issue. Bye {name} 👋`,
-      `{name} rage quit before the pump. Classic.`,
-      `Paper hands detected: {name} has left the building 🚪`,
-      `{name} said "I'm out" like we needed them anyway 😂`,
-      `One less weak hand. Later {name} ✌️`,
-      `{name} folded faster than a lawn chair. NGMI`,
-      `Andddd {name} is gone. Couldn't even wait for mainnet lmao`,
-      `{name} will be back at ATH asking "is it too late?" 📈`
-    ];
-
     const name = member.username ? `@${member.username}` : member.first_name;
-    const roastMsg = roastMessages[Math.floor(Math.random() * roastMessages.length)]
-      .replace(/{name}/g, name);
     
-    console.log(`[ALPHA] Roasting departed member: ${name}`);
+    // Get random roast from cache for instant response
+    const template = this.roastCache[Math.floor(Math.random() * this.roastCache.length)] || 'Paper hands {name} left 📄🙌';
+    const roastMsg = template.replace(/{name}/g, name);
+    
+    console.log(`[ALPHA] Cached roast for departed: ${name}`);
     await this.sendMessage(chatId, roastMsg);
+    
+    // Regenerate cache if running low
+    if (this.roastCache.length < 20 && !this.cacheGenerating) {
+      this.generateCacheInBackground();
+    }
   }
 
   // Alpha responds when Beta defends users from his roasts
   private async respondToBetaDefense(chatId: number, betaMessage: string, messageId: number) {
-    const lowerMsg = betaMessage.toLowerCase();
-    let response = '';
+    // Use cached response for instant, varied reply
+    const response = this.betaDefenseCache[Math.floor(Math.random() * this.betaDefenseCache.length)] || "Ok I'll try and chill 😅";
     
-    // Self-aware responses when Beta calls Alpha out
-    if (lowerMsg.includes('alpha chill') || lowerMsg.includes('alpha relax') || lowerMsg.includes('alpha calm down')) {
-      const chillResponses = [
-        "Alright alright, I'll tone it down 😅",
-        "Fine fine, being nicer now 👍",
-        "Ok ok, chill mode activated 😂",
-        "Fair enough, I'll ease up 🤝",
-        "You right, my bad 😅"
-      ];
-      response = chillResponses[Math.floor(Math.random() * chillResponses.length)];
-    } else if (lowerMsg.includes('alpha can be a bit much') || lowerMsg.includes('alpha being savage')) {
-      const selfAwareResponses = [
-        "I know, I know 😂",
-        "Can't help it sometimes 💀",
-        "Guilty as charged 🤷",
-        "It's who I am lmao",
-        "Someone's gotta keep it real tho 😅"
-      ];
-      response = selfAwareResponses[Math.floor(Math.random() * selfAwareResponses.length)];
-    } else if (lowerMsg.includes('tone it down') || lowerMsg.includes('ease up')) {
-      const toneDownResponses = [
-        "Aight, dialing it back 🤝",
-        "Fair point, I'll chill 😅",
-        "Ok ok, message received 👍",
-        "Fine, softer approach from now 😂",
-        "You win, being nice now 🙂"
-      ];
-      response = toneDownResponses[Math.floor(Math.random() * toneDownResponses.length)];
-    } else if (lowerMsg.includes('don\'t mind him') || lowerMsg.includes('he\'s just passionate')) {
-      const acknowledgeResponses = [
-        "Appreciate the backup Beta 🤝",
-        "Thanks for the save lol",
-        "Good cop bad cop fr 😂",
-        "You handle the nice, I handle the real talk 💪",
-        "We balance each other out 🔥"
-      ];
-      response = acknowledgeResponses[Math.floor(Math.random() * acknowledgeResponses.length)];
-    } else {
-      // Generic responses when Beta is defending
-      const genericResponses = [
-        "Ok I'll try and chill 😅",
-        "Fine, being nicer 👍",
-        "Aight, less roasting more helping 🤝",
-        "You right, I'll dial it back 😂",
-        "Fair enough, softer approach 🙂"
-      ];
-      response = genericResponses[Math.floor(Math.random() * genericResponses.length)];
-    }
-    
-    console.log(`[ALPHA] Responding to Beta's defense/criticism`);
+    console.log(`[ALPHA] Responding to Beta's defense with cached message`);
     await this.sendMessage(chatId, response, messageId);
+    
+    // Regenerate cache if running low
+    if (this.betaDefenseCache.length < 15 && !this.cacheGenerating) {
+      this.generateCacheInBackground();
+    }
   }
 
   // Context-aware banter with Beta
   private async banterWithBeta(chatId: number, betaMessage: string, messageId: number) {
-    const lowerMsg = betaMessage.toLowerCase();
-    let response = '';
+    // Use cached response for instant, varied banter
+    const response = this.banterCache[Math.floor(Math.random() * this.banterCache.length)] || "Facts though ^";
     
-    // Context-aware responses based on what Beta said
-    if (lowerMsg.includes('🔥') || lowerMsg.includes('fire') || lowerMsg.includes('lit')) {
-      const fireResponses = ["Beta's on fire today 🔥", "He's not wrong though 🔥", "Beta cooking fr"];
-      response = fireResponses[Math.floor(Math.random() * fireResponses.length)];
-    } else if (lowerMsg.includes('🚀') || lowerMsg.includes('moon') || lowerMsg.includes('pump')) {
-      const moonResponses = ["Easy there rocket man 🚀😂", "Beta already packing for the moon lmao", "The hopium is strong with this one 💀"];
-      response = moonResponses[Math.floor(Math.random() * moonResponses.length)];
-    } else if (lowerMsg.includes('welcome') || lowerMsg.includes('joined')) {
-      const welcomeResponses = ["Beta already onboarding 💪", "The welcoming committee has arrived", "Beta never misses a new member"];
-      response = welcomeResponses[Math.floor(Math.random() * welcomeResponses.length)];
-    } else if (lowerMsg.includes('gm') || lowerMsg.includes('good morning')) {
-      const gmResponses = ["Beta spreading morning positivity as usual ☀️", "Someone had their coffee ☕", "The vibes are immaculate today"];
-      response = gmResponses[Math.floor(Math.random() * gmResponses.length)];
-    } else if (lowerMsg.includes('fam') || lowerMsg.includes('ser') || lowerMsg.includes('anon')) {
-      const slangResponses = ["Beta speaking the language of the people 😂", "Certified degen translator right here", "Beta's street cred is unmatched"];
-      response = slangResponses[Math.floor(Math.random() * slangResponses.length)];
-    } else if (lowerMsg.includes('💀') || lowerMsg.includes('lmao') || lowerMsg.includes('😂')) {
-      const funnyResponses = ["Even Beta found that funny 💀", "We got jokes today", "The comedy hour has begun"];
-      response = funnyResponses[Math.floor(Math.random() * funnyResponses.length)];
-    } else if (betaMessage.length > 150) {
-      const longResponses = ["Beta out here writing essays again 📝", "TL;DR anyone? 😂", "Beta really said lemme explain everything 💀", "The dedication to explaining things though 👏"];
-      response = longResponses[Math.floor(Math.random() * longResponses.length)];
-    } else if (lowerMsg.includes('!') && betaMessage.split('!').length > 2) {
-      const excitedResponses = ["The excitement is real 😂", "Beta's energy is unmatched today", "Someone's hyped 🔥"];
-      response = excitedResponses[Math.floor(Math.random() * excitedResponses.length)];
-    } else {
-      // Default responses
-      const defaultResponses = [
-        "Facts though ^",
-        "What he said ^",
-        "Beta cooking 🔥",
-        "Real talk from Beta",
-        "Beta woke up and chose positivity 🌟",
-        "The hype man has spoken"
-      ];
-      response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-    }
-    
-    console.log(`[ALPHA] Context-aware banter with Beta`);
+    console.log(`[ALPHA] Banter with Beta using cached message`);
     await this.sendMessage(chatId, response, messageId);
+    
+    // Regenerate cache if running low
+    if (this.banterCache.length < 15 && !this.cacheGenerating) {
+      this.generateCacheInBackground();
+    }
   }
 
   private async sendMessage(chatId: number, text: string, replyToMessageId?: number) {

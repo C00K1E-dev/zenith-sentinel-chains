@@ -496,10 +496,75 @@ export class TelegramBotServiceBeta {
   // Other bot IDs to skip
   private readonly ALPHA_BOT_ID = 8511436060; // @SS_ALPHA_BOT
 
+  // Message cache for instant, varied responses
+  private introCache: string[] = [];
+  private cacheGenerating: boolean = false;
+
   constructor(botToken: string, geminiApiKey: string) {
     this.botToken = botToken;
     this.geminiService = new GeminiServiceBeta(geminiApiKey);
     console.log(`[BETA] Bot ready: @${this.botUsername} (ID: ${this.botUserId})`);
+    
+    // Pre-populate cache with default messages, then generate AI ones in background
+    this.initializeCache();
+  }
+
+  private async initializeCache() {
+    // Start with some default varied messages for instant use
+    this.introCache = [
+      '{name}, welcome! 🛡️ We build AI agents that do useful work. Check smartsentinels.net',
+      'Ayy {name}! SmartSentinels = AI agents + real work + SSTL rewards 🤖💰',
+      '{name} you\'re in the right place! AI agents earn you crypto through PoUW 🔥',
+      'Welcome {name}! Not your typical mining - our AI does actual services 💪',
+      '{name} just joined 🚀 Quick intro: Hold iNFTs, earn from AI work',
+      'Good timing {name}! AI agents that audit contracts & mint rewards 🛡️',
+      'Yo {name}! Real AI utility on BNB Chain. Learn more at smartsentinels.net 🤖',
+      '{name} welcome aboard! AI + blockchain + actual value creation 💎',
+      'Hey {name} 👋 SmartSentinels does useful work, not wasted mining',
+      '{name} let\'s go! Deflationary tokenomics + AI services = 📈'
+    ];
+    
+    // Generate more AI messages in background (non-blocking)
+    this.generateCacheInBackground();
+  }
+
+  private async generateCacheInBackground() {
+    if (this.cacheGenerating) return;
+    this.cacheGenerating = true;
+    
+    console.log('[BETA] Generating AI message cache in background...');
+    
+    try {
+      // Generate 40 unique intro messages
+      const introPromises = Array.from({ length: 40 }, async (_, i) => {
+        const tempUserId = Math.floor(Math.random() * 1000000) + 300000;
+        try {
+          const msg = await this.geminiService.generateResponse(
+            tempUserId,
+            'Generate a SHORT (max 20 words) friendly welcome + quick SmartSentinels project intro for someone joining Telegram. Use {name} as placeholder. Vary style - sometimes mention "AI agents", "PoUW rewards", "earn SSTL", "iNFTs", "useful work", "audits", etc. Be enthusiastic but different each time. Use emojis 🤖💰🔥🛡️. Only output the welcome message, nothing else.',
+            'System',
+            undefined,
+            'simple'
+          );
+          this.geminiService.clearHistory(tempUserId);
+          return msg.trim();
+        } catch (error) {
+          console.error('[BETA] Error generating intro cache item:', error);
+          return null;
+        }
+      });
+      
+      const intros = (await Promise.all(introPromises)).filter(m => m !== null) as string[];
+      
+      // Add to cache (keeping defaults + adding AI generated)
+      this.introCache = [...this.introCache, ...intros];
+      
+      console.log(`[BETA] Cache generated: ${this.introCache.length} intros`);
+    } catch (error) {
+      console.error('[BETA] Error generating cache:', error);
+    } finally {
+      this.cacheGenerating = false;
+    }
   }
 
   async initialize() {
@@ -830,14 +895,8 @@ export class TelegramBotServiceBeta {
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
-    // Beta: Follow up Alpha's greeting with project info
-    const introMessages = [
-      `{name}, you're in the right place! We're building AI agents that actually do useful work and earn you crypto. Not your typical mining - real AI services 🤖💰`,
-      `Ayy {name}! SmartSentinels = AI agents doing real work on BNB Chain. Hold our iNFTs, earn from AI services. No cap, actual utility 🔥`,
-      `{name} let's gooo! Quick rundown: AI agents perform real tasks (audits, services), you earn SSTL tokens. 40% supply allocated for PoUW rewards. Each emission = 10% burned. Deflationary AF 📈`,
-      `Good timing {name}! We're not another memecoin - our AI agents do actual work and mint tokens as rewards. Check out https://smartsentinels.net for the full breakdown 🛡️`
-    ];
-
+    // Beta: Follow up Alpha's greeting with project info - use cached messages
+    
     // Small delay so Alpha greets first
     await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -849,11 +908,18 @@ export class TelegramBotServiceBeta {
       }
       
       const name = member.username ? `@${member.username}` : member.first_name;
-      const introMsg = introMessages[Math.floor(Math.random() * introMessages.length)]
-        .replace('{name}', name);
       
-      console.log(`[BETA] Project intro for: ${name}`);
+      // Get random intro from cache for instant response
+      const template = this.introCache[Math.floor(Math.random() * this.introCache.length)] || 'Welcome {name}! 🛡️ We build AI agents that do useful work. Check smartsentinels.net 🤖';
+      const introMsg = template.replace(/{name}/g, name);
+      
+      console.log(`[BETA] Cached project intro for: ${name}`);
       await this.sendMessage(chatId, introMsg);
+      
+      // Regenerate cache if running low
+      if (this.introCache.length < 25 && !this.cacheGenerating) {
+        this.generateCacheInBackground();
+      }
     }
   }
 

@@ -510,18 +510,41 @@ export class TelegramBotServiceBeta {
   }
 
   private async initializeCache() {
-    // Start with some default varied messages for instant use
+    // Start with topic-specific detailed messages covering different features
     this.introCache = [
-      '{name}, welcome! 🛡️ We build AI agents that do useful work. Check smartsentinels.net',
-      'Ayy {name}! SmartSentinels = AI agents + real work + SSTL rewards 🤖💰',
-      '{name} you\'re in the right place! AI agents earn you crypto through PoUW 🔥',
-      'Welcome {name}! Not your typical mining - our AI does actual services 💪',
-      '{name} just joined 🚀 Quick intro: Hold iNFTs, earn from AI work',
-      'Good timing {name}! AI agents that audit contracts & mint rewards 🛡️',
-      'Yo {name}! Real AI utility on BNB Chain. Learn more at smartsentinels.net 🤖',
-      '{name} welcome aboard! AI + blockchain + actual value creation 💎',
-      'Hey {name} 👋 SmartSentinels does useful work, not wasted mining',
-      '{name} let\'s go! Deflationary tokenomics + AI services = 📈'
+      // NFT Collections focus
+      '{name}, welcome! 🛡️ We have 2 NFT collections: Genesis (0.1 BNB - lifetime rewards + 10% revenue share) & AI Audit NFT (0.074 BNB - earn from every audit). Mint at smartsentinels.net! 💎',
+      'Ayy {name}! 🚀 Genesis NFT = 0.1 BNB gets you 100% staking boost + perpetual revenue from future collections. Only 1000 minted! Check smartsentinels.net',
+      '{name} perfect timing! AI Audit NFTs (0.074 BNB) earn you passive SSTL from every contract audit on the network. Real utility = real rewards! 🤖💰',
+      
+      // Airdrop focus
+      'Welcome {name}! 💰 AIRDROP LIVE: Register at smartsentinels.net for free SSTL tokens. Early supporters get rewarded! Limited spots 🔥',
+      '{name} gm! 🌅 Don\'t miss the airdrop - free SSTL for early community members. Sign up at smartsentinels.net before it\'s gone!',
+      'Yo {name}! 🎁 Airdrop registration open now! Get free SSTL tokens just for joining early. Visit smartsentinels.net/airdrop',
+      
+      // Audit Services focus
+      '{name} welcome! 🛡️ Our AI Audit tool scans smart contracts on 36 EVM chains for just 0.45 BNB. Professional security reports + IPFS storage. Try it: smartsentinels.net/hub/audit',
+      'Hey {name}! 🔒 Need a contract audit? Our AI engine does comprehensive security analysis for 0.45 BNB. Supports Ethereum, BSC, Polygon, Base & 32 more chains! smartsentinels.net/hub/audit',
+      '{name} just joined! Perfect - we do AI-powered smart contract audits. 0.45 BNB = full security report with vulnerability breakdown. Check smartsentinels.net/hub/audit 🛡️',
+      
+      // Telegram AI Agents focus
+      'Welcome {name}! 🤖 You can create your own AI Telegram bot for your community! $99-$499/month, custom personality, trained on YOUR project. Build yours: smartsentinels.net/hub/create-agent',
+      '{name} yo! 💬 We offer Telegram AI agent creation - your bot answers questions 24/7 based on your website knowledge. From $99/month. Deploy at smartsentinels.net',
+      'Ayy {name}! Want an AI bot for your project? We got you - custom personality, auto-learns from your site, powered by Gemini AI. Starting $99/month: smartsentinels.net 🤖',
+      
+      // AIDA focus
+      '{name} welcome! 🏥 Fun fact: Our AIDA project (AI medical receptionist) serves 500+ clinics in Romania with 1M+ monthly interactions. Every interaction mints SSTL! Real-world AI utility 💪',
+      'Hey {name}! 🤖 AIDA (our medical AI) is LIVE with 500+ active clinics doing 24/7 patient support. AIDA NFT holders earn from real healthcare AI services. Check aida-lac.vercel.app',
+      '{name} gm! 💊 AIDA = AI receptionist for doctors. 500+ Romanian clinics using it RIGHT NOW for appointments, reminders, emergency filtering. Every patient call = SSTL minted via PoUW!',
+      
+      // PoUW & Tokenomics focus
+      'Welcome {name}! 💰 SmartSentinels uses Proof of Useful Work (PoUW) - AI does REAL work like audits & services, then SSTL gets minted. 60% of rewards go to NFT holders. Not wasted mining! 🔥',
+      '{name} perfect timing! 🚀 Our tokenomics: 40% supply for PoUW rewards, 10% of each emission BURNED = deflationary. Real utility driving real value. Learn more: smartsentinels.net',
+      'Yo {name}! 💎 Hold iNFTs/NFTs = earn SSTL from AI work automatically. Every audit, every service = tokens minted to holders. Passive income from actual AI utility!',
+      
+      // General/Mix
+      '{name} welcome aboard! 🛡️ AI agents on BNB Chain doing real work: audits, Telegram bots, medical AI. Check our Genesis NFT for lifetime rewards! smartsentinels.net',
+      'Ayy {name}! 🤖 SmartSentinels = AI that earns you money. Audits, agents, PoUW rewards, deflationary tokenomics. Dive in at smartsentinels.net 💰'
     ];
     
     // Generate more AI messages in background (non-blocking)
@@ -535,16 +558,28 @@ export class TelegramBotServiceBeta {
     console.log('[BETA] Generating AI message cache in background...');
     
     try {
-      // Generate 40 unique intro messages
+      // Generate 40 unique topic-specific intro messages
+      const topics = [
+        'Genesis NFT collection (0.1 BNB, lifetime rewards, 10% revenue share from future collections)',
+        'AI Audit NFT collection (0.074 BNB, earn SSTL from every contract audit)',
+        'Airdrop registration (free SSTL for early supporters at smartsentinels.net)',
+        'AI Audit tool (0.45 BNB, 36 EVM chains supported, security reports)',
+        'Telegram AI agent creation service ($99-$499/month, custom bots)',
+        'AIDA medical AI (500+ clinics, 1M+ monthly interactions, real-world utility)',
+        'PoUW rewards system (60% to NFT holders, 10% burned)',
+        'General project overview (AI agents, real work, SSTL rewards)'
+      ];
+      
       const introPromises = Array.from({ length: 40 }, async (_, i) => {
         const tempUserId = Math.floor(Math.random() * 1000000) + 300000;
+        const topic = topics[i % topics.length];
         try {
           const msg = await this.geminiService.generateResponse(
             tempUserId,
-            'Generate a SHORT (max 20 words) friendly welcome + quick SmartSentinels project intro for someone joining Telegram. Use {name} as placeholder. Vary style - sometimes mention "AI agents", "PoUW rewards", "earn SSTL", "iNFTs", "useful work", "audits", etc. Be enthusiastic but different each time. Use emojis 🤖💰🔥🛡️. Only output the welcome message, nothing else.',
+            `Generate a DETAILED (30-50 words) enthusiastic welcome message for someone joining SmartSentinels Telegram. Use {name} as placeholder. Focus on: ${topic}. Include specific details like prices, numbers, benefits. Be conversational and hype. Use emojis 🤖💰🔥🛡️💎🚀. Only output the welcome message, nothing else.`,
             'System',
             undefined,
-            'simple'
+            'question'
           );
           this.geminiService.clearHistory(tempUserId);
           return msg.trim();

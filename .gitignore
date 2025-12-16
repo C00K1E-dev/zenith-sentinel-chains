@@ -25,3 +25,8 @@ dist-ssr
 
 # Environment variables
 .env
+
+# Google Cloud Service Account Keys (NEVER commit these!)
+**/gen-lang-client-*.json
+google-indexing.js
+src/utils/*.json

@@ -733,9 +733,13 @@ export class TelegramBotService {
         const securityTriggers = ['scam', 'legit', 'safe', 'rug', 'audit'];
         const isSecurityQuestion = securityTriggers.some(t => text.toLowerCase().includes(t));
         
-        if (isSecurityQuestion) {
+        // Critical info questions - ALWAYS respond
+        const criticalTriggers = ['contract address', 'token address', 'bscscan', 'how to buy', 'where to buy'];
+        const isCriticalQuestion = criticalTriggers.some(t => text.toLowerCase().includes(t));
+        
+        if (isSecurityQuestion || isCriticalQuestion) {
           shouldRespond = true;
-          responseReason = 'security_question';
+          responseReason = isSecurityQuestion ? 'security_question' : 'critical_info';
         } else {
           // For other triggers, respond 30% of the time
           shouldRespond = Math.random() < 0.30;

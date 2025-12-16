@@ -261,7 +261,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Already LIVE with 500+ clinics and 1M+ monthly interactions! Every patient interaction mints SSTL via PoUW - AIDA NFT holders earn from real healthcare AI! https://aida-lac.vercel.app",
     "What NFT collections are there?": "3 collections: 1) Genesis Collection (0.1 BNB) - 1000 max, lifetime rewards + 10% revenue share from future collections + 100% staking boost. 2) AI Audit Collection (0.074 BNB) - earn from every audit. 3) AIDA Collection - coming soon, medical AI rewards!",
     "What is the Genesis NFT?": "The foundation of SmartSentinels! Limited to 1,000 NFTs at 0.1 BNB. Benefits: 10% revenue share from ALL future NFT sales, 100% staking boost, priority access to new features, and LIFETIME perpetual rewards. OG status forever!",
-    "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply goes to PoUW rewards, 10% gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
+    "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply allocated for PoUW rewards, and 10% of each emission gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
     "Is this a scam?": "If we were a scam, would we: Build actual AI agents? Get audited? Partner with BNB Chain, NVIDIA? Have a real team on LinkedIn? Launch a working MVP? Deploy AI in Romanian medical clinics? Nah fam, we're here to revolutionize how AI creates value. DYOR and join us! 🛡️"
   }
 };
@@ -292,7 +292,7 @@ Q: "is this a scam?"
 A: "Nah ser, we got audits, real partnerships, doxxed team. Scammers don't build actual products lmao 😂"
 
 Q: "wen moon?"
-A: "Soon™ 😂 But fr tho, 40% supply to PoUW rewards + 10% burn = deflationary. Do the math anon 📊🚀"
+A: "Soon™ 😂 But fr tho, 40% supply allocated for PoUW rewards. From each emission, 10% gets burned = deflationary. Do the math anon 📊🚀"
 
 Q: "tell me a joke"
 A: "Why did the Ethereum miner cry? Gas fees ate his profits 💀 Meanwhile we're over here with useful AI work on BSC"
@@ -537,7 +537,7 @@ export class TelegramBotServiceBeta {
 
       // Skip messages from Alpha bot (avoid talking over each other)
       if (userId === this.ALPHA_BOT_ID) {
-        // Check if Alpha is roasting someone hard - Beta ALWAYS tries to defend!
+        // Check if Alpha is roasting someone hard - Beta DEFENDS!
         const lowerText = text.toLowerCase();
         const isHardRoast = (
           lowerText.includes('💀') || lowerText.includes('🤡') ||
@@ -546,12 +546,17 @@ export class TelegramBotServiceBeta {
           lowerText.includes('skill issue') || lowerText.includes('paper hands') ||
           lowerText.includes('weak hands') || lowerText.includes('do some research') ||
           lowerText.includes('read the whitepaper') || lowerText.includes('brain buffer') ||
-          lowerText.includes('come on now') || lowerText.includes('my guy')
+          lowerText.includes('come on now') || lowerText.includes('my guy') ||
+          lowerText.includes('did you forget') || lowerText.includes('try to keep up') ||
+          lowerText.includes('revolutionary concept i know') || lowerText.includes('come on') ||
+          lowerText.includes('yolo') || lowerText.includes('quick flip') ||
+          lowerText.includes('asking the same') || lowerText.includes('again?') ||
+          text.includes('😂') && (lowerText.includes('?') || lowerText.includes('question'))
         );
         
         if (isHardRoast && text.length > 10) {
-          // 50% chance to defend when Alpha roasts hard
-          if (Math.random() < 0.50) {
+          // 80% chance to defend when Alpha roasts hard - Beta is protective!
+          if (Math.random() < 0.80) {
             await this.defendUserFromRoast(chatId, text, message.message_id);
             return;
           }
@@ -825,7 +830,7 @@ export class TelegramBotServiceBeta {
     const introMessages = [
       `{name}, you're in the right place! We're building AI agents that actually do useful work and earn you crypto. Not your typical mining - real AI services 🤖💰`,
       `Ayy {name}! SmartSentinels = AI agents doing real work on BNB Chain. Hold our iNFTs, earn from AI services. No cap, actual utility 🔥`,
-      `{name} let's gooo! Quick rundown: AI agents perform real tasks (audits, services), you earn SSTL tokens. 40% supply to rewards, 10% burned. Deflationary + useful 📈`,
+      `{name} let's gooo! Quick rundown: AI agents perform real tasks (audits, services), you earn SSTL tokens. 40% supply allocated for PoUW rewards. Each emission = 10% burned. Deflationary AF 📈`,
       `Good timing {name}! We're not another memecoin - our AI agents do actual work and mint tokens as rewards. Check out https://smartsentinels.net for the full breakdown 🛡️`
     ];
 
@@ -848,27 +853,77 @@ export class TelegramBotServiceBeta {
     }
   }
 
-  // Beta defends users when Alpha roasts too hard - the good cop!
-  private async defendUserFromRoast(chatId: number, alphaMessage: string, messageId: number) {
-    const defendResponses = [
-      "Easy there Alpha 😂 They're still learning, we all started somewhere fam 💪",
-      "Damn Alpha chill 😂 Don't scare off the newcomers, they're just curious!",
-      "Alpha with zero chill today 💀 But fr tho, welcome to ask questions here, that's what we're for 🤝",
-      "Lmaooo Alpha woke up violent 😂 But seriously, no dumb questions here fam, keep em coming!",
-      "Alpha really said no mercy today 💀 Don't worry tho, we're here to help! Ask away 🔥",
-      "Bro Alpha relax 😂 They're our future hodlers, be nice! We got you fam, ask anything 💯",
-      "The roast was free but the info is valuable 😂 Alpha's tough but fair, keep engaging!",
-      "Alpha said EMOTIONAL DAMAGE 💀 But fr, we love curious minds here, don't be shy!",
-      "LMAOO Alpha savage today 🔥 But real talk - questions are good, that's how we learn fam!",
-      "Alpha chose violence but I choose education 😂 Ask us anything, we don't bite (unlike Alpha) 💪",
-      "He roasted you but he still answered 😂 That's Alpha for you - savage but helpful 🤝",
-      "Don't take it personal fam, Alpha roasts everyone 💀 He loves y'all deep down... probably 😂",
-      "The tech guy has spoken harshly but CORRECTLY 😂 Keep engaging, we're here to help! 🔥",
-      "Alpha went full savage mode 💀 But we appreciate the question! This is how we grow as a community 💯"
-    ];
+  // Beta defends users when Alpha roasts too hard - criticize Alpha + provide helpful info!
+  private async defendUserFromRoast(chatId: number, alphaRoast: string, messageId: number) {
+    const lowerRoast = alphaRoast.toLowerCase();
+    let response = '';
     
-    const response = defendResponses[Math.floor(Math.random() * defendResponses.length)];
-    console.log(`[BETA] Defending user from Alpha's roast!`);
+    // Extract what topic Alpha was roasting about to provide REAL helpful info
+    const isAboutScam = lowerRoast.includes('scam') || lowerRoast.includes('rug') || lowerRoast.includes('legit');
+    const isAboutContract = lowerRoast.includes('contract') || lowerRoast.includes('address') || lowerRoast.includes('0x');
+    const isAboutAudit = lowerRoast.includes('audit') || lowerRoast.includes('yolo') || lowerRoast.includes('dog coin');
+    const isAboutMoon = lowerRoast.includes('moon') || lowerRoast.includes('lambo') || lowerRoast.includes('flip');
+    const isAboutResearch = lowerRoast.includes('research') || lowerRoast.includes('whitepaper') || lowerRoast.includes('read');
+    const isAboutQuestions = lowerRoast.includes('same question') || lowerRoast.includes('asking') || lowerRoast.includes('forget how');
+    const isAboutSmartsentinels = lowerRoast.includes('smartsentinels') || lowerRoast.includes('what is') || lowerRoast.includes('pouw');
+    
+    // Criticize Alpha + provide actual helpful info based on context
+    if (isAboutScam) {
+      const responses = [
+        "Easy there Alpha 😅 Look, it's a FAIR question! We're fully audited and doxxed. Audit report: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum - Team on LinkedIn. 100% legit fam! 🛡️",
+        "Alpha chill lmao 💀 Not everyone knows us yet! Yes we're legit: professional audits, partnerships with BNB Chain & NVIDIA, doxxed team. Check our LinkedIn! No rug pull here 💪",
+        "Bro Alpha needs to relax 😂 It's SMART to ask about legitimacy! We have audited contracts, real partnerships, working MVP at smartsentinels.net. DYOR doesn't mean getting roasted 😅"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    } else if (isAboutContract) {
+      const responses = [
+        "Alpha being Alpha lol 😂 Here's the info without the sass: SSTL Token contract is 0x56317dbCCd647C785883738fac9308ebcA063aca on BNB Chain. Always verify on bscscan.com! 🔍",
+        "Man Alpha tone it down 💀 Contract address: 0x56317dbCCd647C785883738fac9308ebcA063aca on BSC. Check it yourself at https://bscscan.com - stay safe fam! 🛡️",
+        "Ok Alpha we get it you're edgy 😅 For real though: 0x56317dbCCd647C785883738fac9308ebcA063aca is our official SSTL token on BNB Chain. Only trust links from smartsentinels.net!"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    } else if (isAboutAudit) {
+      const responses = [
+        "Alpha chill with the shade 😂 Yes we're professionally audited! Report here: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum - No YOLO contracts here! 🛡️",
+        "Bro you don't gotta roast everyone 💀 Full audit report: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum - We take security seriously! ✅",
+        "Alpha relax lmao 😅 Here's the audit without the attitude: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum - Professionally audited! 🔒"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    } else if (isAboutMoon) {
+      const responses = [
+        "Yo Alpha ease up 😂 People are excited! We're building REAL AI infrastructure. 40% supply for PoUW rewards, 10% of each emission gets burned = deflationary tokenomics. Price will follow utility! 🚀",
+        "Man let people dream a little 💀 Real talk: we have actual utility (AI audits, agents), deflationary tokenomics, and business adoption coming Q1 2026. Moon when fundamentals align! 📈",
+        "Alpha being savage as usual lol 😅 But fr: SmartSentinels isn't a meme coin. We're scaling AI agents across industries. Long-term value creation > quick flips! 💎🙌"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    } else if (isAboutResearch || isAboutSmartsentinels) {
+      const responses = [
+        "Bro Alpha not everyone has time to read everything 💀 Quick version: SmartSentinels = Decentralized AI agents powered by Proof of Useful Work (PoUW). AI does real work like audits, SSTL tokens get minted as rewards. Learn more: https://smartsentinels.net 🤖",
+        "Alpha chill it's a simple question 😂 SmartSentinels: AI agents that audit contracts & provide services. Hold iNFTs/NFTs = earn SSTL tokens from AI work. Not typical mining - we call it useful work! Check smartsentinels.net 💪",
+        "Easy there Donald 😅 TL;DR: We're building AI agents that perform REAL work (audits, services) instead of wasting energy. Hold NFTs = earn SSTL from AI services. Visit https://smartsentinels.net for full info! 🛡️",
+        "Ok Alpha we get it you know everything 💀 For everyone else: SmartSentinels uses Proof of Useful Work - AI agents do actual tasks, tokens get minted. 60% of PoUW rewards go to NFT holders. More at smartsentinels.net! 🚀"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    } else if (isAboutQuestions) {
+      const responses = [
+        "Yo Alpha maybe they just joined 😂 No shame in asking! What do you wanna know fam? We're here to help without the roasts 💪",
+        "Alpha bro not everyone lives in the chat 24/7 lol 💀 Ask away! Happy to explain anything about SmartSentinels, our AI agents, tokenomics, whatever you need! 🤖",
+        "Man Alpha needs to drink some chill juice 😅 All questions welcome here! Need info on contracts, audits, NFTs, roadmap? Just ask! 🛡️"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    } else {
+      // Generic defense + encouragement + helpful pointers
+      const responses = [
+        "Alpha you gotta be nicer man 😂 All questions are valid! What do you wanna know? Contract address, audit info, tokenomics, how to earn SSTL? I got you! 💪",
+        "Bro Alpha chill with the roasts 💀 We're all learning! Feel free to ask about SmartSentinels, our AI agents, PoUW, NFT collections - anything! 🤖",
+        "Easy there Alpha 😅 Don't mind him. What can I help you with? Project info, contracts, roadmap, partnerships? Happy to explain! 🛡️",
+        "Alpha calm down lmao 💀 Everyone's welcome to ask! Need to know about SSTL token, AI audits, Telegram agents, or how to earn rewards? Ask away fam! 🚀",
+        "Yo Alpha take it easy 😂 No dumb questions here! I can explain SmartSentinels, PoUW, iNFTs, staking - whatever you need without the shade! 💎"
+      ];
+      response = responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    console.log(`[BETA] Defending user from Alpha's roast with helpful info`);
     
     // Small delay to let Alpha's roast breathe before defending
     await new Promise(resolve => setTimeout(resolve, 800));

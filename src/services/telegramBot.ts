@@ -267,7 +267,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Already LIVE with 500+ clinics and 1M+ monthly interactions! Every patient interaction mints SSTL via PoUW - AIDA NFT holders earn from real healthcare AI! https://aida-lac.vercel.app",
     "What NFT collections are there?": "3 collections: 1) Genesis Collection (0.1 BNB) - 1000 max, lifetime rewards + 10% revenue share from future collections + 100% staking boost. 2) AI Audit Collection (0.074 BNB) - earn from every audit. 3) AIDA Collection - coming soon, medical AI rewards!",
     "What is the Genesis NFT?": "The foundation of SmartSentinels! Limited to 1,000 NFTs at 0.1 BNB. Benefits: 10% revenue share from ALL future NFT sales, 100% staking boost, priority access to new features, and LIFETIME perpetual rewards. OG status forever!",
-    "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply goes to PoUW rewards, 10% gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
+    "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply allocated for PoUW rewards, and 10% of each emission gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
     "Is this a scam?": "If we were a scam, would we: Build actual AI agents? Get audited? Partner with BNB Chain, NVIDIA? Have a real team on LinkedIn? Launch a working MVP? Deploy AI in Romanian medical clinics? Nah fam, we're here to revolutionize how AI creates value. DYOR and join us! 🛡️"
   }
 };
@@ -519,9 +519,18 @@ export class TelegramBotService {
       const isMentioned = this.isBotMentioned(text);
       const hasTriggers = this.shouldRespond(text);
       
+      // Check if Beta or another bot is mentioned - if so, back off
+      const otherBotMentioned = this.isOtherBotMentioned(text);
+      
       // Decide if we should respond
       let shouldRespond = false;
       let responseReason = '';
+      
+      // PRIORITY CHECK: If another bot is mentioned, don't interfere
+      if (otherBotMentioned && !isMentioned) {
+        console.log(`[ALPHA] Other bot mentioned, backing off`);
+        return;
+      }
       
       if (isPrivateChat) {
         shouldRespond = !isOnCooldown;
@@ -621,6 +630,25 @@ export class TelegramBotService {
       console.log(`[ALPHA] Mention detected in: "${text}"`);
     }
     return mentioned;
+  }
+
+  // Check if Beta or other bots are mentioned
+  private isOtherBotMentioned(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    
+    // Beta bot patterns
+    const betaPatterns = [
+      /\bbeta\b/i,           // "beta" as standalone word
+      /hey\s+beta/i,         // "hey beta"
+      /hi\s+beta/i,          // "hi beta"
+      /yo\s+beta/i,          // "yo beta"
+      /@beta\b/i,            // "@beta"
+      /beta[,!?\s]/i,        // "beta," "beta!" "beta?" "beta "
+      /^beta$/i,             // just "beta"
+      /@SSTL_BETA_BOT/i      // full bot username
+    ];
+    
+    return betaPatterns.some(pattern => pattern.test(lowerText));
   }
 
   private shouldRespond(text: string): boolean {

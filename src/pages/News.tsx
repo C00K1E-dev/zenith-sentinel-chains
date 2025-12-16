@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { MetaTags } from '@/components/MetaTags';
+import { useEffect } from 'react';
 
 interface NewsItem {
   id: number;
@@ -15,6 +16,45 @@ interface NewsItem {
 }
 
 const renderContentWithLinks = (text: string) => {
+  const parts = [];
+  let lastIndex = 0;
+  
+  // Check if content contains HTML (for embedded tweets)
+  if (text.includes('<div') || text.includes('<blockquote')) {
+    // Split by div tags to separate HTML from text
+    const htmlRegex = /(<div[^>]*>[\s\S]*?<\/div>)/g;
+    let match;
+    
+    while ((match = htmlRegex.exec(text)) !== null) {
+      // Add text before the HTML
+      if (match.index > lastIndex) {
+        const textBefore = text.slice(lastIndex, match.index);
+        parts.push(renderTextWithLinks(textBefore));
+      }
+      
+      // Add the HTML content
+      parts.push(
+        <div 
+          key={`html-${match.index}`}
+          dangerouslySetInnerHTML={{ __html: match[1] }}
+        />
+      );
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(renderTextWithLinks(text.slice(lastIndex)));
+    }
+    
+    return parts;
+  }
+  
+  return renderTextWithLinks(text);
+};
+
+const renderTextWithLinks = (text: string) => {
   const parts = [];
   let lastIndex = 0;
   
@@ -54,6 +94,27 @@ const renderContentWithLinks = (text: string) => {
 
 const News = () => {
   const newsItems: NewsItem[] = [
+    {
+      id: 5,
+      title: 'SmartSentinels Airdrop - Powered by theMiracle & MetaMask',
+      date: 'December 16, 2025',
+      emoji: null,
+      content: `We're excited to announce the SmartSentinels Airdrop, powered by [theMiracle](https://www.themiracle.io/) and MetaMask!
+
+SmartSentinels is building the next layer of AI infrastructure — where real work, real demand, and real value meet.
+
+We're not here to promise hype. We're here to turn AI into productive, verifiable utility, powered by a network that rewards contribution, not speculation.
+
+Join our airdrop campaign and be part of the future of decentralized AI infrastructure. Complete tasks, engage with our ecosystem, and earn SSTL tokens as we build something revolutionary.
+
+<div style="margin: 20px 0; display: flex; justify-content: center;">
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">SmartSentinels is building the next layer of AI infrastructure.<br>Where real work, real demand, and real value meet.<br><br>We're not here to promise hype.<br>We're here to turn AI into productive, verifiable utility, powered by a network that rewards contribution, not speculation.<br><br>Our… <a href="https://t.co/JaivRV2EF3">pic.twitter.com/JaivRV2EF3</a></p>&mdash; SmartSentinels (@SmartSentinels_) <a href="https://twitter.com/SmartSentinels_/status/2000594304646222122?ref_src=twsrc%5Etfw">December 15, 2025</a></blockquote>
+</div>
+
+Learn more and participate in the airdrop by visiting the Airdrop section on our platform.
+
+Together, we're building real utility, real value, and real impact in the AI and blockchain space.`
+    },
     {
       id: 4,
       title: 'Explore SmartSentinels on Micro3 Quest',
@@ -128,6 +189,23 @@ This partnership strengthens the foundation of our ecosystem — uniting AI inno
 Together, we're building the future of decentralized AI infrastructure.`
     }
   ];
+
+  // Load Twitter widget script for embedded tweet
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://platform.twitter.com/widgets.js';
+    script.async = true;
+    script.charset = 'utf-8';
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup: remove script when component unmounts
+      const existingScript = document.querySelector('script[src="https://platform.twitter.com/widgets.js"]');
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   return (
     <>

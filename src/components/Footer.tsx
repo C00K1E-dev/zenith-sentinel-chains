@@ -19,6 +19,23 @@ const TelegramIcon = ({ size, className }: { size?: number; className?: string }
   <FontAwesomeIcon icon={faTelegram} className={className} />
 );
 
+// Binance Square Icon Component
+const BinanceIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 126.61 126.61"
+    className={className}
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g>
+      <path d="M38.73 53.2l24.59-24.58 24.6 24.6 14.3-14.31L63.32 0 24.43 38.9l14.3 14.3zM0 63.31l14.3-14.3 14.31 14.3-14.31 14.3zM38.73 73.41l24.59 24.59 24.6-24.6 14.31 14.29-38.9 38.91-38.91-38.88 14.3-14.31zM98 63.31l14.3-14.3 14.31 14.3-14.31 14.3z"/>
+      <path d="M77.83 63.3L63.32 48.78 52.59 59.51l-1.246 1.245-2.045 2.046 14.51 14.52 14.51-14.51.51-.5z"/>
+    </g>
+  </svg>
+);
+
 const Footer = () => {
   const [tickerDismissed, setTickerDismissed] = useState(false);
   
@@ -39,6 +56,7 @@ const Footer = () => {
   
   const socialLinks = [
     { icon: TwitterIcon, label: 'X (Twitter)', href: 'https://x.com/SmartSentinels_' },
+    { icon: BinanceIcon, label: 'Binance Square', href: 'https://www.binance.com/en/square/profile/smart-sentinels' },
     { icon: TelegramIcon, label: 'Telegram', href: 'https://t.me/SmartSentinelsCommunity' },
     { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/company/smartsentinels/' },
     { icon: TikTokIcon, label: 'TikTok', href: 'https://www.tiktok.com/@smartsentinels_official' },

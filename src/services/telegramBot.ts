@@ -663,11 +663,19 @@ export class TelegramBotService {
       const userName = message.from.username || message.from.first_name;
       const userId = message.from.id;
 
-      // Handle new members - Alpha greets first (short)
+      // Handle new members - DISABLED: Let Beta handle all greetings
+      // To re-enable Alpha greetings, uncomment the block below
+      if (message.new_chat_members && message.new_chat_members.length > 0) {
+        // await this.handleNewMembers(chatId, message.new_chat_members);
+        return; // Skip processing - Beta will greet
+      }
+      
+      /* ALPHA GREETING CODE (preserved for future use):
       if (message.new_chat_members && message.new_chat_members.length > 0) {
         await this.handleNewMembers(chatId, message.new_chat_members);
         return;
       }
+      */
 
       // Handle members who left - Alpha roasts them 💀
       if (message.left_chat_member && !message.left_chat_member.is_bot) {

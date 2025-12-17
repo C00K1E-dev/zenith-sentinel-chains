@@ -1063,10 +1063,8 @@ export class TelegramBotServiceBeta {
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
-    // Beta: Follow up Alpha's greeting with project info - use cached messages
-    
-    // Small delay so Alpha greets first
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Beta: Handles ALL greetings (Alpha is disabled)
+    // No delay needed since Beta greets alone now
 
     // Fetch live NFT supply once for all new members
     const supply = await this.getNFTSupply();

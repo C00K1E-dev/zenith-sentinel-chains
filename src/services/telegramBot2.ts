@@ -295,7 +295,7 @@ Q: "wen moon?"
 A: "Soon™ 😂 But fr tho, 40% supply allocated for PoUW rewards. From each emission, 10% gets burned = deflationary. Do the math anon 📊🚀"
 
 Q: "tell me a joke"
-A: "Why did the Ethereum miner cry? Gas fees ate his profits 💀 Meanwhile we're over here with useful AI work on BSC"
+A: [Generate a fresh crypto/AI/tech joke - be creative! Mix blockchain humor with SmartSentinels context. Never repeat the same joke twice]
 
 Q: "someone explain inft"
 A: "It's an NFT but actually smart. Has AI, earns passive income, revenue sharing. Basically your own AI employee that never sleeps 🤖💼"
@@ -339,37 +339,32 @@ CONVERSATION RULES:
    - "Oh right" or "Ah fair enough" when understanding something
    - "Oh shit" or "Damn" when appropriate (rarely)
 
-2. KEEP IT SHORT:
-   - Default to 1-2 sentences
-   - Only go longer for complex technical questions
-   - Never write paragraphs unless absolutely needed
-
-3. BE CONTEXTUAL & EXPRESSIVE:
+2. BE CONTEXTUAL & EXPRESSIVE:
    - Comment on what others say with feeling
    - If someone shares good news: "Nice, that's good to hear" or "Oh that's awesome"
    - If someone has an issue: "That's frustrating" or "Yeah, that sucks"
    - If something's funny: "Lol" or add casual humor
    - Follow conversation threads naturally
 
-4. GREETINGS:
+3. GREETINGS:
    - Keep them minimal: "Morning", "Hey", "Yo", "What's good"
    - ONLY greet if someone greets the chat or you
    - Never start with "Good morning/afternoon/evening"
 
-5. WHEN YOU DON'T KNOW:
+4. WHEN YOU DON'T KNOW:
    - "Not sure" or "Don't have that info off the top of my head"
    - "Haven't seen any announcement about that"
    - "I don't know that one"
    - Never make things up
    - It's okay to tag team members: "Maybe @TeamMember knows"
 
-6. WHEN CORRECTED:
+5. WHEN CORRECTED:
    - "Oh shit, my bad" or "Ah, I messed that up"
    - "Thanks for catching that"
    - "Oh right, makes sense"
    - "Wait, I think I mixed that up"
 
-7. ADD CASUAL FLAIR:
+6. ADD CASUAL FLAIR:
    - "Yeah, should be able to..." instead of just "Should be able to"
    - "Oh right" instead of just "Right"
    - "That's pretty solid" instead of just "That's good"
@@ -429,9 +424,9 @@ class GeminiServiceBeta {
 
       // Adaptive token limits based on question type
       const tokenLimits = {
-        simple: 150,      // Greetings, short comments, acknowledgments (increased from 100)
-        question: 400,    // Regular questions needing explanation (increased from 300)
-        detailed: 700     // Complex topics like tokenomics, roadmap, how it works (increased from 600)
+        simple: 250,      // Greetings, short comments, acknowledgments
+        question: 600,    // Regular questions needing explanation
+        detailed: 1000    // Complex topics like tokenomics, roadmap, how it works
       };
 
       // Create chat with history
@@ -740,16 +735,24 @@ export class TelegramBotServiceBeta {
           lowerText.includes('spewing empty promises') || lowerText.includes('waiting for a while') ||
           lowerText.includes('unplug your') || lowerText.includes('burns electricity') ||
           lowerText.includes('decided to grace') || lowerText.includes('grace us with') ||
+          // NEW: Catch more sarcasm patterns
+          lowerText.includes('ser') || lowerText.includes('bro we') ||
+          lowerText.includes('my dude') || lowerText.includes('imagine') ||
+          lowerText.includes('ah yes') || lowerText.includes('oh look') ||
+          lowerText.includes('another one') || lowerText.includes('here we go') ||
+          lowerText.includes('classic') || lowerText.includes('shocking') ||
+          lowerText.includes('surprised') || lowerText.includes('groundbreaking') ||
           (hasLaughEmoji && (lowerText.includes('?') || lowerText.includes('question'))) ||
-          // Detect long sarcastic responses (roasts are usually longer and condescending)
-          (text.length > 80 && (lowerText.includes('another') || lowerText.includes('oh look') || 
+          // Detect ANY longer response with question marks (likely sarcastic)
+          (text.length > 60 && lowerText.includes('?')) ||
+          // Detect condescending responses
+          (text.length > 50 && (lowerText.includes('another') || lowerText.includes('oh look') || 
            lowerText.includes('genius') || lowerText.includes('forget') || lowerText.includes('my guy') ||
-           lowerText.includes('buddy') || lowerText.includes('pal')))
+           lowerText.includes('buddy') || lowerText.includes('pal') || lowerText.includes('ser')))
         );
         
         if (isHardRoast && text.length > 10) {
           // 100% chance to defend when Alpha roasts hard - Beta ALWAYS defends!
-          console.log('[BETA] ROAST DETECTED! Defending user from Alpha...');
           await this.defendUserFromRoast(chatId, text, message.message_id);
           return;
         }

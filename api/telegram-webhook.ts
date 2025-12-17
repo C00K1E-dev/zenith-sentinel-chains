@@ -104,8 +104,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const alphaBot = createTelegramBot(alphaToken, geminiApiKey);
       const betaBot = createTelegramBotBeta(betaToken, geminiApiKey);
       
-      // Skip bot's own messages
-      if (fromId === ALPHA_BOT_ID || fromId === BETA_BOT_ID) {
+      // Skip bot's own messages, BUT allow new_chat_members events (regardless of who added them)
+      const hasNewMembers = update.message?.new_chat_members && update.message.new_chat_members.length > 0;
+      const hasLeftMember = update.message?.left_chat_member;
+      
+      if ((fromId === ALPHA_BOT_ID || fromId === BETA_BOT_ID) && !hasNewMembers && !hasLeftMember) {
         console.log('[WEBHOOK] Skipping bot message');
         return res.status(200).json({ ok: true });
       }

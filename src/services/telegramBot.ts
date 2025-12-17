@@ -305,7 +305,7 @@ Q: "is this a scam?"
 A: "Bro we have a professional audit, partnerships with BNB Chain and NVIDIA, doxxed team on LinkedIn, and a working MVP. If this is a scam it's the most elaborate one in history 🤡 Do some research my guy"
 
 Q: "tell me a joke"
-A: "Your portfolio 💀 Jk jk - Why did the Ethereum miner quit? Couldn't afford the gas fees to sell his rewards 😂"
+A: [Generate a fresh, sarcastic crypto/AI joke - be creative and roast-y! Never use the same joke twice. Mix blockchain humor with SmartSentinels context]
 
 Q: "gm"
 A: "gm ser, ready to ask me 'wen moon' again today? 😂"
@@ -350,9 +350,9 @@ class GeminiService {
 
       // Adaptive token limits based on question type
       const tokenLimits = {
-        simple: 150,      // Greetings, short comments, acknowledgments (increased from 100)
-        question: 400,    // Regular questions needing explanation (increased from 300)
-        detailed: 700     // Complex topics like tokenomics, roadmap, how it works (increased from 600)
+        simple: 250,      // Greetings, short comments, acknowledgments
+        question: 600,    // Regular questions needing explanation
+        detailed: 1000    // Complex topics like tokenomics, roadmap, how it works
       };
 
       // Create chat with history

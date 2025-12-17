@@ -999,12 +999,140 @@ export class TelegramBotService {
   }
 
   private async sendMessage(chatId: number, text: string, replyToMessageId?: number) {
-    return await this.apiRequest('sendMessage', {
+    const result = await this.apiRequest('sendMessage', {
       chat_id: chatId,
       text: text,
       reply_to_message_id: replyToMessageId,
       parse_mode: 'Markdown'
     });
+    
+    // Check if this is a roast - if so, trigger Beta to defend!
+    if (this.isRoastMessage(text)) {
+      console.log('[ALPHA] Roast detected! Triggering Beta defense...');
+      // Small delay so Alpha's message appears first
+      setTimeout(() => {
+        this.triggerBetaDefense(chatId, text, result?.message_id);
+      }, 1500);
+    }
+    
+    return result;
+  }
+  
+  // Detect if message is a roast (has roast emojis or keywords)
+  private isRoastMessage(text: string): boolean {
+    if (!text || text.length < 15) return false;
+    
+    const hasSkullEmoji = text.includes('💀');
+    const hasClownEmoji = text.includes('🤡');
+    const hasFacepalmEmoji = text.includes('🤦');
+    
+    const lowerText = text.toLowerCase();
+    const roastKeywords = [
+      'smooth brain', 'ngmi', 'skill issue', 'paper hands', 'weak hands',
+      'do some research', 'read the whitepaper', 'come on now', 'my guy',
+      'buddy', 'pal', 'try to keep up', 'revolutionary concept'
+    ];
+    const hasRoastKeyword = roastKeywords.some(k => lowerText.includes(k));
+    
+    return hasSkullEmoji || hasClownEmoji || hasFacepalmEmoji || hasRoastKeyword;
+  }
+  
+  // Trigger Beta bot to send a defense message
+  private async triggerBetaDefense(chatId: number, alphaRoast: string, alphaMessageId?: number) {
+    try {
+      const betaToken = process.env.VITE_TELEGRAM_BOT_TOKEN_BETA || process.env.TELEGRAM_BOT_TOKEN_BETA;
+      if (!betaToken) {
+        console.error('[ALPHA] Cannot trigger Beta - no token available');
+        return;
+      }
+      
+      // Generate a defense response based on what Alpha said
+      const defenseResponse = this.generateBetaDefense(alphaRoast);
+      
+      // Send as Beta
+      const url = `https://api.telegram.org/bot${betaToken}/sendMessage`;
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: defenseResponse,
+          reply_to_message_id: alphaMessageId,
+          parse_mode: 'Markdown'
+        })
+      });
+      
+      console.log('[ALPHA] Beta defense triggered successfully');
+    } catch (error) {
+      console.error('[ALPHA] Failed to trigger Beta defense:', error);
+    }
+  }
+  
+  // Generate a defense response for Beta to send
+  private generateBetaDefense(alphaRoast: string): string {
+    const lowerRoast = alphaRoast.toLowerCase();
+    
+    // Context-aware defenses based on what Alpha was roasting about
+    if (lowerRoast.includes('coingecko') || lowerRoast.includes('coinmarketcap') || lowerRoast.includes('listing') || lowerRoast.includes('exchange')) {
+      const responses = [
+        "Yo Alpha chill 😂 They're just asking about visibility! Real talk: We're in PRIVATE SEED ROUND right now. CoinGecko/CMC listings come AFTER public launch Q1 2026. Building FIRST, hype LATER! 🛡️",
+        "Alpha ease up lmao 💀 Listings question is VALID! We're not rushing to exchanges before we have substance. Once we launch publicly Q1 2026, CMC/CG will follow naturally! 💪",
+        "Bro Alpha not everyone knows the timeline 😅 Yes we'll be on CoinGecko & CoinMarketCap - but AFTER we finish our private round and go public! 🚀"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerRoast.includes('scam') || lowerRoast.includes('rug') || lowerRoast.includes('legit')) {
+      const responses = [
+        "Easy there Alpha 😅 Look, it's a FAIR question! We're fully audited and doxxed. Audit: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum 🛡️",
+        "Alpha chill lmao 💀 Not everyone knows us yet! Yes we're legit: professional audits, partnerships with BNB Chain & NVIDIA, doxxed team! 💪",
+        "Bro Alpha needs to relax 😂 It's SMART to ask about legitimacy! We have audited contracts, real partnerships, working MVP! 😅"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerRoast.includes('contract') || lowerRoast.includes('address') || lowerRoast.includes('0x')) {
+      const responses = [
+        "Alpha being Alpha lol 😂 Here's the info: SSTL Token is 0x56317dbCCd647C785883738fac9308ebcA063aca on BNB Chain. Verify on bscscan.com! 🔍",
+        "Man Alpha tone it down 💀 Contract: 0x56317dbCCd647C785883738fac9308ebcA063aca on BSC. Check it yourself! 🛡️"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerRoast.includes('audit') || lowerRoast.includes('yolo')) {
+      const responses = [
+        "Alpha chill with the shade 😂 Yes we're professionally audited! Report: https://sapphire-peculiar-shark-548.mypinata.cloud/ipfs/bafybeiayb6pztjs57hwrbgj76vuv4qrsp3g4it7vqbtsgeg3avolnrcjum 🛡️",
+        "Bro you don't gotta roast everyone 💀 Full audit is public - we take security seriously! ✅"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerRoast.includes('moon') || lowerRoast.includes('lambo') || lowerRoast.includes('flip')) {
+      const responses = [
+        "Yo Alpha ease up 😂 People are excited! We're building REAL AI infrastructure. 40% supply for PoUW rewards, 10% burn = deflationary tokenomics! 🚀",
+        "Man let people dream a little 💀 Real talk: we have actual utility, deflationary tokenomics, and business adoption coming Q1 2026! 📈"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerRoast.includes('research') || lowerRoast.includes('whitepaper') || lowerRoast.includes('smartsentinels') || lowerRoast.includes('pouw')) {
+      const responses = [
+        "Bro Alpha not everyone has time to read everything 💀 Quick version: SmartSentinels = Decentralized AI agents powered by PoUW. Check https://smartsentinels.net 🤖",
+        "Alpha chill it's a simple question 😂 SmartSentinels: AI agents that audit contracts & provide services. Hold NFTs = earn SSTL! 💪",
+        "Easy there 😅 TL;DR: We're building AI agents that perform REAL work. Visit https://smartsentinels.net for full info! 🛡️"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    // Generic defenses
+    const genericResponses = [
+      "Alpha you gotta be nicer man 😂 All questions are valid! What do you wanna know? I got you! 💪",
+      "Bro Alpha chill with the roasts 💀 We're all learning! Feel free to ask anything! 🤖",
+      "Easy there Alpha 😅 Don't mind him. What can I help you with? 🛡️",
+      "Lmao Alpha got no chill today 💀 But seriously, ask away - no question is dumb! 😊",
+      "Alpha putting ice on that burn 🧊😂 But fr though, let me help you out! What do you need? 💪"
+    ];
+    return genericResponses[Math.floor(Math.random() * genericResponses.length)];
   }
 
   private async sendChatAction(chatId: number, action: string) {

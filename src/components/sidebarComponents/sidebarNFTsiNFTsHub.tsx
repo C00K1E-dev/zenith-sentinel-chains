@@ -133,8 +133,7 @@ const SidebarNFTsiNFTsHub = () => {
       >
         {/* Genesis Collection Card */}
         <motion.div variants={cardVariants}>
-          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-background via-background to-primary/5 border border-primary/20 hover:border-primary/40 transition-all duration-500 hover:shadow-xl hover:shadow-primary/20">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/20 to-accent/10 rounded-full blur-3xl -z-10 group-hover:scale-110 transition-transform duration-700"></div>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-background via-background to-primary/5 border border-primary/30">
             
             {/* Responsive Layout */}
             <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-0 p-4 md:p-6 lg:p-8">
@@ -157,8 +156,11 @@ const SidebarNFTsiNFTsHub = () => {
                     Genesis Collection
                     <Crown size={24} className="text-primary" />
                   </h3>
-                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                    The foundation of SmartSentinels ecosystem. Limited to 1,000 exclusive members with lifetime rewards.
+                  <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-2">
+                    For early supporters who believe in our vision. As a Genesis holder, you're not just an owner - you're a builder helping shape the future of SmartSentinels.
+                  </p>
+                  <p className="text-xs sm:text-sm text-primary/80 font-medium italic">
+                    Limited to 1,000 founding members with lifetime rewards.
                   </p>
                 </div>
 
@@ -259,8 +261,7 @@ const SidebarNFTsiNFTsHub = () => {
 
         {/* AI Audit Collection Card */}
         <motion.div variants={cardVariants}>
-          <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-background via-background to-accent/5 border border-accent/20 hover:border-accent/40 transition-all duration-500 hover:shadow-xl hover:shadow-accent/20">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-accent/20 to-primary/10 rounded-full blur-3xl -z-10 group-hover:scale-110 transition-transform duration-700"></div>
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-background via-background to-accent/5 border border-accent/30">
             
             {/* Responsive Layout */}
             <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-0 p-4 md:p-6 lg:p-8">

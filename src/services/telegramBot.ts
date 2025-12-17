@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import fetch from 'node-fetch';
 
 // Types
 interface TelegramMessage {
@@ -433,6 +434,52 @@ export class TelegramBotService {
     this.initializeCache();
   }
 
+  // Fetch live NFT supply from BSC
+  private async getNFTSupply(): Promise<{ genesis: number; aiAudit: number }> {
+    try {
+      const GENESIS_ADDRESS = '0xd859184C8F6e77Ce7De3f97C85bC902Aa30CeCF3';
+      const AI_AUDIT_ADDRESS = '0x09E2af87B89B0F2c1B5B93D14033dAf3EE9Ac3Bf';
+      const BSC_RPC = 'https://bsc-dataseed.binance.org/';
+      
+      // totalSupply() function signature
+      const data = '0x18160ddd';
+      
+      const [genesisRes, aiAuditRes] = await Promise.all([
+        fetch(BSC_RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_call',
+            params: [{ to: GENESIS_ADDRESS, data }, 'latest'],
+            id: 1
+          })
+        }),
+        fetch(BSC_RPC, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_call',
+            params: [{ to: AI_AUDIT_ADDRESS, data }, 'latest'],
+            id: 2
+          })
+        })
+      ]);
+      
+      const genesisData = await genesisRes.json();
+      const aiAuditData = await aiAuditRes.json();
+      
+      const genesis = parseInt(genesisData.result, 16);
+      const aiAudit = parseInt(aiAuditData.result, 16);
+      
+      return { genesis, aiAudit };
+    } catch (error) {
+      console.error('[ALPHA] Failed to fetch NFT supply:', error);
+      return { genesis: 0, aiAudit: 0 };
+    }
+  }
+
   private async initializeCache() {
     // Start with some default varied messages for instant use
     this.welcomeCache = [
@@ -445,7 +492,9 @@ export class TelegramBotService {
       '{name} just dropped in - Genesis NFT only 1000 supply 💎',
       'Ayy {name} welcome - 0.45 BNB audits vs $10k traditional 🛡️',
       'Sup {name} 👋 60% PoUW rewards to holders 💰',
-      '{name} has arrived 🎯 Real AI, real revenue, real rewards'
+      '{name} has arrived 🎯 Real AI, real revenue, real rewards',
+      'Welcome {name} 🔥 Genesis NFT: {genesisSupply}/1000 minted - grab yours before they\'re gone! 💎',
+      '{name} joined the Sentinels 🛡️ AI Audit NFT: {aiAuditSupply} minted - passive income from every audit 💰'
     ];
     
     this.roastCache = [
@@ -624,6 +673,25 @@ export class TelegramBotService {
       // Handle members who left - Alpha roasts them 💀
       if (message.left_chat_member && !message.left_chat_member.is_bot) {
         await this.handleMemberLeft(chatId, message.left_chat_member);
+        return;
+      }
+
+      // Handle /nfts or /supply command - show live NFT collection stats
+      if (text.toLowerCase().startsWith('/nfts') || text.toLowerCase().startsWith('/supply')) {
+        const supply = await this.getNFTSupply();
+        const remaining = 1000 - supply.genesis;
+        const response = `📊 **Live NFT Collection Stats**\n\n` +
+          `🏆 **Genesis Collection**\n` +
+          `Minted: ${supply.genesis}/1000\n` +
+          `Remaining: ${remaining}\n` +
+          `Price: 0.1 BNB\n` +
+          `Benefits: Lifetime rewards + 10% revenue share 💎\n\n` +
+          `🛡️ **AI Audit Collection**\n` +
+          `Minted: ${supply.aiAudit}\n` +
+          `Price: 0.074 BNB\n` +
+          `Benefits: Passive income from every audit 💰\n\n` +
+          `Mint now: https://smartsentinels.net/hub/nfts`;
+        await this.sendMessage(chatId, response);
         return;
       }
 
@@ -975,6 +1043,9 @@ export class TelegramBotService {
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
+    // Fetch live NFT supply once for all new members
+    const supply = await this.getNFTSupply();
+    
     for (const member of members) {
       // Skip bots (including ourselves)
       if (member.is_bot) {
@@ -986,9 +1057,12 @@ export class TelegramBotService {
       
       // Get random message from cache for instant response
       const template = this.welcomeCache[Math.floor(Math.random() * this.welcomeCache.length)] || 'Welcome {name} 👋';
-      const welcomeMsg = template.replace(/{name}/g, name);
+      const welcomeMsg = template
+        .replace(/{name}/g, name)
+        .replace(/{genesisSupply}/g, supply.genesis.toString())
+        .replace(/{aiAuditSupply}/g, supply.aiAudit.toString());
       
-      console.log(`[ALPHA] Cached welcome for: ${name}`);
+      console.log(`[ALPHA] Cached welcome for: ${name} (Genesis: ${supply.genesis}/1000, AI Audit: ${supply.aiAudit})`);
       await this.sendMessage(chatId, welcomeMsg);
       
       // Regenerate cache if running low

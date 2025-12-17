@@ -226,6 +226,11 @@ const SidebarNFTsiNFTsHub = () => {
                   </div>
                 </div>
 
+                {/* Disclaimer */}
+                <p className="text-[10px] text-muted-foreground/60 leading-tight -mt-2">
+                  * Lifetime rewards are contingent upon project operations. Benefits may be affected by circumstances beyond our control including regulatory changes or project sustainability.
+                </p>
+
                 {/* Buttons Row */}
                 <div className="flex gap-2 items-center">
                   <div className="flex-1">

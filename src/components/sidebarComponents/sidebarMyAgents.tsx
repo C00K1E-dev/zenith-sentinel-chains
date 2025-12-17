@@ -1,6 +1,7 @@
-import { Bot, Sparkles, Cpu, Shield, TrendingUp, Play, Pause, Square, Settings, Plus, Zap, MessageCircle, Trash2 } from 'lucide-react';
+import { Bot, Sparkles, Cpu, Shield, TrendingUp, Play, Pause, Square, Settings, Plus, Zap, MessageCircle, Trash2, Wallet } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { useState, useEffect } from 'react';
+import { useActiveAccount } from 'thirdweb/react';
 
 interface AgentCardProps {
   name: string;
@@ -70,9 +71,18 @@ const AgentCard = ({ name, type, status, performance, earnings, icon: Icon }: Ag
 };
 
 const SidebarMyAgents = () => {
+  const account = useActiveAccount();
+  const isConnected = !!account;
+  const address = account?.address;
   const [telegramAgents, setTelegramAgents] = useState<any[]>([]);
 
   useEffect(() => {
+    // Only load agents if wallet is connected
+    if (!isConnected || !address) {
+      setTelegramAgents([]);
+      return;
+    }
+
     // Load Telegram agents from localStorage
     const savedAgents = localStorage.getItem('telegramAgents');
     if (savedAgents) {
@@ -82,7 +92,7 @@ const SidebarMyAgents = () => {
         console.error('Error loading agents:', error);
       }
     }
-  }, []);
+  }, [isConnected, address]);
 
   const deleteTelegramAgent = (projectName: string) => {
     const updated = telegramAgents.filter(agent => agent.projectName !== projectName);
@@ -136,7 +146,24 @@ const SidebarMyAgents = () => {
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">My Agents</span>
           </h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+        {/* Wallet Connection Warning */}
+        {!isConnected && (
+          <div className="glass-card p-6 mb-6 text-center border-2 border-primary/30">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mx-auto mb-4">
+              <Wallet size={32} className="text-primary" />
+            </div>
+            <h3 className="text-xl font-orbitron font-bold mb-2">Connect Your Wallet</h3>
+            <p className="text-muted-foreground mb-4">
+              Please connect your wallet to view and manage your AI agents.
+            </p>
+          </div>
+        )}
+
+        {/* Show content only if wallet is connected */}
+        {isConnected && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>
             <StatCard
               title="Active Agents"
@@ -290,6 +317,8 @@ const SidebarMyAgents = () => {
             </div>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

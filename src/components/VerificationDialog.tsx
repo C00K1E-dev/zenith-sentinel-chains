@@ -38,7 +38,7 @@ export function VerificationDialog({
   const [error, setError] = useState('');
 
   // Hardcoded campaign tweet URL for like-post and twitter-tags
-  const CAMPAIGN_TWEET_URL = 'https://x.com/SmartSentinels_/status/1989335438243275029';
+  const CAMPAIGN_TWEET_URL = 'https://x.com/SmartSentinels_/status/2001240645239705979';
 
   const handleOpenAction = () => {
     if (actionUrl) {

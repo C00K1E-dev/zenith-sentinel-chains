@@ -1053,17 +1053,15 @@ export class TelegramBotService {
     // Check if this is a roast - if so, trigger Beta to defend!
     if (this.isRoastMessage(text)) {
       console.log('[ALPHA] Roast detected! Triggering Beta defense...');
-      // Small delay so Alpha's message appears first
-      setTimeout(() => {
-        this.triggerBetaDefense(chatId, text, result?.message_id);
-      }, 1500);
+      // Small delay so Alpha's message appears first (await for serverless)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      await this.triggerBetaDefense(chatId, text, result?.message_id);
     } 
     // Bot-to-Bot Banter: 20% chance Beta jumps in with commentary
     else if (text.length > 30 && Math.random() < 0.20) {
       console.log('[ALPHA] Triggering Beta banter...');
-      setTimeout(() => {
-        this.triggerBetaBanter(chatId, text, result?.message_id);
-      }, 2000);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await this.triggerBetaBanter(chatId, text, result?.message_id);
     }
     
     return result;

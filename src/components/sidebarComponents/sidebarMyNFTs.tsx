@@ -50,37 +50,6 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
   const [aiAuditIds, setAiAuditIds] = useState<bigint[]>([]);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  // Cache helpers
-  const getCacheKey = (contractName: string, address: string) => 
-    `nft-tokens-${contractName}-${address}`;
-  
-  const getCache = (key: string): { tokens: string[], timestamp: number } | null => {
-    try {
-      const cached = localStorage.getItem(key);
-      if (!cached) return null;
-      const data = JSON.parse(cached);
-      // Cache valid for 5 minutes
-      if (Date.now() - data.timestamp > 5 * 60 * 1000) {
-        localStorage.removeItem(key);
-        return null;
-      }
-      return data;
-    } catch {
-      return null;
-    }
-  };
-
-  const setCache = (key: string, tokens: bigint[]) => {
-    try {
-      localStorage.setItem(key, JSON.stringify({
-        tokens: tokens.map(t => t.toString()),
-        timestamp: Date.now()
-      }));
-    } catch {
-      // Ignore cache errors
-    }
-  };
-
   // Helper function to fetch token IDs with multiple fallback methods
   const fetchTokenIds = async (
     contract: any,
@@ -88,14 +57,6 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
     contractName: string
   ): Promise<bigint[]> => {
     console.log(`🔍 Fetching ${contractName} tokens for:`, ownerAddress);
-
-    // Check cache first
-    const cacheKey = getCacheKey(contractName, ownerAddress);
-    const cached = getCache(cacheKey);
-    if (cached) {
-      console.log(`✅ ${contractName} loaded from cache:`, cached.tokens.length);
-      return cached.tokens.map(t => BigInt(t));
-    }
 
     // Method 1: Try tokensOfOwner (ERC721Enumerable extension)
     try {
@@ -105,14 +66,12 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         params: [ownerAddress],
       });
       console.log(`✅ ${contractName} tokensOfOwner succeeded:`, result);
-      const tokens = result as bigint[];
-      setCache(cacheKey, tokens);
-      return tokens;
+      return result as bigint[];
     } catch (error) {
       console.log(`⚠️ ${contractName} tokensOfOwner failed:`, error);
     }
 
-    // Method 2: Try balanceOf + tokenOfOwnerByIndex (batched in groups of 5)
+    // Method 2: Try balanceOf + tokenOfOwnerByIndex
     try {
       const balance = await readContract({
         contract,
@@ -122,48 +81,24 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
       console.log(`✅ ${contractName} balance:`, balance.toString());
 
       const balanceNum = Number(balance);
-      if (balanceNum === 0) {
-        setCache(cacheKey, []);
-        return [];
-      }
+      if (balanceNum === 0) return [];
 
-      const tokenIds: bigint[] = [];
-      const batchSize = 5;
-      
-      // Process in batches to avoid overwhelming the RPC
-      for (let i = 0; i < balanceNum; i += batchSize) {
-        const batchPromises = [];
-        const batchEnd = Math.min(i + batchSize, balanceNum);
-        
-        for (let j = i; j < batchEnd; j++) {
-          batchPromises.push(
-            readContract({
-              contract,
-              method: 'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
-              params: [ownerAddress, BigInt(j)],
-            }).catch(err => {
-              console.error(`❌ ${contractName} tokenOfOwnerByIndex[${j}] failed:`, err);
-              return null;
-            })
-          );
-        }
-        
-        const results = await Promise.all(batchPromises);
-        for (const result of results) {
-          if (result !== null) {
-            tokenIds.push(result as bigint);
-          }
-        }
-        
-        // Small delay between batches to avoid rate limiting
-        if (batchEnd < balanceNum) {
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-      }
+      const tokenIds = await Promise.all(
+        Array.from({ length: balanceNum }, (_, i) =>
+          readContract({
+            contract,
+            method: 'function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)',
+            params: [ownerAddress, BigInt(i)],
+          }).catch(err => {
+            console.error(`❌ ${contractName} tokenOfOwnerByIndex[${i}] failed:`, err);
+            return null;
+          })
+        )
+      );
 
-      console.log(`✅ ${contractName} token IDs via balanceOf:`, tokenIds);
-      setCache(cacheKey, tokenIds);
-      return tokenIds;
+      const validTokenIds = tokenIds.filter((id): id is bigint => id !== null);
+      console.log(`✅ ${contractName} token IDs via balanceOf:`, validTokenIds);
+      return validTokenIds;
     } catch (error) {
       console.error(`❌ ${contractName} balanceOf method failed:`, error);
     }
@@ -176,15 +111,12 @@ const SidebarMyNFTs = ({ onSendNFT }: { onSendNFT?: (tokenId: bigint, tokenName:
         params: [ownerAddress],
       });
       console.log(`✅ ${contractName} walletOfOwner succeeded:`, result);
-      const tokens = result as bigint[];
-      setCache(cacheKey, tokens);
-      return tokens;
+      return result as bigint[];
     } catch (error) {
       console.log(`⚠️ ${contractName} walletOfOwner not available:`, error);
     }
 
     console.error(`❌ All methods failed for ${contractName}`);
-    setCache(cacheKey, []);
     return [];
   };
 

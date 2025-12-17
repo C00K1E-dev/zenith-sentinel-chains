@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import fetch from 'node-fetch';
 
 // Types
 interface TelegramMessage {

@@ -767,6 +767,14 @@ export class TelegramBotServiceBeta {
           shouldRespond = Math.random() < 0.40;
           responseReason = 'casual_trigger';
         }
+      } else if (!isOnCooldown && this.isInterestingMessage(text)) {
+        // PROACTIVE ENGAGEMENT: 6% chance to jump into interesting discussions
+        // Beta is slightly less aggressive than Alpha
+        if (Math.random() < 0.06) {
+          shouldRespond = true;
+          responseReason = 'proactive_engagement';
+          console.log(`[BETA] Proactive engagement triggered on: "${text.slice(0, 50)}..."`);
+        }
       }
 
       if (shouldRespond) {
@@ -945,6 +953,40 @@ export class TelegramBotServiceBeta {
     
     // Default to simple (greetings, comments, short replies)
     return 'simple';
+  }
+
+  // Detect interesting messages worth jumping into (for proactive engagement)
+  private isInterestingMessage(text: string): boolean {
+    if (!text || text.length < 15) return false;
+    
+    const lowerText = text.toLowerCase();
+    
+    // Beta focuses more on community/emotional topics
+    const interestingTopics = [
+      // Community vibes
+      'excited', 'hyped', 'love this', 'amazing', 'awesome', 'great project',
+      'bullish', 'moon', 'diamond hands', 'hodl', 'lfg', 'let\'s go',
+      // Newcomer signals
+      'just joined', 'new here', 'newbie', 'first time', 'hello everyone',
+      'confused', 'don\'t understand', 'help', 'lost',
+      // Positive sentiment
+      'thank you', 'thanks', 'appreciate', 'helpful', 'best community',
+      // Discussion topics
+      'i think', 'in my opinion', 'what do you think', 'anyone else',
+      // AI/Tech enthusiasm
+      'ai', 'future', 'innovation', 'game changer', 'revolutionary',
+      // Market sentiment
+      'dip', 'buy the dip', 'fomo', 'fud', 'worried', 'scared'
+    ];
+    
+    // Check if message contains interesting topic
+    const hasInterestingTopic = interestingTopics.some(topic => lowerText.includes(topic));
+    
+    // Also interested in excited messages
+    const hasExcitement = text.includes('!!') || text.includes('🚀') || 
+                          text.includes('🔥') || text.includes('💪') || text.includes('❤️');
+    
+    return hasInterestingTopic || hasExcitement;
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {

@@ -745,6 +745,13 @@ export class TelegramBotService {
           shouldRespond = Math.random() < 0.30;
           responseReason = 'casual_trigger';
         }
+      } else if (!isOnCooldown && this.isInterestingMessage(text)) {
+        // PROACTIVE ENGAGEMENT: 8% chance to jump into interesting discussions
+        if (Math.random() < 0.08) {
+          shouldRespond = true;
+          responseReason = 'proactive_engagement';
+          console.log(`[ALPHA] Proactive engagement triggered on: "${text.slice(0, 50)}..."`);
+        }
       }
 
       if (shouldRespond) {
@@ -930,6 +937,43 @@ export class TelegramBotService {
     return 'simple';
   }
 
+  // Detect interesting messages worth jumping into (for proactive engagement)
+  private isInterestingMessage(text: string): boolean {
+    if (!text || text.length < 15) return false;
+    
+    const lowerText = text.toLowerCase();
+    
+    // Hot topics Alpha might want to comment on
+    const interestingTopics = [
+      // Crypto excitement/hype
+      'moon', 'lambo', 'pump', 'bullish', 'bearish', 'dip', 'buy the dip',
+      'all time high', 'ath', 'fomo', 'fud', 'hodl', 'diamond hands',
+      // Debates/opinions
+      'better than', 'worse than', 'compared to', 'vs', 'versus',
+      'i think', 'in my opinion', 'unpopular opinion', 'hot take',
+      // Market talk
+      'btc', 'eth', 'bitcoin', 'ethereum', 'market', 'trading', 'chart',
+      'resistance', 'support', 'breakout', 'rally',
+      // AI/Tech discussions
+      'ai', 'artificial intelligence', 'chatgpt', 'openai', 'machine learning',
+      'blockchain', 'defi', 'web3', 'nft',
+      // Confusion or help needed
+      'confused', 'don\'t understand', 'help', 'lost', 'newbie', 'noob',
+      // Strong emotions
+      'love this', 'hate this', 'amazing', 'terrible', 'best', 'worst',
+      'excited', 'worried', 'scared', 'hyped'
+    ];
+    
+    // Check if message contains interesting topic
+    const hasInterestingTopic = interestingTopics.some(topic => lowerText.includes(topic));
+    
+    // Also interested in messages with strong punctuation (excitement)
+    const hasExcitement = text.includes('!!') || text.includes('??') || 
+                          text.includes('🚀') || text.includes('🔥') || text.includes('💎');
+    
+    return hasInterestingTopic || hasExcitement;
+  }
+
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
     for (const member of members) {
       // Skip bots (including ourselves)
@@ -1013,9 +1057,99 @@ export class TelegramBotService {
       setTimeout(() => {
         this.triggerBetaDefense(chatId, text, result?.message_id);
       }, 1500);
+    } 
+    // Bot-to-Bot Banter: 20% chance Beta jumps in with commentary
+    else if (text.length > 30 && Math.random() < 0.20) {
+      console.log('[ALPHA] Triggering Beta banter...');
+      setTimeout(() => {
+        this.triggerBetaBanter(chatId, text, result?.message_id);
+      }, 2000);
     }
     
     return result;
+  }
+  
+  // Trigger Beta to add friendly banter/commentary after Alpha speaks
+  private async triggerBetaBanter(chatId: number, alphaMessage: string, alphaMessageId?: number) {
+    try {
+      const betaToken = process.env.VITE_TELEGRAM_BOT_TOKEN_BETA || process.env.TELEGRAM_BOT_TOKEN_BETA;
+      if (!betaToken) return;
+      
+      // Generate banter response based on Alpha's message
+      const banterResponse = this.generateBetaBanter(alphaMessage);
+      
+      const url = `https://api.telegram.org/bot${betaToken}/sendMessage`;
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: banterResponse,
+          reply_to_message_id: alphaMessageId,
+          parse_mode: 'Markdown'
+        })
+      });
+      
+      console.log('[ALPHA] Beta banter triggered successfully');
+    } catch (error) {
+      console.error('[ALPHA] Failed to trigger Beta banter:', error);
+    }
+  }
+  
+  // Generate playful banter for Beta to say after Alpha
+  private generateBetaBanter(alphaMessage: string): string {
+    const lowerMsg = alphaMessage.toLowerCase();
+    
+    // Context-aware banter responses
+    if (lowerMsg.includes('audit') || lowerMsg.includes('security')) {
+      const responses = [
+        "Alpha takes security VERY seriously btw 🔒 It's kinda his thing",
+        "^ He's not wrong though. Security first! 💪",
+        "Facts. Alpha knows his stuff when it comes to audits 🛡️"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerMsg.includes('tokenomics') || lowerMsg.includes('%') || lowerMsg.includes('supply')) {
+      const responses = [
+        "The math checks out btw 📊 Alpha did his homework",
+        "^ This is why I let Alpha handle the numbers lol 🧮",
+        "Tokenomics nerd alert 🤓 But he's right!"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerMsg.includes('pouw') || lowerMsg.includes('useful work') || lowerMsg.includes('ai agent')) {
+      const responses = [
+        "PoUW is actually genius if you think about it 🧠",
+        "^ This is what makes us different from other projects! 🚀",
+        "AI doing actual work > mining solving random puzzles 💡"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    if (lowerMsg.includes('buy') || lowerMsg.includes('invest') || lowerMsg.includes('price')) {
+      const responses = [
+        "NFA but I'm bullish 👀",
+        "Alpha being responsible for once lol 😂",
+        "DYOR as always! But we're building something real here 💪"
+      ];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    // Generic friendly banter
+    const genericBanter = [
+      "Couldn't have said it better myself 😤",
+      "Alpha spitting facts as usual 💯",
+      "^ What he said 👆",
+      "This guy gets it 🙌",
+      "Alpha being Alpha lol 😂",
+      "Facts though 📠",
+      "He's got a point ngl 🤔",
+      "Listen to the man 👂",
+      "Alpha woke up and chose truth today 💪"
+    ];
+    return genericBanter[Math.floor(Math.random() * genericBanter.length)];
   }
   
   // Detect if message is a roast (has roast emojis or keywords)

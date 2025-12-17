@@ -32,19 +32,19 @@ const SidebarNFTsiNFTsHub = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
+        duration: 0.3
       }
     }
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.5,
-        ease: [0.4, 0, 0.2, 1] as const
+        duration: 0.3,
+        ease: "easeOut" as const
       }
     }
   };
@@ -144,6 +144,7 @@ const SidebarNFTsiNFTsHub = () => {
                   src="/assets/genesisNFT.svg"
                   alt="Genesis NFT"
                   loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-contain max-w-xs"
                 />
               </div>
@@ -269,6 +270,7 @@ const SidebarNFTsiNFTsHub = () => {
                   src="/assets/AIAuditNFT.svg"
                   alt="AI Audit NFT"
                   loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-contain max-w-xs"
                 />
               </div>
@@ -361,6 +363,7 @@ const SidebarNFTsiNFTsHub = () => {
                     src="/assets/aida.svg" 
                     alt="AIDA Collection" 
                     loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 w-full h-full object-cover opacity-60"
                   />
                   {/* Coming Soon Badge */}

@@ -3,9 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//fonts.gstatic.com">
+    
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&display=swap" as="style">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Preload critical images -->
+    <link rel="preload" href="/assets/pouwGlobe.png" as="image" fetchpriority="high">
     
     <!-- Favicon - Updated with version for cache busting -->
     <link rel="icon" type="image/svg+xml" href="/ss-icon.svg?v=3">
@@ -15,14 +25,6 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/ss-icon-192.png?v=3">
     <link rel="icon" type="image/png" sizes="512x512" href="/ss-icon-512.png?v=3">
     <link rel="manifest" href="/manifest.json">
-    
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/ss-icon.svg" as="image" type="image/svg+xml">
-    <link rel="preload" href="/src/assets/ssv2hero.svg" as="image" type="image/svg+xml">
-    
-    <!-- DNS prefetch for external resources -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com">
-    <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <title>SmartSentinels | AI</title>
     <meta name="description" content="SmartSentinels delivers verifiable AI services powered by Proof of Useful Work. Join the decentralized workforce revolution where AI agents perform real work and earn real rewards." />
     <meta name="author" content="SmartSentinels" />

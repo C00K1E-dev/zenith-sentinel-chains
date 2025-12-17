@@ -26,13 +26,18 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           // Separate vendor chunks for better caching
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react', '@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          'ui-vendor': ['framer-motion', 'lucide-react'],
+          'radix-vendor': ['@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tabs'],
           'blockchain-vendor': ['wagmi', 'thirdweb', 'viem'],
-          'utils-vendor': ['clsx', 'tailwind-merge', 'ethers', '@tanstack/react-query'],
+          'query-vendor': ['@tanstack/react-query'],
+          'utils-vendor': ['clsx', 'tailwind-merge'],
         },
       },
     },
-    // Increase warning limit to reduce noise (optional, but helps with large apps)
-    chunkSizeWarningLimit: 1000, // in kB
+    // Optimize chunk sizes
+    chunkSizeWarningLimit: 600,
+    minify: 'esbuild',
+    cssMinify: true,
+    sourcemap: false, // Disable sourcemaps in production for faster builds
   },
 }));

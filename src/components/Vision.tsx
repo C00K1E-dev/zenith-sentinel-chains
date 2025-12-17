@@ -121,6 +121,7 @@ const Vision = () => {
               <img
                 src="/assets/pouwGlobe.png"
                 alt="Global Vision"
+                loading="lazy"
                 className="relative w-full h-full object-contain animate-float drop-shadow-xl z-10 rounded-2xl"
               />
             </div>

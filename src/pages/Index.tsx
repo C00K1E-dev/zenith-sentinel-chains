@@ -217,7 +217,8 @@ const Index = () => {
                 {/* Globe Image - Scaled up to match glow */}
                 <img 
                   src="/assets/pouwGlobe.png" 
-                  alt="Global AI Network" 
+                  alt="Global AI Network"
+                  fetchpriority="high"
                   className="relative w-full h-full object-contain object-center animate-float z-10"
                   style={{ transform: 'scale(1.8)' }}
                 />

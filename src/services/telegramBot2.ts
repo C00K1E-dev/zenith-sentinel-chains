@@ -551,44 +551,50 @@ export class TelegramBotServiceBeta {
   }
 
   private async initializeCache() {
-    // Start with EXCITING topic-specific messages that SELL the services & NFTs
+    // Start with WELCOMING messages that include helpful links
     this.introCache = [
-      // NFT Collections focus - SELL IT!
-      '{name}, welcome! 🛡️💎 GENESIS NFT = 0.1 BNB for LIFETIME REWARDS from ALL FUTURE NFT SALES! 10% revenue share FOREVER + 100% staking boost. Only 1000 exist! This is INSANE value! smartsentinels.net 🔥',
-      'Ayy {name}! 🚀 Hold up - AI Audit NFT is 0.074 BNB and you earn PASSIVE SSTL from EVERY SINGLE AUDIT on the network! 40.2 SSTL per audit goes to holders. You literally get paid while you sleep! 💰😱',
-      '{name} PERFECT timing! 🤯 Genesis NFT holders get revenue share from EVERY future NFT collection we launch. Imagine earning from collections that don\'t even exist yet! PERPETUAL INCOME! Only 1000 spots! smartsentinels.net 💎',
-      'Welcome {name}! 🎯 AI Audit NFT = you become a stakeholder in our audit business! Every contract scanned = you get paid. 500+ audits already done! This is REAL passive income! 0.074 BNB! smartsentinels.net/hub 🤑',
+      // Welcome messages with useful links
+      'Welcome {name}! 🛡️ Glad to have you here! We\'re building AI agents that do useful work. Check out our hub: https://smartsentinels.net/hub - NFTs, AI audits, and custom agents! Questions? Just ask! 🤖',
+      'Hey {name}, welcome to SmartSentinels! 🚀 Here\'s what we\'re about:\n📱 Website: https://smartsentinels.net\n🎯 NFT Collections: https://smartsentinels.net/hub/nfts\n🔒 AI Audits: https://smartsentinels.net/hub/audit\n🤖 Create Agent: https://smartsentinels.net/hub/create-agent\nFeel free to explore! 💎',
+      'Welcome aboard {name}! 🔥 Quick intro: Genesis NFT ({genesisSupply}/1000 minted) = lifetime rewards! Check it out: https://smartsentinels.net/hub/nfts - Need help? Tag me anytime! 💪',
+      '{name} welcome! 🎉 Here are some helpful links to get you started:\n🌐 Main Site: https://smartsentinels.net\n📊 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\nFeel free to ask questions! 🛡️',
+      'Hey {name}! 👋 Welcome to the community! AI Audit NFT holders earn from every audit - {aiAuditSupply} already minted! Check out: https://smartsentinels.net/hub/nfts or explore our docs 📚',
       
-      // Airdrop focus - HYPE IT!
-      '{name} you\'re EARLY! 💰🎁 AIRDROP LIVE NOW - FREE SSTL just for being here! Early supporters getting rewarded BIG TIME! Don\'t sleep on this! Register: smartsentinels.net Limited spots! ⏰',
-      'Yo {name}! 🔥 AIRDROP = FREE MONEY for early community! No cap, just sign up and get SSTL tokens. This is your chance to get in BEFORE launch! smartsentinels.net 🚀',
+      // Welcome with Genesis NFT info
+      'Welcome {name}! 💎 Genesis NFT = lifetime rewards + 10% revenue share! Only 1000 ever, {genesisSupply} already minted. Details: https://smartsentinels.net/hub/nfts 🔥',
+      '{name} welcome! 🛡️ Genesis Collection ({genesisSupply}/1000): https://smartsentinels.net/hub/nfts - Limited supply, lifetime benefits! Questions? Fire away! 🚀',
       
-      // Audit Services focus - SELL THE VALUE!
-      '{name} welcome! 🛡️ Our AI audits BLOW TRADITIONAL AUDITS OUT OF THE WATER! 0.45 BNB vs $5k-$50k from manual auditors! 36 EVM chains supported! Security reports in MINUTES not weeks! This is the future! smartsentinels.net/hub/audit 🤯',
-      'Hey {name}! 🔒💎 Real talk: manual audits cost $10k+. Our AI does it for 0.45 BNB with the SAME depth! Ethereum, BSC, Base, Polygon + 32 more chains! Every audit mints 67 SSTL! TRY IT: smartsentinels.net/hub/audit 🚀',
+      // Welcome with AI Audit info
+      'Welcome {name}! 🔒 Check out our AI Audit tool - 0.45 BNB, 36 EVM chains supported: https://smartsentinels.net/hub/audit - Real security analysis in minutes! 💪',
+      'Hey {name}, welcome! 🛡️ AI Audit NFT ({aiAuditSupply} minted) = passive income from audits. Learn more: https://smartsentinels.net/hub/nfts 💰',
       
-      // Telegram AI Agents focus - SELL THE SPEED!
-      'Welcome {name}! 🤖 BRO - you can have your OWN AI TELEGRAM BOT ready in 5 MINUTES! No coding! Just paste your website, pick personality, DONE! From $99/month! Your community gets 24/7 AI support instantly! smartsentinels.net/hub/create-agent 😱',
-      '{name} this is WILD! 💬 5 MINUTES to deploy a custom AI agent for YOUR project! It auto-learns from your site, answers questions 24/7, has YOUR personality! This used to cost $10k+ to build! Now $99/month! smartsentinels.net 🔥',
-      'Ayy {name}! 🤖 Imagine your community has an AI expert answering questions INSTANTLY, 24/7, never sleeps! That\'s what we offer! Setup in 5 min, powered by Gemini AI, from $99/month! This is A GAME CHANGER! smartsentinels.net 💪',
+      // Welcome with Telegram Agent info
+      'Welcome {name}! 🤖 Did you know you can create your own AI Telegram bot in 5 minutes? Check it: https://smartsentinels.net/hub/create-agent - From $99/month, no coding needed! 🔥',
+      '{name} welcome! 💬 We help projects build custom AI agents! Setup in minutes: https://smartsentinels.net/hub/create-agent - Your community deserves 24/7 AI support! 🚀',
       
-      // AIDA focus - REAL WORLD PROOF!
-      '{name} welcome! 🏥 AIDA is in ALPHA TESTING! AI medical receptionist being piloted with Romanian doctors! Once live, AIDA NFT holders earn from EVERY patient interaction! Real-world healthcare AI utility! This will be HUGE! 💰',
-      'Hey {name}! 🤖 AIDA = AI receptionist for medical offices, currently in testing phase! Real doctors, real clinics, preparing for launch! Once live, every call = SSTL minted! AIDA NFT holders will share in actual healthcare AI profits! NEXT LEVEL utility coming! 🔥',
+      // Welcome with AIDA info
+      'Welcome {name}! 🏥 AIDA (medical AI receptionist) is in alpha testing! Real-world AI utility coming soon. Check progress: https://aida-lac.vercel.app 💡',
+      'Hey {name}, welcome! 🤖 AIDA = AI for doctors\' offices, currently in pilot phase with Romanian clinics. More info: https://aida-lac.vercel.app 🔥',
       
-      // PoUW & Tokenomics focus - SELL THE MATH!
-      'Welcome {name}! 💰 Here\'s the MATH: Hold NFT → AI does work → 60% of new SSTL goes to YOU → 10% gets BURNED → Supply shrinks → Your bag gets MORE VALUABLE! This is GENIUS tokenomics! smartsentinels.net 🧠💎',
-      '{name} LISTEN! 🚀 40% of TOTAL SUPPLY goes to PoUW rewards! That\'s 40 MILLION SSTL distributed to NFT holders over time! Plus 10% of each emission BURNED = DEFLATIONARY! This is built to PUMP! 📈🔥',
-      'Yo {name}! 💎 Every audit, every agent interaction, every AIDA call = SSTL minted → YOU get paid (if you hold NFTs)! This isn\'t staking, this is ACTUAL REVENUE SHARING from AI WORK! INSANE! 🤯',
+      // Welcome with social links
+      '{name} welcome to SmartSentinels! 🎯 Join the conversation:\n💬 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\n💼 LinkedIn: https://linkedin.com/company/smartsentinels\nLet\'s build together! 💎',
+      'Welcome {name}! 🚀 Follow us for updates:\n📱 TikTok: https://tiktok.com/@smartsentinels_official\n🐦 Twitter: https://x.com/SmartSentinels_\n🌐 Website: https://smartsentinels.net\nGlad you\'re here! 🔥',
       
-      // General/Mix - HYPE EVERYTHING!
-      '{name} welcome to the FUTURE! 🛡️ AI agents earning YOU money 24/7! Audits, bots, medical AI - all LIVE and GENERATING REVENUE! Genesis NFT = lifetime access to ALL OF IT! smartsentinels.net 🚀💰',
-      'Ayy {name}! 🤖 SmartSentinels = BEST kept secret in crypto! Real AI, real revenue, real rewards! Don\'t believe me? Check our audit at smartsentinels.net! This is NOT a meme coin, this is a BUSINESS! 💼🔥',
+      // Welcome with PoUW info
+      'Welcome {name}! 💰 PoUW = Proof of Useful Work. AI does real work, SSTL tokens get minted, 60% goes to NFT holders! Learn more: https://smartsentinels.net 🧠',
+      '{name} welcome! 🛡️ Our tokenomics: 60% PoUW rewards to holders, 10% burned = deflationary! Details: https://smartsentinels.net 📈',
       
-      // NEW: Live supply messages
-      '{name} welcome! 🔥 Genesis NFT: {genesisSupply}/1000 minted! These are going FAST! Once they\'re gone, they\'re GONE! 0.1 BNB for lifetime rewards! smartsentinels.net/hub/nfts 💎',
-      'Hey {name}! 💰 AI Audit NFT: {aiAuditSupply} already minted! Each holder earns from EVERY audit on the network! Get yours: smartsentinels.net/hub/nfts 🚀',
-      '{name} HURRY! ⚡ Genesis NFT: {genesisSupply}/1000 sold! Only 1000 EVER! 10% revenue share from ALL future collections! This is your chance to be OG! smartsentinels.net 🛡️'
+      // Welcome with airdrop info
+      'Welcome {name}! 🎁 Airdrop registration is live! Free SSTL for early supporters: https://smartsentinels.net - Don\'t miss out! ⏰',
+      'Hey {name}, welcome! 💰 Early supporters airdrop: https://smartsentinels.net - Join before it\'s too late! Limited spots! 🔥',
+      
+      // General welcome with all links
+      'Welcome {name}! 🛡️ Here\'s everything:\n🌐 Hub: https://smartsentinels.net/hub\n🎯 NFTs: https://smartsentinels.net/hub/nfts\n🔒 Audits: https://smartsentinels.net/hub/audit\n🤖 Agents: https://smartsentinels.net/hub/create-agent\nExplore and ask questions anytime! 💎',
+      '{name} welcome to the community! 🎉 Quick links:\n📱 Main: https://smartsentinels.net\n💬 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\nGlad you joined! 🚀',
+      
+      // Welcome with live supply
+      'Welcome {name}! 🔥 Genesis: {genesisSupply}/1000 minted | AI Audit: {aiAuditSupply} minted\nMint yours: https://smartsentinels.net/hub/nfts 💎',
+      'Hey {name}, welcome! ⚡ Current supply: Genesis {genesisSupply}/1000, AI Audit {aiAuditSupply}. Check collections: https://smartsentinels.net/hub/nfts 🛡️'
     ];
     
     // Generate more AI messages in background (non-blocking)
@@ -620,7 +626,7 @@ export class TelegramBotServiceBeta {
         try {
           const msg = await this.geminiService.generateResponse(
             tempUserId,
-            `Generate an EXCITING, SALESY welcome message (35-55 words) for someone joining SmartSentinels Telegram. Use {name} as placeholder. Focus on: ${topic}. SELL IT HARD! Make it sound TOO GOOD TO BE TRUE! Use phrases like "INSANE value", "LIFETIME rewards", "5 MINUTES setup", "PASSIVE INCOME", "You literally get PAID". Include specific prices, numbers, benefits. Be HYPED and use CAPS for emphasis. Emojis: 🤖💰🔥🛡️💎🚀🤯😱🎯💪. Only output the message.`,
+            `Generate a WELCOMING message (40-60 words) for someone joining SmartSentinels Telegram. Use {name} as placeholder. Focus on: ${topic}. Include relevant links (smartsentinels.net, smartsentinels.net/hub/nfts, smartsentinels.net/hub/audit, smartsentinels.net/hub/create-agent, t.me/SmartSentinelsCommunity, or x.com/SmartSentinels_). Be friendly, helpful, and informative. Use emojis: 🤖💰🔥🛡️💎🚀🎯💪👋. Start with "Welcome" or "Hey". Only output the message.`,
             'System',
             undefined,
             'question'

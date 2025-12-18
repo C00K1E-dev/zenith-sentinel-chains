@@ -265,7 +265,7 @@ const Vision = () => {
 
                           {/* Demo Button */}
                           <a 
-                            href="https://aida-lac.vercel.app/" 
+                            href="https://aida-ai.health/" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="flex items-center justify-center gap-1.5 w-full py-1.5 sm:py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] sm:text-xs font-semibold rounded-lg transition-colors"

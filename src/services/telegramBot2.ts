@@ -146,7 +146,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
       name: "AIDA Collection",
       fullName: "Artificial Intelligence for Doctors and Assistants",
       description: "A STANDALONE PROJECT under the SmartSentinels umbrella. AIDA is a complete AI medical receptionist solution targeting Romanian medical offices - handling appointments, reminders, emergency filtering, and 24/7 patient support via phone and WhatsApp.",
-      website: "https://aida-lac.vercel.app",
+      website: "https://aida-ai.health",
       status: "Alpha Testing - Pilot phase with select medical offices",
       pricing: {
         basic: "199€/month - 24/7 reception, appointment management, SMS reminders",
@@ -258,7 +258,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "How much does an AI agent cost?": "Starter: $99/month, Pro: $249/month, Enterprise: $499/month. Paid in USDT on BNB Chain. Cancel anytime. Manage your agents at https://smartsentinels.net/hub/my-agents",
     "What is the AI Audit tool?": "Our AI-powered smart contract security scanner! Go to https://smartsentinels.net/hub/audit - paste your Solidity code or enter a contract address, pay 0.45 BNB, and get a comprehensive security audit. Supports 36 EVM chains, trained on ETA Registry standards and 37 SWC vulnerabilities. Reports stored on IPFS forever!",
     "How much does an AI audit cost?": "0.45 BNB per audit. Each audit mints 67 SSTL tokens to the PoUW pool - 60% goes to NFT holders, 20% to treasury, 10% to burn. Real utility generating real rewards!",
-    "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Currently in ALPHA TESTING with pilot medical offices! Every patient interaction mints SSTL via PoUW - AIDA NFT holders will earn from real healthcare AI! https://aida-lac.vercel.app",
+    "What is AIDA?": "AIDA = Artificial Intelligence for Doctors and Assistants! It's a STANDALONE PROJECT under SmartSentinels umbrella targeting Romanian medical offices. It's a full AI receptionist: 24/7 phone & WhatsApp support, appointment management, emergency filtering, auto-reminders. Currently in ALPHA TESTING with pilot medical offices! Every patient interaction mints SSTL via PoUW - AIDA NFT holders will earn from real healthcare AI! https://aida-ai.health",
     "What NFT collections are there?": "3 collections: 1) Genesis Collection (0.1 BNB) - 1000 max, lifetime rewards + 10% revenue share from future collections + 100% staking boost. 2) AI Audit Collection (0.074 BNB) - earn from every audit. 3) AIDA Collection - coming soon, medical AI rewards!",
     "What is the Genesis NFT?": "The foundation of SmartSentinels! Limited to 1,000 NFTs at 0.1 BNB. Benefits: 10% revenue share from ALL future NFT sales, 100% staking boost, priority access to new features, and LIFETIME perpetual rewards. OG status forever!",
     "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply allocated for PoUW rewards, and 10% of each emission gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
@@ -504,8 +504,8 @@ export class TelegramBotServiceBeta {
     'Hey {name}, welcome! 🛡️ AI Audit NFT = passive income from audits. Learn more: https://smartsentinels.net/hub/nfts 💰',
     'Welcome {name}! 🤖 Did you know you can create your own AI Telegram bot in 5 minutes? Check it: https://smartsentinels.net/hub/create-agent - From $99/month, no coding needed! 🔥',
     '{name} welcome! 💬 We help projects build custom AI agents! Setup in minutes: https://smartsentinels.net/hub/create-agent - Your community deserves 24/7 AI support! 🚀',
-    'Welcome {name}! 🏥 AIDA (medical AI receptionist) is in alpha testing! Real-world AI utility coming soon. Check progress: https://aida-lac.vercel.app 💡',
-    'Hey {name}, welcome! 🤖 AIDA = AI for doctors\' offices, currently in pilot phase with Romanian clinics. More info: https://aida-lac.vercel.app 🔥',
+    'Welcome {name}! 🏥 AIDA (medical AI receptionist) is in alpha testing! Real-world AI utility coming soon. Check progress: https://aida-ai.health 💡',
+    'Hey {name}, welcome! 🤖 AIDA = AI for doctors\' offices, currently in pilot phase with Romanian clinics. More info: https://aida-ai.health 🔥',
     '{name} welcome to SmartSentinels! 🎯 Join the conversation:\n💬 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\n💼 LinkedIn: https://linkedin.com/company/smartsentinels\nLet\'s build together! 💎',
     'Welcome {name}! 🚀 Follow us for updates:\n📱 TikTok: https://tiktok.com/@smartsentinels_official\n🐦 Twitter: https://x.com/SmartSentinels_\n🌐 Website: https://smartsentinels.net\nGlad you\'re here! 🔥',
     'Welcome {name}! 💰 PoUW = Proof of Useful Work. AI does real work, SSTL tokens get minted, 60% goes to NFT holders! Learn more: https://smartsentinels.net 🧠',
@@ -521,7 +521,7 @@ export class TelegramBotServiceBeta {
     'Welcome {name}! 🎁 Free SSTL airdrop for early supporters! Register at https://smartsentinels.net before spots fill up! ⏰',
     '{name} welcome! 🔒 Need a smart contract audit? 0.45 BNB, 36 EVM chains, AI-powered security analysis: https://smartsentinels.net/hub/audit 🛡️',
     'Hey {name}! 🤖 Build your own AI Telegram bot in 5 minutes! From $99/month, zero coding: https://smartsentinels.net/hub/create-agent 🚀',
-    'Welcome {name}! 🏥 AIDA = AI medical receptionist in alpha testing with Romanian clinics. Real AI utility coming Q1 2026! https://aida-lac.vercel.app 💡',
+    'Welcome {name}! 🏥 AIDA = AI medical receptionist in alpha testing with Romanian clinics. Real AI utility coming Q1 2026! https://aida-ai.health 💡',
     '{name} welcome! 💰 60% of PoUW rewards go to NFT holders! 10% burned each cycle = deflationary tokenomics! Learn more: https://smartsentinels.net 🧠',
     'Welcome {name}! 🌐 Contract: 0x56317dbCCd647C785883738fac9308ebcA063aca on BNB Chain. Always verify on BSCScan! https://bscscan.com 🔍'
   ];

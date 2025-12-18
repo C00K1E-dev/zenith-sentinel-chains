@@ -932,24 +932,25 @@ export class TelegramBotService {
     return hasInterestingTopic || hasExcitement;
   }
 
-  private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
-    for (const member of members) {
-      // Skip bots (including ourselves)
-      if (member.is_bot) {
-        console.log(`[ALPHA] Skipping bot: ${member.first_name}`);
-        continue;
-      }
-      
-      const name = member.username ? `@${member.username}` : member.first_name;
-      
-      // Get random message from static array
-      const template = this.welcomeMessages[Math.floor(Math.random() * this.welcomeMessages.length)];
-      const welcomeMsg = template.replace(/{name}/g, name);
-      
-      console.log(`[ALPHA] Welcome sent for: ${name}`);
-      await this.sendMessage(chatId, welcomeMsg);
-    }
-  }
+  // Unused for now - kept for future implementation
+  // private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
+  //   for (const member of members) {
+  //     // Skip bots (including ourselves)
+  //     if (member.is_bot) {
+  //       console.log(`[ALPHA] Skipping bot: ${member.first_name}`);
+  //       continue;
+  //     }
+  //     
+  //     const name = member.username ? `@${member.username}` : member.first_name;
+  //     
+  //     // Get random message from static array
+  //     const template = this.welcomeMessages[Math.floor(Math.random() * this.welcomeMessages.length)];
+  //     const welcomeMsg = template.replace(/{name}/g, name);
+  //     
+  //     console.log(`[ALPHA] Welcome sent for: ${name}`);
+  //     await this.sendMessage(chatId, welcomeMsg);
+  //   }
+  // }
 
   private async handleMemberLeft(chatId: number, member: { first_name: string; username?: string; is_bot?: boolean }) {
     const name = member.username ? `@${member.username}` : member.first_name;
@@ -963,7 +964,7 @@ export class TelegramBotService {
   }
 
   // Alpha responds when Beta defends users from his roasts
-  private async respondToBetaDefense(chatId: number, betaMessage: string, messageId: number) {
+  private async respondToBetaDefense(chatId: number, _betaMessage: string, messageId: number) {
     // Use static response for instant reply
     const response = this.betaDefenseMessages[Math.floor(Math.random() * this.betaDefenseMessages.length)];
     
@@ -972,7 +973,7 @@ export class TelegramBotService {
   }
 
   // Context-aware banter with Beta
-  private async banterWithBeta(chatId: number, betaMessage: string, messageId: number) {
+  private async banterWithBeta(chatId: number, _betaMessage: string, messageId: number) {
     // Use static response for instant banter
     const response = this.banterMessages[Math.floor(Math.random() * this.banterMessages.length)];
     

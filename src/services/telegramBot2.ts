@@ -780,6 +780,12 @@ export class TelegramBotServiceBeta {
     }
   }
 
+  // Public method for webhook to call when Alpha roasts someone
+  async defendUser(chatId: number, alphaRoast: string, messageId: number) {
+    console.log('[BETA] 🛡️ Defending user from Alpha roast!');
+    await this.defendUserFromRoast(chatId, alphaRoast, messageId);
+  }
+
   // Proper mention detection - exact username match OR name mention
   private isBotMentioned(text: string): boolean {
     if (!this.botUsername) return false;

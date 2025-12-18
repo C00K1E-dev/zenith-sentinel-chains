@@ -13,7 +13,7 @@ import { createTelegramBotBeta } from '../src/services/telegramBot2.js';
  * User-created agents use /api/agent-webhook instead
  */
 
-// Roast detection helper
+// Roast detection helper - Beta uses this to detect when Alpha roasts someone
 function isRoastMessage(text: string): boolean {
   if (!text || text.length < 10) return false;
   
@@ -107,6 +107,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Skip bot's own messages, BUT allow new_chat_members events (regardless of who added them)
       const hasNewMembers = update.message?.new_chat_members && update.message.new_chat_members.length > 0;
       const hasLeftMember = update.message?.left_chat_member;
+      
+      // Check if Alpha sent a roast - Beta should defend!
+      const isAlphaRoast = fromId === ALPHA_BOT_ID && isRoastMessage(messageText);
+      
+      if (isAlphaRoast && messageId) {
+        console.log('[WEBHOOK] 🛡️ Alpha roasted someone! Beta to the rescue!');
+        // Beta defends the user who got roasted
+        await betaBot.defendUser(chatId, messageText, messageId);
+        return res.status(200).json({ ok: true });
+      }
       
       if ((fromId === ALPHA_BOT_ID || fromId === BETA_BOT_ID) && !hasNewMembers && !hasLeftMember) {
         console.log('[WEBHOOK] Skipping bot message');

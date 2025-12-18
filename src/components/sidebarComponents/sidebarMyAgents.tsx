@@ -75,24 +75,30 @@ const SidebarMyAgents = () => {
   const isConnected = !!account;
   const address = account?.address;
   const [telegramAgents, setTelegramAgents] = useState<any[]>([]);
+  const [hasCheckedConnection, setHasCheckedConnection] = useState(false);
+
+  // Track connection status changes
+  useEffect(() => {
+    if (account) {
+      setHasCheckedConnection(true);
+    }
+  }, [account]);
 
   useEffect(() => {
-    // Only load agents if wallet is connected
-    if (!isConnected || !address) {
-      setTelegramAgents([]);
-      return;
-    }
-
-    // Load Telegram agents from localStorage
-    const savedAgents = localStorage.getItem('telegramAgents');
-    if (savedAgents) {
-      try {
-        setTelegramAgents(JSON.parse(savedAgents));
-      } catch (error) {
-        console.error('Error loading agents:', error);
+    // Load Telegram agents from localStorage when wallet is connected
+    if (isConnected && address) {
+      const savedAgents = localStorage.getItem('telegramAgents');
+      if (savedAgents) {
+        try {
+          setTelegramAgents(JSON.parse(savedAgents));
+        } catch (error) {
+          console.error('Error loading agents:', error);
+        }
       }
+    } else {
+      setTelegramAgents([]);
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, account]);
 
   const deleteTelegramAgent = (projectName: string) => {
     const updated = telegramAgents.filter(agent => agent.projectName !== projectName);
@@ -160,8 +166,8 @@ const SidebarMyAgents = () => {
           </div>
         )}
 
-        {/* Show content only if wallet is connected */}
-        {isConnected && (
+        {/* Stats Section - Show only when connected */}
+        {(isConnected && address) && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>

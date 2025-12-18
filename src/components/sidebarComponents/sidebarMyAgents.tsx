@@ -78,6 +78,11 @@ const SidebarMyAgents = () => {
   
   const [telegramAgents, setTelegramAgents] = useState<any[]>([]);
 
+  // Debug log
+  useEffect(() => {
+    console.log('[MY_AGENTS] Wallet State:', { account, address, isConnected });
+  }, [account, address, isConnected]);
+
   useEffect(() => {
     // Load Telegram agents from localStorage when wallet is connected
     if (address) {

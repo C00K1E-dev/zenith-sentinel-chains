@@ -1,7 +1,7 @@
 import { Bot, Settings, TrendingUp, MessageCircle, Trash2, Calendar, DollarSign, RefreshCw, ExternalLink, AlertCircle, BarChart3, Loader2, Network, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useAccount } from 'wagmi';
+import { useActiveAccount } from 'thirdweb/react';
 import { getOrCreateUser, getUserAgents, getLatestSubscription, deleteAgent } from '@/lib/supabase';
 import { getSubscriptionStatus } from '@/lib/subscriptionManager';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,7 +43,9 @@ interface AgentWithSubscription extends Agent {
 }
 
 export default function SidebarMyAgentsEnhanced() {
-  const { address, isConnected } = useAccount();
+  const account = useActiveAccount();
+  const address = account?.address;
+  const isConnected = !!account;
   const [agents, setAgents] = useState<AgentWithSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);

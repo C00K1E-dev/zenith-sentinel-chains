@@ -1,7 +1,8 @@
 import { Bot, Sparkles, Cpu, Shield, TrendingUp, Play, Pause, Square, Settings, Plus, Zap, MessageCircle, Trash2, Wallet } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { useState, useEffect } from 'react';
-import { useActiveAccount } from 'thirdweb/react';
+import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/react';
+import { useAccount } from 'wagmi';
 
 interface AgentCardProps {
   name: string;
@@ -71,18 +72,30 @@ const AgentCard = ({ name, type, status, performance, earnings, icon: Icon }: Ag
 };
 
 const SidebarMyAgents = () => {
+  // Thirdweb wallet connection - using connection status hook for more reliable detection
   const account = useActiveAccount();
-  const isConnected = !!account;
-  const address = account?.address;
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const thirdwebConnected = connectionStatus === 'connected' && !!account;
+  const thirdwebAddress = account?.address;
+  
+  // Wagmi wallet connection (fallback for desktop wallets not using thirdweb)
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+  
+  // Combined wallet state - prioritize thirdweb, fallback to wagmi
+  const isConnected = thirdwebConnected || wagmiConnected;
+  const address = thirdwebAddress || wagmiAddress;
+  
   const [telegramAgents, setTelegramAgents] = useState<any[]>([]);
-  const [hasCheckedConnection, setHasCheckedConnection] = useState(false);
 
-  // Track connection status changes
-  useEffect(() => {
-    if (account) {
-      setHasCheckedConnection(true);
-    }
-  }, [account]);
+  // Debug: Log wallet state
+  console.log('[MY_AGENTS_WALLET]', {
+    connectionStatus,
+    account: account ? account.address : null,
+    thirdwebConnected,
+    wagmiConnected,
+    isConnected,
+    address
+  });
 
   useEffect(() => {
     // Load Telegram agents from localStorage when wallet is connected
@@ -98,7 +111,7 @@ const SidebarMyAgents = () => {
     } else {
       setTelegramAgents([]);
     }
-  }, [isConnected, address, account]);
+  }, [isConnected, address, thirdwebConnected, wagmiConnected]);
 
   const deleteTelegramAgent = (projectName: string) => {
     const updated = telegramAgents.filter(agent => agent.projectName !== projectName);

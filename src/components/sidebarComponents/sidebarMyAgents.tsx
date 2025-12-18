@@ -1,7 +1,7 @@
 import { Bot, Sparkles, Cpu, Shield, TrendingUp, Play, Pause, Square, Settings, Plus, Zap, MessageCircle, Trash2, Wallet } from 'lucide-react';
 import StatCard from '@/components/StatCard';
 import { useState, useEffect } from 'react';
-import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/react';
+import { useActiveAccount } from 'thirdweb/react';
 import { useAccount } from 'wagmi';
 
 interface AgentCardProps {
@@ -72,34 +72,22 @@ const AgentCard = ({ name, type, status, performance, earnings, icon: Icon }: Ag
 };
 
 const SidebarMyAgents = () => {
-  // Thirdweb wallet connection - using connection status hook for more reliable detection
+  // Thirdweb wallet connection (works for both mobile and desktop)
   const account = useActiveAccount();
-  const connectionStatus = useActiveWalletConnectionStatus();
-  const thirdwebConnected = connectionStatus === 'connected' && !!account;
-  const thirdwebAddress = account?.address;
+  const address = account?.address;
   
-  // Wagmi wallet connection (fallback for desktop wallets not using thirdweb)
-  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+  // Wagmi wallet connection (fallback)
+  const { address: wagmiAddress } = useAccount();
   
-  // Combined wallet state - prioritize thirdweb, fallback to wagmi
-  const isConnected = thirdwebConnected || wagmiConnected;
-  const address = thirdwebAddress || wagmiAddress;
+  // Use whichever is available
+  const walletAddress = address || wagmiAddress;
+  const isConnected = !!walletAddress;
   
   const [telegramAgents, setTelegramAgents] = useState<any[]>([]);
 
-  // Debug: Log wallet state
-  console.log('[MY_AGENTS_WALLET]', {
-    connectionStatus,
-    account: account ? account.address : null,
-    thirdwebConnected,
-    wagmiConnected,
-    isConnected,
-    address
-  });
-
   useEffect(() => {
     // Load Telegram agents from localStorage when wallet is connected
-    if (isConnected && address) {
+    if (walletAddress) {
       const savedAgents = localStorage.getItem('telegramAgents');
       if (savedAgents) {
         try {
@@ -111,7 +99,7 @@ const SidebarMyAgents = () => {
     } else {
       setTelegramAgents([]);
     }
-  }, [isConnected, address, thirdwebConnected, wagmiConnected]);
+  }, [walletAddress]);
 
   const deleteTelegramAgent = (projectName: string) => {
     const updated = telegramAgents.filter(agent => agent.projectName !== projectName);
@@ -180,7 +168,7 @@ const SidebarMyAgents = () => {
         )}
 
         {/* Stats Section - Show only when connected */}
-        {(isConnected && address) && (
+        {walletAddress && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>

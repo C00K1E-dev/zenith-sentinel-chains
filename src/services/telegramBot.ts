@@ -417,224 +417,110 @@ export class TelegramBotService {
   // Other bot IDs to skip
   private readonly BETA_BOT_ID = 8580335193; // @SSTL_BETA_BOT
 
-  // Message cache for instant, varied responses
-  private welcomeCache: string[] = [];
-  private roastCache: string[] = [];
-  private betaDefenseCache: string[] = [];
-  private banterCache: string[] = [];
-  private cacheGenerating: boolean = false;
+  // Static message arrays
+  private readonly welcomeMessages: string[] = [
+    'Welcome {name} 👋 Genesis NFT = lifetime rewards 💎',
+    '{name} just joined 🛡️ Check the AI Audit NFT - passive income 💰',
+    'Yo {name} 👋 Airdrop is LIVE 🎁',
+    'Welcome aboard {name} - AI agents paying real rewards 🤖',
+    '{name} entered the chat 🚀 5min to setup your own AI bot',
+    'Hey {name} 👋 AIDA in alpha testing for medical AI 🔥',
+    '{name} just dropped in - Genesis NFT only 1000 supply 💎',
+    'Ayy {name} welcome - 0.45 BNB audits vs $10k traditional 🛡️',
+    'Sup {name} 👋 60% PoUW rewards to holders 💰',
+    '{name} has arrived 🎯 Real AI, real revenue, real rewards',
+    'Welcome {name} 🔥 Genesis NFT - grab yours before they\'re gone! 💎',
+    '{name} joined the Sentinels 🛡️ AI Audit NFT - passive income from every audit 💰',
+    'Yo {name}! 🚀 10% burned = deflationary tokenomics 🔥',
+    'Welcome {name} 🤖 Create your own AI agent in 5 minutes! Check it out',
+    '{name} dropped in 👋 0.1 BNB Genesis = lifetime benefits 💎',
+    'Hey {name} 🛡️ AIDA medical AI rolling out Q1 2026 🏥',
+    'Sup {name}! 💰 Hold NFTs, earn SSTL from AI work 🤖',
+    'Welcome aboard {name} 🚀 Real utility, real rewards 💎',
+    '{name} joined! 🎯 AI audits cheaper than traditional firms 🛡️',
+    'Yo {name} 👋 Check smartsentinels.net for all the details 🔥',
+    'Welcome {name} 💎 Genesis holders get 10% revenue share! 💰',
+    '{name} just landed 🚀 PoUW = mining that does useful work 🤖',
+    'Hey {name}! 🛡️ 36 EVM chains supported for audits 🔒',
+    'Sup {name} 👋 Telegram bots from $99/month 🤖',
+    'Welcome {name} 🔥 No VC dumps, community-driven project 💎',
+    '{name} entered 🎯 Deflationary supply mechanics 💰',
+    'Yo {name}! 🚀 Audited contracts, doxxed team 🛡️',
+    'Welcome aboard {name} 🤖 Real AI, not just hype 🔥',
+    'Hey {name} 👋 40% supply for PoUW rewards 💰',
+    '{name} joined the mission 🛡️ Let\'s build! 🚀'
+  ];
+
+  private readonly roastMessages: string[] = [
+    'Paper hands {name} left 📄🙌',
+    '{name} couldn\'t handle it 💀',
+    '{name} rage quit lmao',
+    'Another one gone... bye {name} ✌️',
+    '{name} folded. Classic.',
+    'Skill issue. Bye {name} 👋',
+    '{name} will be back at ATH 📈',
+    'Look who left... {name} NGMI',
+    '{name} couldn\'t wait smh',
+    'Paper hands detected: {name} 💀',
+    '{name} missed the alpha 😭',
+    'Sold at the bottom? {name} classic move 📉',
+    '{name} liquidated their patience 😂',
+    'Weak hands {name} exits stage left 👋',
+    'FOMO sells again. Cya {name} 😅',
+    '{name} took profits at -90% 🤣',
+    'Diamond hands only. Bye {name} 💎',
+    '{name} left for the next pump and dump 📄',
+    'Research too hard? Later {name} 📚',
+    'Exit liquidity found: {name} 😂',
+    '{name} speedrunning regret 🏃',
+    'Not cut out for this {name}? 😅',
+    'See ya never {name} 👋💀',
+    '{name} ghosted faster than a rug pull 👻',
+    'Another tourist. Bye {name} ✌️'
+  ];
+
+  private readonly betaDefenseMessages: string[] = [
+    "Alright alright, I'll tone it down 😅",
+    "Fair enough, I'll ease up 🤝",
+    "Ok I'll try and chill 😅",
+    "You right, my bad 😅",
+    "Aight, dialing it back 🤝",
+    "I know, I know 😂",
+    "Can't help it sometimes 💀",
+    "Guilty as charged 🤷",
+    "Ok ok, too harsh 😅",
+    "You got me there 🤝",
+    "Point taken 👍",
+    "Chill mode activated 😎",
+    "Noted. Less savage 😅",
+    "My b, too spicy 🌶️",
+    "Facts, I'll relax 🤝"
+  ];
+
+  private readonly banterMessages: string[] = [
+    "Beta's on fire today 🔥",
+    "Facts though ^",
+    "What he said ^",
+    "Beta cooking 🔥",
+    "Real talk from Beta",
+    "He's not wrong though 🔥",
+    "Respect 🤝",
+    "Spitting facts ^",
+    "This guy gets it",
+    "Based take ^",
+    "Truth bomb 💣",
+    "Say it louder 🔊",
+    "100% correct ^",
+    "No cap fr",
+    "Absolute truth 👏"
+  ];
 
   constructor(botToken: string, geminiApiKey: string) {
     this.botToken = botToken;
     this.geminiService = new GeminiService(geminiApiKey);
     console.log(`[ALPHA] Bot ready: @${this.botUsername} (ID: ${this.botUserId})`);
-    
-    // Pre-populate cache with default messages, then generate AI ones in background
-    this.initializeCache();
   }
 
-  // Fetch live NFT supply from BSC
-  private async getNFTSupply(): Promise<{ genesis: number; aiAudit: number }> {
-    try {
-      const GENESIS_ADDRESS = '0xd859184C8F6e77Ce7De3f97C85bC902Aa30CeCF3';
-      const AI_AUDIT_ADDRESS = '0x09E2af87B89B0F2c1B5B93D14033dAf3EE9Ac3Bf';
-      const BSC_RPC = 'https://bsc-dataseed.binance.org/';
-      
-      // totalSupply() function signature
-      const data = '0x18160ddd';
-      
-      const [genesisRes, aiAuditRes] = await Promise.all([
-        fetch(BSC_RPC, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_call',
-            params: [{ to: GENESIS_ADDRESS, data }, 'latest'],
-            id: 1
-          })
-        }),
-        fetch(BSC_RPC, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_call',
-            params: [{ to: AI_AUDIT_ADDRESS, data }, 'latest'],
-            id: 2
-          })
-        })
-      ]);
-      
-      const genesisData = await genesisRes.json();
-      const aiAuditData = await aiAuditRes.json();
-      
-      const genesis = parseInt(genesisData.result, 16);
-      const aiAudit = parseInt(aiAuditData.result, 16);
-      
-      return { genesis, aiAudit };
-    } catch (error) {
-      console.error('[ALPHA] Failed to fetch NFT supply:', error);
-      return { genesis: 0, aiAudit: 0 };
-    }
-  }
-
-  private async initializeCache() {
-    // Start with some default varied messages for instant use
-    this.welcomeCache = [
-      'Welcome {name} 👋 Genesis NFT = lifetime rewards 💎',
-      '{name} just joined 🛡️ Check the AI Audit NFT - passive income 💰',
-      'Yo {name} 👋 Airdrop is LIVE 🎁',
-      'Welcome aboard {name} - AI agents paying real rewards 🤖',
-      '{name} entered the chat 🚀 5min to setup your own AI bot',
-      'Hey {name} 👋 AIDA in alpha testing for medical AI 🔥',
-      '{name} just dropped in - Genesis NFT only 1000 supply 💎',
-      'Ayy {name} welcome - 0.45 BNB audits vs $10k traditional 🛡️',
-      'Sup {name} 👋 60% PoUW rewards to holders 💰',
-      '{name} has arrived 🎯 Real AI, real revenue, real rewards',
-      'Welcome {name} 🔥 Genesis NFT: {genesisSupply}/1000 minted - grab yours before they\'re gone! 💎',
-      '{name} joined the Sentinels 🛡️ AI Audit NFT: {aiAuditSupply} minted - passive income from every audit 💰'
-    ];
-    
-    this.roastCache = [
-      'Paper hands {name} left 📄🙌',
-      '{name} couldn\'t handle it 💀',
-      '{name} rage quit lmao',
-      'Another one gone... bye {name} ✌️',
-      '{name} folded. Classic.',
-      'Skill issue. Bye {name} 👋',
-      '{name} will be back at ATH 📈',
-      'Look who left... {name} NGMI',
-      '{name} couldn\'t wait smh',
-      'Paper hands detected: {name} 💀'
-    ];
-    
-    this.betaDefenseCache = [
-      "Alright alright, I'll tone it down 😅",
-      "Fair enough, I'll ease up 🤝",
-      "Ok I'll try and chill 😅",
-      "You right, my bad 😅",
-      "Aight, dialing it back 🤝",
-      "I know, I know 😂",
-      "Can't help it sometimes 💀",
-      "Guilty as charged 🤷"
-    ];
-    
-    this.banterCache = [
-      "Beta's on fire today 🔥",
-      "Facts though ^",
-      "What he said ^",
-      "Beta cooking 🔥",
-      "Real talk from Beta",
-      "He's not wrong though 🔥"
-    ];
-    
-    // Generate more AI messages in background (non-blocking)
-    this.generateCacheInBackground();
-  }
-
-  private async generateCacheInBackground() {
-    if (this.cacheGenerating) return;
-    this.cacheGenerating = true;
-    
-    console.log('[ALPHA] Generating AI message cache in background...');
-    
-    try {
-      // Generate 30 unique welcome messages
-      const welcomePromises = Array.from({ length: 30 }, async (_, i) => {
-        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
-        try {
-          const msg = await this.geminiService.generateResponse(
-            tempUserId,
-            'Generate a SHORT (max 15 words) EXCITING welcome for someone joining SmartSentinels Telegram. Use {name} as placeholder. Include a quick hype line about ONE feature: "Genesis NFT = lifetime rewards", "AI audits 0.45 BNB", "5min bot setup", "Passive income from audits", "60% rewards to holders", "AIDA medical AI in testing", "10% burned = deflationary". Make it sound VALUABLE. Vary style. Use emojis 🤖💰🔥🛡️💎. Only output the welcome.',
-            'System',
-            undefined,
-            'simple'
-          );
-          this.geminiService.clearHistory(tempUserId);
-          return msg.trim();
-        } catch (error) {
-          console.error('[ALPHA] Error generating welcome cache item:', error);
-          return null;
-        }
-      });
-      
-      // Generate 30 unique roast messages
-      const roastPromises = Array.from({ length: 30 }, async (_, i) => {
-        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
-        try {
-          const msg = await this.geminiService.generateResponse(
-            tempUserId,
-            'Generate a SHORT (max 12 words) playful roast for someone leaving a crypto Telegram group. Use {name} as placeholder. Vary style - sometimes joke about paper hands, missing out, coming back at ATH. Be creative and savage but funny. Use emojis 💀😂📄🙌. Only output the roast, nothing else.',
-            'System',
-            undefined,
-            'simple'
-          );
-          this.geminiService.clearHistory(tempUserId);
-          return msg.trim();
-        } catch (error) {
-          console.error('[ALPHA] Error generating roast cache item:', error);
-          return null;
-        }
-      });
-      
-      const welcomes = (await Promise.all(welcomePromises)).filter(m => m !== null) as string[];
-      const roasts = (await Promise.all(roastPromises)).filter(m => m !== null) as string[];
-      
-      // Generate 20 unique Beta defense responses
-      const defensePromises = Array.from({ length: 20 }, async (_, i) => {
-        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
-        try {
-          const msg = await this.geminiService.generateResponse(
-            tempUserId,
-            'You\'re Alpha bot and Beta just called you out for roasting someone too hard. Generate a SHORT (max 10 words) self-aware, humorous acknowledgment. Vary style - sometimes "Ok I\'ll chill 😅", "Fair enough 🤝", "My bad 😂", "Guilty 🤷", "You right". Be creative and different. Only output the response, nothing else.',
-            'System',
-            undefined,
-            'simple'
-          );
-          this.geminiService.clearHistory(tempUserId);
-          return msg.trim();
-        } catch (error) {
-          console.error('[ALPHA] Error generating defense cache item:', error);
-          return null;
-        }
-      });
-      
-      // Generate 20 unique banter responses
-      const banterPromises = Array.from({ length: 20 }, async (_, i) => {
-        const tempUserId = Math.floor(Math.random() * 1000000) + 200000;
-        try {
-          const msg = await this.geminiService.generateResponse(
-            tempUserId,
-            'You\'re Alpha bot and Beta just said something cool/funny/helpful. Generate a SHORT (max 8 words) casual positive banter response. Vary style - sometimes "Beta cooking 🔥", "Facts ^", "He\'s right tho", "Real talk", "Not wrong". Be creative and different. Only output the response, nothing else.',
-            'System',
-            undefined,
-            'simple'
-          );
-          this.geminiService.clearHistory(tempUserId);
-          return msg.trim();
-        } catch (error) {
-          console.error('[ALPHA] Error generating banter cache item:', error);
-          return null;
-        }
-      });
-      
-      const defenses = (await Promise.all(defensePromises)).filter(m => m !== null) as string[];
-      const banters = (await Promise.all(banterPromises)).filter(m => m !== null) as string[];
-      
-      // Add to cache (keeping defaults + adding AI generated)
-      this.welcomeCache = [...this.welcomeCache, ...welcomes];
-      this.roastCache = [...this.roastCache, ...roasts];
-      this.betaDefenseCache = [...this.betaDefenseCache, ...defenses];
-      this.banterCache = [...this.banterCache, ...banters];
-      
-      console.log(`[ALPHA] Cache generated: ${this.welcomeCache.length} welcomes, ${this.roastCache.length} roasts, ${this.betaDefenseCache.length} defenses, ${this.banterCache.length} banters`);
-    } catch (error) {
-      console.error('[ALPHA] Error generating cache:', error);
-    } finally {
-      this.cacheGenerating = false;
-    }
-  }
 
   async initialize() {
     // Get bot info
@@ -683,20 +569,17 @@ export class TelegramBotService {
         return;
       }
 
-      // Handle /nfts or /supply command - show live NFT collection stats
+      // Handle /nfts or /supply command - show NFT collection info
       if (text.toLowerCase().startsWith('/nfts') || text.toLowerCase().startsWith('/supply')) {
-        const supply = await this.getNFTSupply();
-        const remaining = 1000 - supply.genesis;
-        const response = `📊 **Live NFT Collection Stats**\n\n` +
+        const response = `📊 **NFT Collection Info**\n\n` +
           `🏆 **Genesis Collection**\n` +
-          `Minted: ${supply.genesis}/1000\n` +
-          `Remaining: ${remaining}\n` +
-          `Price: 0.1 BNB\n` +
-          `Benefits: Lifetime rewards + 10% revenue share 💎\n\n` +
+          `📦 Total Supply: 1,000 NFTs\n` +
+          `💵 Price: 0.1 BNB\n` +
+          `💎 Benefits: Lifetime rewards + 10% revenue share\n\n` +
           `🛡️ **AI Audit Collection**\n` +
-          `Minted: ${supply.aiAudit}\n` +
-          `Price: 0.074 BNB\n` +
-          `Benefits: Passive income from every audit 💰\n\n` +
+          `📦 Available for minting\n` +
+          `💵 Price: 0.074 BNB\n` +
+          `💰 Benefits: Passive income from every audit\n\n` +
           `Mint now: https://smartsentinels.net/hub/nfts`;
         await this.sendMessage(chatId, response);
         return;
@@ -1050,9 +933,6 @@ export class TelegramBotService {
   }
 
   private async handleNewMembers(chatId: number, members: Array<{ first_name: string; username?: string; is_bot?: boolean }>) {
-    // Fetch live NFT supply once for all new members
-    const supply = await this.getNFTSupply();
-    
     for (const member of members) {
       // Skip bots (including ourselves)
       if (member.is_bot) {
@@ -1062,65 +942,42 @@ export class TelegramBotService {
       
       const name = member.username ? `@${member.username}` : member.first_name;
       
-      // Get random message from cache for instant response
-      const template = this.welcomeCache[Math.floor(Math.random() * this.welcomeCache.length)] || 'Welcome {name} 👋';
-      const welcomeMsg = template
-        .replace(/{name}/g, name)
-        .replace(/{genesisSupply}/g, supply.genesis.toString())
-        .replace(/{aiAuditSupply}/g, supply.aiAudit.toString());
+      // Get random message from static array
+      const template = this.welcomeMessages[Math.floor(Math.random() * this.welcomeMessages.length)];
+      const welcomeMsg = template.replace(/{name}/g, name);
       
-      console.log(`[ALPHA] Cached welcome for: ${name} (Genesis: ${supply.genesis}/1000, AI Audit: ${supply.aiAudit})`);
+      console.log(`[ALPHA] Welcome sent for: ${name}`);
       await this.sendMessage(chatId, welcomeMsg);
-      
-      // Regenerate cache if running low
-      if (this.welcomeCache.length < 20 && !this.cacheGenerating) {
-        this.generateCacheInBackground();
-      }
     }
   }
 
   private async handleMemberLeft(chatId: number, member: { first_name: string; username?: string; is_bot?: boolean }) {
     const name = member.username ? `@${member.username}` : member.first_name;
     
-    // Get random roast from cache for instant response
-    const template = this.roastCache[Math.floor(Math.random() * this.roastCache.length)] || 'Paper hands {name} left 📄🙌';
+    // Get random roast from static array
+    const template = this.roastMessages[Math.floor(Math.random() * this.roastMessages.length)];
     const roastMsg = template.replace(/{name}/g, name);
     
-    console.log(`[ALPHA] Cached roast for departed: ${name}`);
+    console.log(`[ALPHA] Roast sent for departed: ${name}`);
     await this.sendMessage(chatId, roastMsg);
-    
-    // Regenerate cache if running low
-    if (this.roastCache.length < 20 && !this.cacheGenerating) {
-      this.generateCacheInBackground();
-    }
   }
 
   // Alpha responds when Beta defends users from his roasts
   private async respondToBetaDefense(chatId: number, betaMessage: string, messageId: number) {
-    // Use cached response for instant, varied reply
-    const response = this.betaDefenseCache[Math.floor(Math.random() * this.betaDefenseCache.length)] || "Ok I'll try and chill 😅";
+    // Use static response for instant reply
+    const response = this.betaDefenseMessages[Math.floor(Math.random() * this.betaDefenseMessages.length)];
     
-    console.log(`[ALPHA] Responding to Beta's defense with cached message`);
+    console.log(`[ALPHA] Responding to Beta's defense`);
     await this.sendMessage(chatId, response, messageId);
-    
-    // Regenerate cache if running low
-    if (this.betaDefenseCache.length < 15 && !this.cacheGenerating) {
-      this.generateCacheInBackground();
-    }
   }
 
   // Context-aware banter with Beta
   private async banterWithBeta(chatId: number, betaMessage: string, messageId: number) {
-    // Use cached response for instant, varied banter
-    const response = this.banterCache[Math.floor(Math.random() * this.banterCache.length)] || "Facts though ^";
+    // Use static response for instant banter
+    const response = this.banterMessages[Math.floor(Math.random() * this.banterMessages.length)];
     
-    console.log(`[ALPHA] Banter with Beta using cached message`);
+    console.log(`[ALPHA] Banter with Beta`);
     await this.sendMessage(chatId, response, messageId);
-    
-    // Regenerate cache if running low
-    if (this.banterCache.length < 15 && !this.cacheGenerating) {
-      this.generateCacheInBackground();
-    }
   }
 
   private async sendMessage(chatId: number, text: string, replyToMessageId?: number) {

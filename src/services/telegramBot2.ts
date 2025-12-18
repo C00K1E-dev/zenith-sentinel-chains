@@ -491,166 +491,47 @@ export class TelegramBotServiceBeta {
   // Other bot IDs to skip
   private readonly ALPHA_BOT_ID = 8511436060; // @SS_ALPHA_BOT
 
-  // Message cache for instant, varied responses
-  private introCache: string[] = [];
-  private cacheGenerating: boolean = false;
+  // Static welcome messages
+  private readonly welcomeMessages: string[] = [
+    'Welcome {name}! 🛡️ Glad to have you here! We\'re building AI agents that do useful work. Check out our hub: https://smartsentinels.net/hub - NFTs, AI audits, and custom agents! Questions? Just ask! 🤖',
+    'Hey {name}, welcome to SmartSentinels! 🚀 Here\'s what we\'re about:\n📱 Website: https://smartsentinels.net\n🎯 NFT Collections: https://smartsentinels.net/hub/nfts\n🔒 AI Audits: https://smartsentinels.net/hub/audit\n🤖 Create Agent: https://smartsentinels.net/hub/create-agent\nFeel free to explore! 💎',
+    'Welcome aboard {name}! 🔥 Quick intro: Genesis NFT = lifetime rewards! Check it out: https://smartsentinels.net/hub/nfts - Need help? Tag me anytime! 💪',
+    '{name} welcome! 🎉 Here are some helpful links to get you started:\n🌐 Main Site: https://smartsentinels.net\n📊 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\nFeel free to ask questions! 🛡️',
+    'Hey {name}! 👋 Welcome to the community! AI Audit NFT holders earn from every audit! Check out: https://smartsentinels.net/hub/nfts or explore our docs 📚',
+    'Welcome {name}! 💎 Genesis NFT = lifetime rewards + 10% revenue share! Only 1000 ever. Details: https://smartsentinels.net/hub/nfts 🔥',
+    '{name} welcome! 🛡️ Genesis Collection - Limited supply, lifetime benefits! Check: https://smartsentinels.net/hub/nfts Questions? Fire away! 🚀',
+    'Welcome {name}! 🔒 Check out our AI Audit tool - 0.45 BNB, 36 EVM chains supported: https://smartsentinels.net/hub/audit - Real security analysis in minutes! 💪',
+    'Hey {name}, welcome! 🛡️ AI Audit NFT = passive income from audits. Learn more: https://smartsentinels.net/hub/nfts 💰',
+    'Welcome {name}! 🤖 Did you know you can create your own AI Telegram bot in 5 minutes? Check it: https://smartsentinels.net/hub/create-agent - From $99/month, no coding needed! 🔥',
+    '{name} welcome! 💬 We help projects build custom AI agents! Setup in minutes: https://smartsentinels.net/hub/create-agent - Your community deserves 24/7 AI support! 🚀',
+    'Welcome {name}! 🏥 AIDA (medical AI receptionist) is in alpha testing! Real-world AI utility coming soon. Check progress: https://aida-lac.vercel.app 💡',
+    'Hey {name}, welcome! 🤖 AIDA = AI for doctors\' offices, currently in pilot phase with Romanian clinics. More info: https://aida-lac.vercel.app 🔥',
+    '{name} welcome to SmartSentinels! 🎯 Join the conversation:\n💬 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\n💼 LinkedIn: https://linkedin.com/company/smartsentinels\nLet\'s build together! 💎',
+    'Welcome {name}! 🚀 Follow us for updates:\n📱 TikTok: https://tiktok.com/@smartsentinels_official\n🐦 Twitter: https://x.com/SmartSentinels_\n🌐 Website: https://smartsentinels.net\nGlad you\'re here! 🔥',
+    'Welcome {name}! 💰 PoUW = Proof of Useful Work. AI does real work, SSTL tokens get minted, 60% goes to NFT holders! Learn more: https://smartsentinels.net 🧠',
+    '{name} welcome! 🛡️ Our tokenomics: 60% PoUW rewards to holders, 10% burned = deflationary! Details: https://smartsentinels.net 📈',
+    'Welcome {name}! 🎁 Airdrop registration is live! Free SSTL for early supporters: https://smartsentinels.net - Don\'t miss out! ⏰',
+    'Hey {name}, welcome! 💰 Early supporters airdrop: https://smartsentinels.net - Join before it\'s too late! Limited spots! 🔥',
+    'Welcome {name}! 🛡️ Here\'s everything:\n🌐 Hub: https://smartsentinels.net/hub\n🎯 NFTs: https://smartsentinels.net/hub/nfts\n🔒 Audits: https://smartsentinels.net/hub/audit\n🤖 Agents: https://smartsentinels.net/hub/create-agent\nExplore and ask questions anytime! 💎',
+    '{name} welcome to the community! 🎉 Quick links:\n📱 Main: https://smartsentinels.net\n💬 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\nGlad you joined! 🚀',
+    'Welcome {name}! 🔥 Genesis & AI Audit NFTs available now!\nMint yours: https://smartsentinels.net/hub/nfts 💎',
+    'Hey {name}, welcome! ⚡ Check our NFT collections: https://smartsentinels.net/hub/nfts 🛡️',
+    'Welcome {name}! 🏆 Genesis NFT (0.1 BNB) = lifetime rewards + 10% revenue share from ALL future NFT sales! Only 1000 supply: https://smartsentinels.net/hub/nfts 💎',
+    'Hey {name}, welcome! 🔥 AI Audit NFT (0.074 BNB) = passive income from every smart contract audit on our network! Details: https://smartsentinels.net/hub/nfts 💰',
+    'Welcome {name}! 🎁 Free SSTL airdrop for early supporters! Register at https://smartsentinels.net before spots fill up! ⏰',
+    '{name} welcome! 🔒 Need a smart contract audit? 0.45 BNB, 36 EVM chains, AI-powered security analysis: https://smartsentinels.net/hub/audit 🛡️',
+    'Hey {name}! 🤖 Build your own AI Telegram bot in 5 minutes! From $99/month, zero coding: https://smartsentinels.net/hub/create-agent 🚀',
+    'Welcome {name}! 🏥 AIDA = AI medical receptionist in alpha testing with Romanian clinics. Real AI utility coming Q1 2026! https://aida-lac.vercel.app 💡',
+    '{name} welcome! 💰 60% of PoUW rewards go to NFT holders! 10% burned each cycle = deflationary tokenomics! Learn more: https://smartsentinels.net 🧠',
+    'Welcome {name}! 🌐 Contract: 0x56317dbCCd647C785883738fac9308ebcA063aca on BNB Chain. Always verify on BSCScan! https://bscscan.com 🔍'
+  ];
 
   constructor(botToken: string, geminiApiKey: string) {
     this.botToken = botToken;
     this.geminiService = new GeminiServiceBeta(geminiApiKey);
     console.log(`[BETA] Bot ready: @${this.botUsername} (ID: ${this.botUserId})`);
-    
-    // Pre-populate cache with default messages, then generate AI ones in background
-    this.initializeCache();
   }
 
-  // Fetch live NFT supply from BSC
-  private async getNFTSupply(): Promise<{ genesis: number; aiAudit: number }> {
-    try {
-      const GENESIS_ADDRESS = '0xd859184C8F6e77Ce7De3f97C85bC902Aa30CeCF3';
-      const AI_AUDIT_ADDRESS = '0x09E2af87B89B0F2c1B5B93D14033dAf3EE9Ac3Bf';
-      const BSC_RPC = 'https://bsc-dataseed.binance.org/';
-      
-      // totalSupply() function signature
-      const data = '0x18160ddd';
-      
-      const [genesisRes, aiAuditRes] = await Promise.all([
-        fetch(BSC_RPC, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_call',
-            params: [{ to: GENESIS_ADDRESS, data }, 'latest'],
-            id: 1
-          })
-        }),
-        fetch(BSC_RPC, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_call',
-            params: [{ to: AI_AUDIT_ADDRESS, data }, 'latest'],
-            id: 2
-          })
-        })
-      ]);
-      
-      const genesisData = await genesisRes.json();
-      const aiAuditData = await aiAuditRes.json();
-      
-      const genesis = parseInt(genesisData.result, 16);
-      const aiAudit = parseInt(aiAuditData.result, 16);
-      
-      return { genesis, aiAudit };
-    } catch (error) {
-      console.error('[BETA] Failed to fetch NFT supply:', error);
-      return { genesis: 0, aiAudit: 0 };
-    }
-  }
-
-  private async initializeCache() {
-    // Start with WELCOMING messages that include helpful links
-    this.introCache = [
-      // Welcome messages with useful links
-      'Welcome {name}! 🛡️ Glad to have you here! We\'re building AI agents that do useful work. Check out our hub: https://smartsentinels.net/hub - NFTs, AI audits, and custom agents! Questions? Just ask! 🤖',
-      'Hey {name}, welcome to SmartSentinels! 🚀 Here\'s what we\'re about:\n📱 Website: https://smartsentinels.net\n🎯 NFT Collections: https://smartsentinels.net/hub/nfts\n🔒 AI Audits: https://smartsentinels.net/hub/audit\n🤖 Create Agent: https://smartsentinels.net/hub/create-agent\nFeel free to explore! 💎',
-      'Welcome aboard {name}! 🔥 Quick intro: Genesis NFT ({genesisSupply}/1000 minted) = lifetime rewards! Check it out: https://smartsentinels.net/hub/nfts - Need help? Tag me anytime! 💪',
-      '{name} welcome! 🎉 Here are some helpful links to get you started:\n🌐 Main Site: https://smartsentinels.net\n📊 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\nFeel free to ask questions! 🛡️',
-      'Hey {name}! 👋 Welcome to the community! AI Audit NFT holders earn from every audit - {aiAuditSupply} already minted! Check out: https://smartsentinels.net/hub/nfts or explore our docs 📚',
-      
-      // Welcome with Genesis NFT info
-      'Welcome {name}! 💎 Genesis NFT = lifetime rewards + 10% revenue share! Only 1000 ever, {genesisSupply} already minted. Details: https://smartsentinels.net/hub/nfts 🔥',
-      '{name} welcome! 🛡️ Genesis Collection ({genesisSupply}/1000): https://smartsentinels.net/hub/nfts - Limited supply, lifetime benefits! Questions? Fire away! 🚀',
-      
-      // Welcome with AI Audit info
-      'Welcome {name}! 🔒 Check out our AI Audit tool - 0.45 BNB, 36 EVM chains supported: https://smartsentinels.net/hub/audit - Real security analysis in minutes! 💪',
-      'Hey {name}, welcome! 🛡️ AI Audit NFT ({aiAuditSupply} minted) = passive income from audits. Learn more: https://smartsentinels.net/hub/nfts 💰',
-      
-      // Welcome with Telegram Agent info
-      'Welcome {name}! 🤖 Did you know you can create your own AI Telegram bot in 5 minutes? Check it: https://smartsentinels.net/hub/create-agent - From $99/month, no coding needed! 🔥',
-      '{name} welcome! 💬 We help projects build custom AI agents! Setup in minutes: https://smartsentinels.net/hub/create-agent - Your community deserves 24/7 AI support! 🚀',
-      
-      // Welcome with AIDA info
-      'Welcome {name}! 🏥 AIDA (medical AI receptionist) is in alpha testing! Real-world AI utility coming soon. Check progress: https://aida-lac.vercel.app 💡',
-      'Hey {name}, welcome! 🤖 AIDA = AI for doctors\' offices, currently in pilot phase with Romanian clinics. More info: https://aida-lac.vercel.app 🔥',
-      
-      // Welcome with social links
-      '{name} welcome to SmartSentinels! 🎯 Join the conversation:\n💬 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\n💼 LinkedIn: https://linkedin.com/company/smartsentinels\nLet\'s build together! 💎',
-      'Welcome {name}! 🚀 Follow us for updates:\n📱 TikTok: https://tiktok.com/@smartsentinels_official\n🐦 Twitter: https://x.com/SmartSentinels_\n🌐 Website: https://smartsentinels.net\nGlad you\'re here! 🔥',
-      
-      // Welcome with PoUW info
-      'Welcome {name}! 💰 PoUW = Proof of Useful Work. AI does real work, SSTL tokens get minted, 60% goes to NFT holders! Learn more: https://smartsentinels.net 🧠',
-      '{name} welcome! 🛡️ Our tokenomics: 60% PoUW rewards to holders, 10% burned = deflationary! Details: https://smartsentinels.net 📈',
-      
-      // Welcome with airdrop info
-      'Welcome {name}! 🎁 Airdrop registration is live! Free SSTL for early supporters: https://smartsentinels.net - Don\'t miss out! ⏰',
-      'Hey {name}, welcome! 💰 Early supporters airdrop: https://smartsentinels.net - Join before it\'s too late! Limited spots! 🔥',
-      
-      // General welcome with all links
-      'Welcome {name}! 🛡️ Here\'s everything:\n🌐 Hub: https://smartsentinels.net/hub\n🎯 NFTs: https://smartsentinels.net/hub/nfts\n🔒 Audits: https://smartsentinels.net/hub/audit\n🤖 Agents: https://smartsentinels.net/hub/create-agent\nExplore and ask questions anytime! 💎',
-      '{name} welcome to the community! 🎉 Quick links:\n📱 Main: https://smartsentinels.net\n💬 Telegram: https://t.me/SmartSentinelsCommunity\n🐦 Twitter: https://x.com/SmartSentinels_\nGlad you joined! 🚀',
-      
-      // Welcome with live supply
-      'Welcome {name}! 🔥 Genesis: {genesisSupply}/1000 minted | AI Audit: {aiAuditSupply} minted\nMint yours: https://smartsentinels.net/hub/nfts 💎',
-      'Hey {name}, welcome! ⚡ Current supply: Genesis {genesisSupply}/1000, AI Audit {aiAuditSupply}. Check collections: https://smartsentinels.net/hub/nfts 🛡️'
-    ];
-    
-    // Generate more AI messages in background (non-blocking)
-    this.generateCacheInBackground();
-  }
-
-  private async generateCacheInBackground() {
-    if (this.cacheGenerating) return;
-    this.cacheGenerating = true;
-    
-    console.log('[BETA] Generating AI message cache in background...');
-    
-    try {
-      // Generate 40 unique topic-specific intro messages
-      const topics = [
-        'Genesis NFT collection (0.1 BNB, lifetime rewards, 10% revenue share from future collections)',
-        'AI Audit NFT collection (0.074 BNB, earn SSTL from every contract audit)',
-        'Airdrop registration (free SSTL for early supporters at smartsentinels.net)',
-        'AI Audit tool (0.45 BNB, 36 EVM chains supported, security reports)',
-        'Telegram AI agent creation service ($99-$499/month, custom bots)',
-        'AIDA medical AI (alpha testing with pilot clinics, real-world healthcare utility coming soon)',
-        'PoUW rewards system (60% to NFT holders, 10% burned)',
-        'General project overview (AI agents, real work, SSTL rewards)'
-      ];
-      
-      const introPromises = Array.from({ length: 40 }, async (_, i) => {
-        const tempUserId = Math.floor(Math.random() * 1000000) + 300000;
-        const topic = topics[i % topics.length];
-        try {
-          const msg = await this.geminiService.generateResponse(
-            tempUserId,
-            `Generate a WELCOMING message (40-60 words) for someone joining SmartSentinels Telegram. Use {name} as placeholder. Focus on: ${topic}. Include relevant links (smartsentinels.net, smartsentinels.net/hub/nfts, smartsentinels.net/hub/audit, smartsentinels.net/hub/create-agent, t.me/SmartSentinelsCommunity, or x.com/SmartSentinels_). Be friendly, helpful, and informative. Use emojis: 🤖💰🔥🛡️💎🚀🎯💪👋. Start with "Welcome" or "Hey". Only output the message.`,
-            'System',
-            undefined,
-            'question'
-          );
-          this.geminiService.clearHistory(tempUserId);
-          return msg.trim();
-        } catch (error) {
-          console.error('[BETA] Error generating intro cache item:', error);
-          return null;
-        }
-      });
-      
-      const intros = (await Promise.all(introPromises)).filter(m => m !== null) as string[];
-      
-      // Add to cache (keeping defaults + adding AI generated)
-      this.introCache = [...this.introCache, ...intros];
-      
-      console.log(`[BETA] Cache generated: ${this.introCache.length} intros`);
-    } catch (error) {
-      console.error('[BETA] Error generating cache:', error);
-    } finally {
-      this.cacheGenerating = false;
-    }
-  }
 
   async initialize() {
     // Get bot info
@@ -685,18 +566,15 @@ export class TelegramBotServiceBeta {
         return;
       }
 
-      // Handle /nfts or /supply command - show live NFT collection stats
+      // Handle /nfts or /supply command - show NFT collection info
       if (text.toLowerCase().startsWith('/nfts') || text.toLowerCase().startsWith('/supply')) {
-        const supply = await this.getNFTSupply();
-        const remaining = 1000 - supply.genesis;
-        const response = `📊 **NFT Collection Live Stats**\n\n` +
+        const response = `📊 **NFT Collection Info**\n\n` +
           `🏆 **Genesis Collection**\n` +
-          `✅ Minted: ${supply.genesis}/1000\n` +
-          `⏳ Remaining: ${remaining}\n` +
+          `📦 Total Supply: 1,000 NFTs\n` +
           `💵 Price: 0.1 BNB\n` +
           `💎 Benefits: Lifetime rewards + 10% revenue share from ALL future NFT sales + 100% staking boost!\n\n` +
           `🛡️ **AI Audit Collection**\n` +
-          `✅ Minted: ${supply.aiAudit}\n` +
+          `📦 Available for minting\n` +
           `💵 Price: 0.074 BNB\n` +
           `💰 Benefits: Passive income from every audit performed on the network!\n\n` +
           `🚀 Mint yours: https://smartsentinels.net/hub/nfts`;
@@ -1072,9 +950,6 @@ export class TelegramBotServiceBeta {
     // Beta: Handles ALL greetings (Alpha is disabled)
     // No delay needed since Beta greets alone now
 
-    // Fetch live NFT supply once for all new members
-    const supply = await this.getNFTSupply();
-
     for (const member of members) {
       // Skip bots (including ourselves)
       if (member.is_bot) {
@@ -1084,20 +959,12 @@ export class TelegramBotServiceBeta {
       
       const name = member.username ? `@${member.username}` : member.first_name;
       
-      // Get random intro from cache for instant response
-      const template = this.introCache[Math.floor(Math.random() * this.introCache.length)] || 'Welcome {name}! 🛡️ We build AI agents that do useful work. Check smartsentinels.net 🤖';
-      const introMsg = template
-        .replace(/{name}/g, name)
-        .replace(/{genesisSupply}/g, supply.genesis.toString())
-        .replace(/{aiAuditSupply}/g, supply.aiAudit.toString());
+      // Get random welcome message
+      const template = this.welcomeMessages[Math.floor(Math.random() * this.welcomeMessages.length)];
+      const introMsg = template.replace(/{name}/g, name);
       
-      console.log(`[BETA] Cached project intro for: ${name} (Genesis: ${supply.genesis}/1000, AI Audit: ${supply.aiAudit})`);
+      console.log(`[BETA] Welcome message sent for: ${name}`);
       await this.sendMessage(chatId, introMsg);
-      
-      // Regenerate cache if running low
-      if (this.introCache.length < 25 && !this.cacheGenerating) {
-        this.generateCacheInBackground();
-      }
     }
   }
 

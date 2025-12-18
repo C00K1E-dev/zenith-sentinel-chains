@@ -88,10 +88,14 @@ export default function AdminDashboard() {
           uniqueXHandles: new Set(formattedRegistrations.map(r => r.x).filter(Boolean)).size
         });
       } else {
-        console.error('Failed to fetch registrations:', data.error);
+        if (import.meta.env.DEV) {
+          console.error('Failed to fetch registrations:', data.error);
+        }
       }
     } catch (error) {
-      console.error('Fetch registrations error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Fetch registrations error:', error);
+      }
       toast({
         title: "Error",
         description: "Failed to fetch registrations",

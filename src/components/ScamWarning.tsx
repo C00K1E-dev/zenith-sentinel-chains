@@ -131,7 +131,6 @@ export const useSecurityTickerState = () => {
   const handleDismiss = () => {
     // Don't persist to sessionStorage - just dismiss for this session
     setDismissed(true);
-    console.log('[SECURITY] Ticker dismissed, dispatching event');
     // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('securityTickerDismissed'));
   };
@@ -206,13 +205,6 @@ const ScamWarning = () => {
   const [referrerDomain, setReferrerDomain] = useState('');
 
   useEffect(() => {
-    // Debug logging
-    console.log('[SECURITY] ScamWarning component mounted');
-    console.log('[SECURITY] Current domain:', window.location.hostname);
-    console.log('[SECURITY] Document referrer:', document.referrer);
-    console.log('[SECURITY] Has opener:', !!window.opener);
-    console.log('[SECURITY] Full URL:', window.location.href);
-    
     // FIRST: Check current domain immediately - this is the most important check
     const currentDomain = window.location.hostname.toLowerCase();
     
@@ -324,7 +316,6 @@ const ScamWarning = () => {
         // Cross-origin opener - can't access location
         // But the fact that there IS an opener from a different origin is suspicious
         // when combined with being on the hub page
-        console.log('[SECURITY] Cross-origin opener detected');
       }
     }
   }, []);

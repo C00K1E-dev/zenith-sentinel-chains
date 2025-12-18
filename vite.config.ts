@@ -40,4 +40,8 @@ export default defineConfig(({ mode }) => ({
     cssMinify: true,
     sourcemap: false, // Disable sourcemaps in production for faster builds
   },
+  esbuild: {
+    // Remove console logs in production
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+  },
 }));

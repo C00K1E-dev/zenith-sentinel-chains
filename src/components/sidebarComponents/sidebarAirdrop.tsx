@@ -388,7 +388,11 @@ const SidebarAirdrop = memo(() => {
   const checkPendingVerifications = async () => {
     if (!account?.address) return;
     
-    const adminKey = import.meta.env.VITE_ADMIN_KEY || '006046';
+    const adminKey = import.meta.env.VITE_ADMIN_KEY;
+    if (!adminKey) {
+      console.error('Admin key not configured');
+      return;
+    }
     
     try {
       const response = await fetch(`${API_BASE_URL}/admin/pending-verifications?adminKey=${adminKey}`);

@@ -50,7 +50,11 @@ export default function AdminDashboard() {
     }
 
     // Simple admin key validation
-    const validAdminKey = import.meta.env.VITE_ADMIN_KEY || '006046';
+    const validAdminKey = import.meta.env.VITE_ADMIN_KEY;
+    if (!validAdminKey) {
+      alert('Admin authentication not configured');
+      return;
+    }
     if (adminKey !== validAdminKey) {
       alert('Invalid admin key');
       return;

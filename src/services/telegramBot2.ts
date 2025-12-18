@@ -745,7 +745,7 @@ export class TelegramBotServiceBeta {
         
         // Build context from recent messages
         const contextMessages = filtered
-          .slice(-5) // Last 5 messages
+          .slice(-10) // Last 10 messages
           .map(m => `${m.userName}: ${m.text}`)
           .join('\n');
         

@@ -2,7 +2,6 @@ import { Bot, Sparkles, Cpu, Shield, TrendingUp, Play, Pause, Square, Settings, 
 import StatCard from '@/components/StatCard';
 import { useState, useEffect } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
-import { useAccount } from 'wagmi';
 
 interface AgentCardProps {
   name: string;
@@ -75,19 +74,13 @@ const SidebarMyAgents = () => {
   // Thirdweb wallet connection (works for both mobile and desktop)
   const account = useActiveAccount();
   const address = account?.address;
-  
-  // Wagmi wallet connection (fallback)
-  const { address: wagmiAddress } = useAccount();
-  
-  // Use whichever is available
-  const walletAddress = address || wagmiAddress;
-  const isConnected = !!walletAddress;
+  const isConnected = !!account;
   
   const [telegramAgents, setTelegramAgents] = useState<any[]>([]);
 
   useEffect(() => {
     // Load Telegram agents from localStorage when wallet is connected
-    if (walletAddress) {
+    if (address) {
       const savedAgents = localStorage.getItem('telegramAgents');
       if (savedAgents) {
         try {
@@ -99,7 +92,7 @@ const SidebarMyAgents = () => {
     } else {
       setTelegramAgents([]);
     }
-  }, [walletAddress]);
+  }, [address]);
 
   const deleteTelegramAgent = (projectName: string) => {
     const updated = telegramAgents.filter(agent => agent.projectName !== projectName);
@@ -168,7 +161,7 @@ const SidebarMyAgents = () => {
         )}
 
         {/* Stats Section - Show only when connected */}
-        {walletAddress && (
+        {address && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>

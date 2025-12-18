@@ -159,7 +159,7 @@ const SidebarAirdrop = memo(() => {
       icon: Heart,
       completed: false,
       type: 'social',
-      actionUrl: 'https://x.com/SmartSentinels_/status/2000594304646222122?s=20',
+      actionUrl: 'https://x.com/SmartSentinels_/status/2001657579152241011',
       requiresVerification: true,
     },
     {
@@ -170,7 +170,7 @@ const SidebarAirdrop = memo(() => {
       icon: Users,
       completed: false,
       type: 'engagement',
-      actionUrl: 'https://x.com/SmartSentinels_/status/2000594304646222122?s=20',
+      actionUrl: 'https://x.com/SmartSentinels_/status/2001657579152241011',
       requiresVerification: true,
     },
     {

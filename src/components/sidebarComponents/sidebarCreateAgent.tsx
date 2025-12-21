@@ -328,6 +328,8 @@ PARAMETER custom_instructions """
                           <img
                             src="/assets/telegramSentinel.webp"
                             alt="Telegram Sentinel AI Agent"
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-auto object-contain max-h-[400px] opacity-90 hover:opacity-100 transition-opacity duration-300"
                           />
                         </div>
@@ -339,6 +341,8 @@ PARAMETER custom_instructions """
                           <img
                             src="/assets/telegramSentinel.webp"
                             alt="Telegram Sentinel AI Agent"
+                            loading="lazy"
+                            decoding="async"
                             className="w-full max-h-64 object-contain opacity-90"
                           />
                         </div>

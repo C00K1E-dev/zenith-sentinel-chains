@@ -6,5 +6,10 @@ import { injectSpeedInsights } from '@vercel/speed-insights';
 
 createRoot(document.getElementById("root")!).render(<App />);
 
-inject();
-injectSpeedInsights();
+// Defer analytics to improve initial load performance
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    inject();
+    injectSpeedInsights();
+  });
+}

@@ -140,7 +140,7 @@ const SidebarNFTsiNFTsHub = () => {
               {/* Image Section */}
               <div className="relative flex items-center justify-start min-h-[300px] md:min-h-[400px]">
                 <img
-                  src="/assets/genesisNFT.svg"
+                  src="/assets/genesisNFT.webp"
                   alt="Genesis NFT"
                   loading="lazy"
                   decoding="async"
@@ -273,7 +273,7 @@ const SidebarNFTsiNFTsHub = () => {
               {/* Image Section */}
               <div className="relative flex items-center justify-start min-h-[300px] md:min-h-[400px]">
                 <img
-                  src="/assets/AIAuditNFT.svg"
+                  src="/assets/AIAuditNFT.webp"
                   alt="AI Audit NFT"
                   loading="lazy"
                   decoding="async"
@@ -366,7 +366,7 @@ const SidebarNFTsiNFTsHub = () => {
                 <div className="aspect-square lg:aspect-auto lg:h-full relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-muted/10 to-muted/20"></div>
                   <img 
-                    src="/assets/aida.svg" 
+                    src="/assets/aida.webp" 
                     alt="AIDA Collection" 
                     loading="lazy"
                     decoding="async"

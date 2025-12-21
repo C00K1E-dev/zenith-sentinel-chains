@@ -477,7 +477,7 @@ const Index = () => {
                     {/* Central Token Design */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <img 
-                        src="/assets/token.svg" 
+                        src="/assets/token.webp" 
                         alt="SSTL Token" 
                         className="w-48 h-48 object-contain animate-float-slow"
                       />

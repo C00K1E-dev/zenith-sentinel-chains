@@ -203,7 +203,7 @@ const Vision = () => {
                           {/* Header */}
                           <div className="flex items-center gap-2 sm:gap-3 mb-3 pb-3 border-b border-emerald-500/20">
                             <img
-                              src="/assets/aida.svg"
+                              src="/assets/aida.webp"
                               alt="AIDA Logo"
                               loading="lazy"
                               className="w-16 h-16 sm:w-28 sm:h-28 object-contain"

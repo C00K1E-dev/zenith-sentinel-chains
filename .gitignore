@@ -26,6 +26,9 @@ dist-ssr
 # Environment variables
 .env
 
+# Original SVG files (replaced with optimized WebP)
+public/assets/SVG's/
+
 # Google Cloud Service Account Keys (NEVER commit these!)
 **/gen-lang-client-*.json
 google-indexing.js

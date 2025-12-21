@@ -40,15 +40,15 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
       case 'genesis':
       case 'genesis nft':
       case 'genesis collection':
-        return '/assets/genesisNFT.svg';
+        return '/assets/genesisNFT.webp';
       case 'ai audit':
       case 'ai audit nft':
       case 'ai audit collection':
-        return '/assets/AIAuditNFT.svg';
+        return '/assets/AIAuditNFT.webp';
       case 'aida':
       case 'aida nft':
       case 'aida collection':
-        return '/assets/aida.svg';
+        return '/assets/aida.webp';
       default:
         return '/placeholder.svg';
     }

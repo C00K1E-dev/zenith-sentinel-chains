@@ -821,7 +821,7 @@ const SidebarSeedRound = memo(() => {
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: '1.5rem' }}>
           <motion.img
-            src="/assets/token.svg"
+            src="/assets/token.webp"
             alt="SSTL Token"
             style={{ width: 250, height: 250 }}
             animate={{

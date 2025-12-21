@@ -326,7 +326,7 @@ PARAMETER custom_instructions """
                         {/* Right Column - Image (2/5 width) */}
                         <div className="hidden lg:flex lg:col-span-2 items-center justify-center p-6 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent">
                           <img
-                            src="/assets/telegramSentinel.svg"
+                            src="/assets/telegramSentinel.webp"
                             alt="Telegram Sentinel AI Agent"
                             className="w-full h-auto object-contain max-h-[400px] opacity-90 hover:opacity-100 transition-opacity duration-300"
                           />
@@ -337,7 +337,7 @@ PARAMETER custom_instructions """
                       <div className="lg:hidden px-6 pb-6 pt-0">
                         <div className="rounded-lg overflow-hidden bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent p-6">
                           <img
-                            src="/assets/telegramSentinel.svg"
+                            src="/assets/telegramSentinel.webp"
                             alt="Telegram Sentinel AI Agent"
                             className="w-full max-h-64 object-contain opacity-90"
                           />

@@ -21,7 +21,8 @@ export default async function handler(req, res) {
     const { data, error } = await supabase
       .from('airdrop_registrations')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100000);
 
     if (error) {
       console.error('Supabase error:', error);

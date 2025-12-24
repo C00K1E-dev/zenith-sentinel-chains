@@ -95,6 +95,23 @@ const renderTextWithLinks = (text: string) => {
 const News = () => {
   const newsItems: NewsItem[] = [
     {
+      id: 6,
+      title: 'Join Us at 4AI Twitter Space: AI Identity & Data Protection',
+      date: 'December 24, 2025',
+      emoji: null,
+      content: `Security isn't optional in AI.
+
+SmartSentinels launched with a clear mission: let AI do real, verifiable work — starting with AI-driven smart contract audits that generate measurable proof.
+
+Excited to join this Space on 26.12 and talk about identity, data protection and how PoUW turns AI into something users can finally trust.
+
+<div style="margin: 20px 0; display: flex; justify-content: center;">
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">🎄Christmas Eve is all about the feeling of being safe and sound.<br><br>💛Join us to know more about AI identity, data ownership and user protection in autonomous systems.<br><br>📅 Date: 26 • 12 • 2025<br>📍 Venue: <a href="https://t.co/mQdfxRJwzd">https://t.co/mQdfxRJwzd</a><br><br>🎁 Rewards: $50 USDT – 5 Winners<br><br>🏆 How to Win:<br>1️⃣… <a href="https://t.co/meumgJB8ly">pic.twitter.com/meumgJB8ly</a></p>&mdash; 4AI 🔶 BNB (@4aibsc) <a href="https://twitter.com/4aibsc/status/2003832176517742800?ref_src=twsrc%5Etfw">December 24, 2025</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
+
+Don't miss this opportunity to learn more about how AI identity and data ownership are being revolutionized through autonomous systems and verifiable proof mechanisms.`
+    },
+    {
       id: 5,
       title: 'SmartSentinels Airdrop - Powered by theMiracle & MetaMask',
       date: 'December 16, 2025',

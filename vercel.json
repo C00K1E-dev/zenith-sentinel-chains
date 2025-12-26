@@ -7,6 +7,17 @@
       "source": "/:path*",
       "has": [
         {
+          "type": "host",
+          "value": "www.smartsentinels.net"
+        }
+      ],
+      "destination": "https://smartsentinels.net/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
           "type": "header",
           "key": "x-forwarded-proto",
           "value": "http"
@@ -28,7 +39,8 @@
     { "source": "/nft", "destination": "/hub", "permanent": true },
     { "source": "/nfts", "destination": "/hub", "permanent": true },
     { "source": "/token", "destination": "/", "permanent": true },
-    { "source": "/about", "destination": "/", "permanent": true }
+    { "source": "/about", "destination": "/", "permanent": true },
+    { "source": "/hub/index.html", "destination": "/hub", "permanent": true }
   ],
   "headers": [
     {

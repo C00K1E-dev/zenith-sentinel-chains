@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, Rocket, Trophy, Globe, Zap, Brain, Users, Award } from 'lucide-react';
+import { ArrowLeft, Calendar, Rocket, Trophy, Globe, Zap, Brain, Users, Award, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
@@ -364,9 +364,24 @@ Together, we're building the future of decentralized AI infrastructure.`
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-orbitron font-bold mb-4 neon-glow">
                   News & Announcements
                 </h1>
-                <p className="text-base sm:text-lg text-muted-foreground">
+                <p className="text-base sm:text-lg text-muted-foreground mb-6">
                   Stay informed about the latest updates and partnerships from SmartSentinels
                 </p>
+                
+                {/* Telegram Subscription Button */}
+                <a
+                  href="https://t.me/SmartSentinelsOfficial"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block"
+                >
+                  <Button 
+                    className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-[0_0_20px_rgba(248,244,66,0.5)] transition-all duration-300"
+                  >
+                    <Send size={18} />
+                    <span className="font-semibold">Subscribe on Telegram</span>
+                  </Button>
+                </a>
               </div>
             </div>
 

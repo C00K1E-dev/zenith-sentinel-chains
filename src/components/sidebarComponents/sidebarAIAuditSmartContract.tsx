@@ -2666,6 +2666,7 @@ const SidebarAIAuditSmartContract: React.FC<AuditFeatureProps> = ({ showTitle = 
           <ContractAddressInput 
             onCodeFetched={handleContractCodeFetched}
             disabled={isProcessing || isLoading}
+            onExampleAudit={handleTestModeAudit}
           />
         </div>
 

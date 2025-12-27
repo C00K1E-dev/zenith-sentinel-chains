@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Loader2, ExternalLink, AlertCircle, CheckCircle2, Info, FlaskConical } from 'lucide-react';
+import { Search, Loader2, ExternalLink, AlertCircle, CheckCircle2, Info, FlaskConical, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChainSelector, SUPPORTED_CHAINS } from '@/components/ChainSelector';
@@ -13,11 +13,15 @@ import {
 interface ContractAddressInputProps {
   onCodeFetched: (code: string, contractInfo: ContractSourceCode) => void;
   disabled?: boolean;
+  onExampleAudit?: (contractAddress: string, chainId: string) => void;
 }
+
+
 
 export const ContractAddressInput: React.FC<ContractAddressInputProps> = ({
   onCodeFetched,
   disabled = false,
+  onExampleAudit,
 }) => {
   const [contractAddress, setContractAddress] = useState('');
   const [selectedChainId, setSelectedChainId] = useState('1'); // Ethereum mainnet
@@ -85,6 +89,32 @@ export const ContractAddressInput: React.FC<ContractAddressInputProps> = ({
   const explorerUrl = contractAddress && isValidAddress(contractAddress) 
     ? getExplorerUrl(contractAddress, selectedChainId)
     : null;
+
+  const handleExampleAudit = async (address: string, chainId: string) => {
+    if (!onExampleAudit) return;
+    
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const contractInfo = await fetchContractSourceCode(address, chainId);
+      setSuccess(`✅ Fetching ${contractInfo.contractName} for example audit...`);
+      onCodeFetched(contractInfo.sourceCode, contractInfo);
+      
+      // Small delay to let the code populate
+      setTimeout(() => {
+        onExampleAudit(address, chainId);
+        setSuccess(null);
+      }, 500);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch contract';
+      setError(errorMessage);
+      console.error('Error fetching example contract:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-3">
@@ -190,26 +220,48 @@ export const ContractAddressInput: React.FC<ContractAddressInputProps> = ({
           </summary>
           <div className="mt-3 space-y-3">
             <div>
-              <p className="font-medium mb-2 text-foreground">Click to Test:</p>
+              <p className="font-medium mb-2 text-foreground">Click to Fill Address then fetch and Run Test Audit:</p>
               <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    setContractAddress('0xdAC17F958D2ee523a2206206994597C13D831ec7');
-                    setSelectedChainId('1');
-                  }}
-                  className="block w-full text-left font-mono text-xs bg-muted hover:bg-primary/10 p-2 rounded-lg transition-colors"
-                >
-                  <strong className="text-primary">ETH USDT:</strong> <span className="text-muted-foreground">0xdAC1...1ec7</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setContractAddress('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48');
-                    setSelectedChainId('1');
-                  }}
-                  className="block w-full text-left font-mono text-xs bg-muted hover:bg-primary/10 p-2 rounded-lg transition-colors"
-                >
-                  <strong className="text-primary">ETH USDC:</strong> <span className="text-muted-foreground">0xA0b8...eB48</span>
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setContractAddress('0xdAC17F958D2ee523a2206206994597C13D831ec7');
+                      setSelectedChainId('1');
+                    }}
+                    className="flex-1 text-left font-mono text-xs bg-muted hover:bg-primary/10 p-2 rounded-lg transition-colors"
+                  >
+                    <strong className="text-primary">ETH USDT:</strong> <span className="text-muted-foreground">0xdAC1...1ec7</span>
+                  </button>
+                  <button
+                    onClick={() => handleExampleAudit('0xdAC17F958D2ee523a2206206994597C13D831ec7', '1')}
+                    disabled={isLoading || disabled}
+                    className="px-3 py-2 text-xs bg-primary/20 hover:bg-primary/30 text-primary rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Run test audit (no payment required)"
+                  >
+                    {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                    Run Test
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setContractAddress('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48');
+                      setSelectedChainId('1');
+                    }}
+                    className="flex-1 text-left font-mono text-xs bg-muted hover:bg-primary/10 p-2 rounded-lg transition-colors"
+                  >
+                    <strong className="text-primary">ETH USDC:</strong> <span className="text-muted-foreground">0xA0b8...eB48</span>
+                  </button>
+                  <button
+                    onClick={() => handleExampleAudit('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', '1')}
+                    disabled={isLoading || disabled}
+                    className="px-3 py-2 text-xs bg-primary/20 hover:bg-primary/30 text-primary rounded-lg transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Run test audit (no payment required)"
+                  >
+                    {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <FileText className="h-3 w-3" />}
+                    Run Test
+                  </button>
+                </div>
               </div>
             </div>
             <div className="pt-2 border-t border-border text-xs text-muted-foreground flex items-start gap-2">

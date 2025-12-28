@@ -152,10 +152,25 @@ const SidebarNFTsiNFTsHub = () => {
               <div className="flex flex-col gap-3 md:gap-4 md:pl-4 lg:pl-6">
                 {/* Header */}
                 <div>
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-orbitron font-bold text-foreground mb-2 flex items-center gap-2">
-                    Genesis Collection
-                    <Crown size={24} className="text-primary" />
-                  </h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-orbitron font-bold text-foreground flex items-center gap-2">
+                      Genesis Collection
+                      <Crown size={24} className="text-primary" />
+                    </h3>
+                    <a 
+                      href="https://nftcalendar.io/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/50 border border-primary/20 hover:border-primary/40 transition-all hover:scale-105"
+                    >
+                      <span className="text-xs font-medium text-muted-foreground">Verified by</span>
+                      <img 
+                        src="/assets/nftcalendar-500x500.png" 
+                        alt="NFT Calendar" 
+                        className="w-5 h-5 object-contain"
+                      />
+                    </a>
+                  </div>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-2">
                     For early supporters who believe in our vision. As a Genesis holder, you're not just an owner - you're a builder helping shape the future of SmartSentinels.
                   </p>
@@ -285,10 +300,25 @@ const SidebarNFTsiNFTsHub = () => {
               <div className="flex flex-col gap-3 md:gap-4 md:pl-4 lg:pl-6">
                 {/* Header */}
                 <div>
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-orbitron font-bold text-foreground mb-2 flex items-center gap-2">
-                    AI Audit Collection
-                    <Bot size={24} className="text-primary" />
-                  </h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-orbitron font-bold text-foreground flex items-center gap-2">
+                      AI Audit Collection
+                      <Bot size={24} className="text-primary" />
+                    </h3>
+                    <a 
+                      href="https://nftcalendar.io/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-background/50 border border-accent/20 hover:border-accent/40 transition-all hover:scale-105"
+                    >
+                      <span className="text-xs font-medium text-muted-foreground">Verified by</span>
+                      <img 
+                        src="/assets/nftcalendar-500x500.png" 
+                        alt="NFT Calendar" 
+                        className="w-5 h-5 object-contain"
+                      />
+                    </a>
+                  </div>
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                     Own an NFT and generate passive income. Share in the revenue generated from AI-powered smart contract audits on the network.
                   </p>

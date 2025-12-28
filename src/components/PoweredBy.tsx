@@ -16,7 +16,7 @@ const PoweredBy = memo(() => {
     { name: 'theMiracle', logo: '/assets/miracle.svg', link: 'https://www.themiracle.io/' },
     { name: 'Studio Blockchain', logo: '/assets/studio.png', link: 'https://studio-blockchain.com/' },
     { name: 'Micro3', logo: '/assets/micro3.png', link: 'https://micro3.io/' },
-    { name: 'Get featured here', logo: '', isText: true },
+    { name: 'NFT Calendar', logo: '/assets/nftcalendar-500x500.png', link: 'https://nftcalendar.io/' },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },
     { name: 'Get featured here', logo: '', isText: true },

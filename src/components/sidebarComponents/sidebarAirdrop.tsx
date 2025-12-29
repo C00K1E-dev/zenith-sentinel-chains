@@ -63,37 +63,85 @@ const thirdwebClient = createThirdwebClient({
 // Helper function to detect if wallet is MetaMask
 const detectMetaMaskWallet = (): boolean => {
   if (typeof window === 'undefined') return false;
-  const { ethereum } = window as any;
   
-  // Check for MetaMask on desktop
-  if (ethereum?.isMetaMask === true) return true;
-  
-  // Check for MetaMask mobile in-app browser
-  // MetaMask mobile sets specific user agent
-  if (typeof navigator !== 'undefined') {
-    const userAgent = navigator.userAgent || '';
-    // Check for various MetaMask mobile signatures
-    if (userAgent.includes('MetaMask') || 
-        userAgent.includes('metamask') ||
-        userAgent.includes('MM Mobile')) return true;
-  }
-  
-  // Additional check for injected provider
-  if (ethereum?.providers) {
-    return ethereum.providers.some((provider: any) => provider.isMetaMask);
-  }
-  
-  // Check if current provider is MetaMask (mobile specific)
-  if (ethereum) {
-    // MetaMask mobile may not set isMetaMask immediately
-    // Check for MetaMask-specific properties
-    if (ethereum._metamask || ethereum.isMetaMask) return true;
+  try {
+    const { ethereum } = window as any;
     
-    // Check if the provider has MetaMask branding
-    if (ethereum.constructor?.name === 'MetaMask') return true;
+    // Log detection attempt for debugging
+    console.log('[METAMASK_DETECT] Checking for MetaMask:', {
+      hasEthereum: !!ethereum,
+      isMetaMask: ethereum?.isMetaMask,
+      _metamask: !!ethereum?._metamask,
+      providers: ethereum?.providers?.length,
+      userAgent: navigator?.userAgent,
+    });
+    
+    // Check 1: Standard MetaMask detection (desktop and mobile)
+    if (ethereum?.isMetaMask === true) {
+      console.log('[METAMASK_DETECT] ✓ Detected via ethereum.isMetaMask');
+      return true;
+    }
+    
+    // Check 2: MetaMask mobile in-app browser via user agent
+    if (typeof navigator !== 'undefined') {
+      const userAgent = navigator.userAgent || '';
+      const hasMetaMaskUA = 
+        userAgent.includes('MetaMask') || 
+        userAgent.includes('metamask') ||
+        userAgent.includes('MM Mobile');
+      
+      if (hasMetaMaskUA) {
+        console.log('[METAMASK_DETECT] ✓ Detected via user agent');
+        return true;
+      }
+    }
+    
+    // Check 3: Multiple providers (when multiple wallets are installed)
+    if (ethereum?.providers && Array.isArray(ethereum.providers)) {
+      const hasMetaMask = ethereum.providers.some((provider: any) => {
+        return provider.isMetaMask === true;
+      });
+      
+      if (hasMetaMask) {
+        console.log('[METAMASK_DETECT] ✓ Detected in providers array');
+        return true;
+      }
+    }
+    
+    // Check 4: MetaMask-specific internal property
+    if (ethereum?._metamask) {
+      console.log('[METAMASK_DETECT] ✓ Detected via _metamask property');
+      return true;
+    }
+    
+    // Check 5: Check for MetaMask constructor name
+    if (ethereum?.constructor?.name === 'MetaMask') {
+      console.log('[METAMASK_DETECT] ✓ Detected via constructor name');
+      return true;
+    }
+    
+    // Check 6: On mobile, check if we're in MetaMask's in-app browser
+    // This is the most reliable method for MetaMask Mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile && ethereum) {
+      // MetaMask mobile always injects ethereum when in-app
+      // If we have ethereum on mobile and it's the only provider, likely MetaMask
+      const isInAppBrowser = !window.navigator.standalone && 
+                             (window.innerHeight > window.innerWidth || 
+                              window.screen.orientation?.type?.includes('portrait'));
+      
+      if (isInAppBrowser && ethereum && !ethereum.providers) {
+        console.log('[METAMASK_DETECT] ✓ Detected as mobile in-app browser');
+        return true;
+      }
+    }
+    
+    console.log('[METAMASK_DETECT] ✗ MetaMask not detected');
+    return false;
+  } catch (error) {
+    console.error('[METAMASK_DETECT] Error during detection:', error);
+    return false;
   }
-  
-  return false;
 };
 
 interface Task {
@@ -302,56 +350,13 @@ const SidebarAirdrop = memo(() => {
       return;
     }
 
-    // Function to perform MetaMask detection with retry for mobile
-    const performDetection = () => {
-      // Check if MetaMask is the connected wallet (desktop or mobile)
-      const isMetaMask = 
-        connector?.name === 'MetaMask' || 
-        connector?.name?.toLowerCase().includes('metamask') ||
-        detectMetaMaskWallet();
-      
-      console.log('[METAMASK] Detection:', { 
-        connectorName: connector?.name, 
-        detectResult: detectMetaMaskWallet(), 
-        isMetaMask,
-        userAgent: navigator.userAgent,
-        isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
-        ethereum: typeof (window as any).ethereum !== 'undefined',
-        ethereumIsMetaMask: (window as any).ethereum?.isMetaMask
-      });
-      
-      return isMetaMask;
-    };
-
-    // Initial detection
-    let isMetaMask = performDetection();
-    setIsMetaMaskWallet(isMetaMask);
-
-    // On mobile, the wallet injection might be delayed
-    // Retry detection after a short delay if not detected initially
-    if (!isMetaMask && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      console.log('[METAMASK] Mobile device detected, retrying detection...');
-      const retryTimeout = setTimeout(() => {
-        isMetaMask = performDetection();
-        setIsMetaMaskWallet(isMetaMask);
-        
-        // Apply bonus after retry if detected
-        if (isMetaMask && !metaMaskBonusApplied) {
-          applyMetaMaskBonus();
-        }
-      }, 1500); // Wait 1.5 seconds for wallet injection on mobile
-
-      return () => clearTimeout(retryTimeout);
-    }
-
     // Function to apply MetaMask bonus
     const applyMetaMaskBonus = () => {
       const savedBonus = localStorage.getItem(`metamask_bonus_${account.address}`);
       if (!savedBonus) {
-        console.log('MetaMask detected! Adding 10 bonus points...');
+        console.log('[METAMASK] Applying bonus - 10 points...');
         
         // Call completeTask which handles backend persistence
-        // Wrap in try-catch to handle mobile errors gracefully
         (async () => {
           try {
             await completeTask('connect-metamask', 10);
@@ -380,11 +385,76 @@ const SidebarAirdrop = memo(() => {
       }
     };
 
-    // Apply MetaMask bonus if applicable and not yet applied
+    // Function to perform MetaMask detection
+    const performDetection = () => {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      // On mobile: if wallet is connected and ethereum exists, assume it's MetaMask
+      // because MetaMask mobile opens pages in its in-app browser
+      if (isMobile && account?.address && (window as any).ethereum) {
+        console.log('[METAMASK] Mobile wallet connected with ethereum provider - assuming MetaMask');
+        return true;
+      }
+      
+      // Check connector name
+      const connectorIsMetaMask = 
+        connector?.name === 'MetaMask' || 
+        connector?.name?.toLowerCase().includes('metamask') ||
+        connector?.id === 'io.metamask' ||
+        connector?.id === 'metaMask';
+      
+      // Check wallet detection function
+      const detectResult = detectMetaMaskWallet();
+      
+      const isMetaMask = connectorIsMetaMask || detectResult;
+      
+      console.log('[METAMASK] Detection result:', { 
+        connectorName: connector?.name,
+        connectorId: connector?.id,
+        connectorIsMetaMask,
+        detectResult,
+        finalResult: isMetaMask,
+        isMobile,
+        hasEthereum: !!(window as any).ethereum,
+        walletConnected: !!account?.address
+      });
+      
+      return isMetaMask;
+    };
+
+    // Initial detection
+    let isMetaMask = performDetection();
+    setIsMetaMaskWallet(isMetaMask);
+
+    // Apply bonus immediately if detected
     if (isMetaMask && !metaMaskBonusApplied) {
       applyMetaMaskBonus();
     }
-  }, [account?.address, connector?.name, metaMaskBonusApplied]);
+
+    // On mobile, retry detection after delays to handle late injection
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile && !isMetaMask) {
+      console.log('[METAMASK] Mobile device - scheduling retry checks...');
+      
+      // Try multiple times with increasing delays
+      const timeouts = [500, 1500, 3000].map((delay) => 
+        setTimeout(() => {
+          const retryResult = performDetection();
+          if (retryResult && !isMetaMask) {
+            console.log(`[METAMASK] Mobile retry successful after ${delay}ms`);
+            isMetaMask = true;
+            setIsMetaMaskWallet(true);
+            
+            if (!metaMaskBonusApplied) {
+              applyMetaMaskBonus();
+            }
+          }
+        }, delay)
+      );
+
+      return () => timeouts.forEach(clearTimeout);
+    }
+  }, [account?.address, connector?.name, connector?.id, metaMaskBonusApplied]);
 
   // Load user progress from backend and localStorage
   useEffect(() => {
@@ -700,29 +770,29 @@ const SidebarAirdrop = memo(() => {
     // Special handling for Connect MetaMask
     if (taskId === 'connect-metamask') {
       try {
-        // Re-check MetaMask detection on mobile in case it was delayed
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        const currentIsMetaMask = isMetaMaskWallet || detectMetaMaskWallet();
         
-        if (isMobile && !currentIsMetaMask) {
-          // On mobile, do one more check after a brief delay
-          console.log('[METAMASK] Mobile detected, performing final check...');
-          await new Promise(resolve => setTimeout(resolve, 500));
-          const finalCheck = detectMetaMaskWallet();
-          
-          if (finalCheck) {
-            setIsMetaMaskWallet(true);
-          }
+        // On mobile, if user is connected with ANY wallet, assume it's MetaMask
+        // since MetaMask mobile opens the page in its in-app browser
+        let isMetaMaskConnected = isMetaMaskWallet;
+        
+        if (isMobile && account?.address && (window as any).ethereum) {
+          console.log('[METAMASK] Mobile user with connected wallet - accepting as MetaMask');
+          isMetaMaskConnected = true;
+          setIsMetaMaskWallet(true);
+        } else if (!isMobile) {
+          // On desktop, do stricter checking
+          isMetaMaskConnected = isMetaMaskWallet || detectMetaMaskWallet();
         }
         
-        const isMetaMaskConnected = isMetaMaskWallet || currentIsMetaMask || detectMetaMaskWallet();
-        
         console.log('[METAMASK] Manual completion check:', {
-          isMetaMaskWallet,
-          currentIsMetaMask,
-          isMetaMaskConnected,
           isMobile,
-          connectorName: connector?.name
+          isMetaMaskWallet,
+          hasAccount: !!account?.address,
+          hasEthereum: !!(window as any).ethereum,
+          isMetaMaskConnected,
+          connectorName: connector?.name,
+          connectorId: connector?.id
         });
         
         if (isMetaMaskConnected) {
@@ -753,7 +823,7 @@ const SidebarAirdrop = memo(() => {
         } else {
           toast({
             title: "MetaMask Required",
-            description: "Please connect using MetaMask mobile app or browser extension to claim this bonus.",
+            description: "Please connect using the MetaMask mobile app or browser extension to claim this bonus. On mobile, open this page in MetaMask's browser.",
             variant: "destructive",
           });
         }

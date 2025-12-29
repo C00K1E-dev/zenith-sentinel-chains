@@ -773,16 +773,17 @@ const SidebarAirdrop = memo(() => {
       try {
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         
-        // On mobile, if user is connected with ANY wallet, assume it's MetaMask
-        // since MetaMask mobile opens the page in its in-app browser
-        let isMetaMaskConnected = isMetaMaskWallet;
+        // On mobile, if user is connected with a wallet, accept it as MetaMask
+        // Most mobile users access dApps through MetaMask's in-app browser
+        let isMetaMaskConnected = false;
         
-        if (isMobile && account?.address && (window as any).ethereum) {
+        if (isMobile && account?.address) {
+          // If on mobile with connected wallet, assume MetaMask
           console.log('[METAMASK] Mobile user with connected wallet - accepting as MetaMask');
           isMetaMaskConnected = true;
           setIsMetaMaskWallet(true);
-        } else if (!isMobile) {
-          // On desktop, do stricter checking
+        } else {
+          // On desktop, do proper MetaMask checking
           isMetaMaskConnected = isMetaMaskWallet || detectMetaMaskWallet();
         }
         
@@ -824,7 +825,9 @@ const SidebarAirdrop = memo(() => {
         } else {
           toast({
             title: "MetaMask Required",
-            description: "Please connect using the MetaMask mobile app or browser extension to claim this bonus. On mobile, open this page in MetaMask's browser.",
+            description: isMobile 
+              ? "Please ensure you're using the MetaMask mobile app to connect your wallet."
+              : "Please connect using the MetaMask browser extension to claim this bonus.",
             variant: "destructive",
           });
         }

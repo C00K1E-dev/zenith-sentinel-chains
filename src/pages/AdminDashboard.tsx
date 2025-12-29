@@ -493,7 +493,7 @@ export default function AdminDashboard() {
   const exportAllUsers = async () => {
     try {
       // Fetch ALL users with points from leaderboard (no limit for export)
-      const response = await fetch(`${API_BASE_URL.replace('/api', '')}/api/leaderboard?limit=10000`);
+      const response = await fetch(`${API_BASE_URL}/leaderboard?limit=100000`);
       const data = await response.json();
 
       if (data.success && data.data) {

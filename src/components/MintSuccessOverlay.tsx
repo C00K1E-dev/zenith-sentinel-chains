@@ -112,8 +112,17 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="fixed inset-0 bg-black/80 backdrop-blur-md"
-          style={{ zIndex: 999999 }}
-          onClick={onClose}
+          style={{ zIndex: 999999, touchAction: 'none' }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
         />
 
         <motion.div
@@ -121,9 +130,14 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className="fixed inset-0 flex items-center justify-center p-4"
-          style={{ zIndex: 1000000 }}
+          style={{ zIndex: 1000000, pointerEvents: 'none' }}
         >
-          <div className="glass-card p-6 md:p-8 rounded-xl max-w-md w-full mx-4 relative" onClick={(e) => e.stopPropagation()} style={{ pointerEvents: 'auto' }}>
+          <div 
+            className="glass-card p-6 md:p-8 rounded-xl max-w-md w-full mx-4 relative" 
+            onClick={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            style={{ pointerEvents: 'auto' }}
+          >
             {/* Close button */}
             <button
               onClick={(e) => {
@@ -132,8 +146,15 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
                 console.log('Close button clicked');
                 onClose();
               }}
-              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 transition-colors z-50 cursor-pointer"
-              style={{ pointerEvents: 'auto' }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Close button touched');
+                onClose();
+              }}
+              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 active:bg-white/20 transition-colors z-50 cursor-pointer"
+              style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+              type="button"
             >
               <X size={20} className="text-muted-foreground" />
             </button>
@@ -207,8 +228,19 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
             >
               {txHash && (
                 <button
-                  onClick={() => window.open(getExplorerUrl(txHash), '_blank')}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-lg transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(getExplorerUrl(txHash), '_blank');
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.open(getExplorerUrl(txHash), '_blank');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 hover:bg-primary/20 active:bg-primary/30 border border-primary/20 rounded-lg transition-colors"
+                  style={{ touchAction: 'manipulation' }}
+                  type="button"
                 >
                   <ExternalLink size={16} />
                   <span className="text-sm font-medium">View Transaction</span>
@@ -223,18 +255,35 @@ const MintSuccessOverlay: React.FC<MintSuccessOverlayProps> = memo(({
                     console.log('Close button in actions clicked');
                     onClose();
                   }}
-                  className="flex-1 px-4 py-3 bg-muted hover:bg-muted/80 rounded-lg transition-colors text-sm font-medium cursor-pointer"
-                  style={{ pointerEvents: 'auto' }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Close button in actions touched');
+                    onClose();
+                  }}
+                  className="flex-1 px-4 py-3 bg-muted hover:bg-muted/80 active:bg-muted/70 rounded-lg transition-colors text-sm font-medium cursor-pointer"
+                  style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+                  type="button"
                 >
                   Close
                 </button>
                 {onViewNFTs && (
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       onViewNFTs();
                       onClose();
                     }}
-                    className="flex-1 px-4 py-3 bg-primary hover:bg-primary/90 rounded-lg transition-colors text-sm font-medium text-primary-foreground"
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onViewNFTs();
+                      onClose();
+                    }}
+                    className="flex-1 px-4 py-3 bg-primary hover:bg-primary/90 active:bg-primary/80 rounded-lg transition-colors text-sm font-medium text-primary-foreground"
+                    style={{ touchAction: 'manipulation' }}
+                    type="button"
                   >
                     View My NFTs
                   </button>

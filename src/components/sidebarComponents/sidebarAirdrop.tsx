@@ -126,7 +126,8 @@ const detectMetaMaskWallet = (): boolean => {
     if (isMobile && ethereum) {
       // MetaMask mobile always injects ethereum when in-app
       // If we have ethereum on mobile and it's the only provider, likely MetaMask
-      const isInAppBrowser = !window.navigator.standalone && 
+      const nav = window.navigator as any;
+      const isInAppBrowser = !nav.standalone && 
                              (window.innerHeight > window.innerWidth || 
                               window.screen.orientation?.type?.includes('portrait'));
       

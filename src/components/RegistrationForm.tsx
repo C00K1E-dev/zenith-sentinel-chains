@@ -19,6 +19,7 @@ interface RegistrationFormProps {
   onOpenChange: (open: boolean) => void;
   walletAddress: string;
   onSuccess: () => void;
+  referralCode?: string; // REFERRAL: Optional referral code from URL
 }
 
 interface FormData {
@@ -37,6 +38,7 @@ export function RegistrationForm({
   onOpenChange,
   walletAddress,
   onSuccess,
+  referralCode, // REFERRAL: Extract referral code from props
 }: RegistrationFormProps) {
   const [formData, setFormData] = useState<FormData>({
     walletAddress,
@@ -114,6 +116,7 @@ export function RegistrationForm({
             : `@${formData.xHandle}`,
           telegramHandle: formData.telegramHandle,
           timestamp: Date.now(),
+          referralCode: referralCode || null, // REFERRAL: Include referral code in API call
         }),
       });
 

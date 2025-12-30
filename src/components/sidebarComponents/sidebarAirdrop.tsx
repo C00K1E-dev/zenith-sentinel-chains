@@ -260,6 +260,7 @@ const SidebarAirdrop = memo(() => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null); // REFERRAL: Store referral code from URL
 
   const [isClaiming, setIsClaiming] = useState(false);
   const [activeTab, setActiveTab] = useState<'tasks' | 'leaderboard'>('tasks');
@@ -298,6 +299,25 @@ const SidebarAirdrop = memo(() => {
       address: AI_AUDIT_CONTRACT_ADDRESS, 
       chain: bsc 
     }), []);
+
+  // REFERRAL: Capture referral code from URL on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+      console.log('[REFERRAL] Captured referral code from URL:', refCode);
+      // Store in localStorage for persistence
+      localStorage.setItem('airdrop_referral_code', refCode);
+    } else {
+      // Check if we have a stored referral code
+      const stored = localStorage.getItem('airdrop_referral_code');
+      if (stored) {
+        setReferralCode(stored);
+        console.log('[REFERRAL] Using stored referral code:', stored);
+      }
+    }
+  }, []);
 
   // Check NFT balances when wallet connects
   useEffect(() => {
@@ -1680,6 +1700,7 @@ const SidebarAirdrop = memo(() => {
           onOpenChange={setRegistrationFormOpen}
           walletAddress={account.address}
           onSuccess={handleRegistrationSuccess}
+          referralCode={referralCode || undefined} // REFERRAL: Pass referral code to form
         />
       )}
     </div>

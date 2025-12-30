@@ -35,13 +35,19 @@ export default function AdminDashboard() {
   const [tagVerifications, setTagVerifications] = useState<PendingVerification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, uniqueTelegrams: 0, uniqueXHandles: 0 });
-  const [activeTab, setActiveTab] = useState<'registrations' | 'verifications' | 'telegram' | 'likes' | 'tags' | 'telegram-agents'>('registrations');
+  const [activeTab, setActiveTab] = useState<'registrations' | 'verifications' | 'telegram' | 'likes' | 'tags' | 'telegram-agents' | 'referrals'>('registrations');
   const [resetWallet, setResetWallet] = useState('');
   const [deleteWallet, setDeleteWallet] = useState('');
   const [nftHolders, setNftHolders] = useState<any[]>([]);
   const [manualCheckWallet, setManualCheckWallet] = useState('');
   const [isCheckingNFT, setIsCheckingNFT] = useState(false);
   const [isSyncingNFTs, setIsSyncingNFTs] = useState(false);
+  
+  // REFERRAL: State for referral management
+  const [referralStats, setReferralStats] = useState<any>(null);
+  const [newReferralCode, setNewReferralCode] = useState('');
+  const [newReferralName, setNewReferralName] = useState('');
+  const [isCreatingReferral, setIsCreatingReferral] = useState(false);
 
   const fetchRegistrations = async () => {
     if (!adminKey) {
@@ -191,6 +197,77 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Fetch NFT holders error:', error);
+    }
+  };
+
+  // REFERRAL: Fetch referral statistics
+  const fetchReferralStats = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/referral-stats?adminKey=${adminKey}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setReferralStats(data.data);
+      }
+    } catch (error) {
+      console.error('Fetch referral stats error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch referral statistics",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // REFERRAL: Create new referral code
+  const handleCreateReferralCode = async () => {
+    if (!newReferralCode.trim()) {
+      toast({
+        title: "Error",
+        description: "Referral code cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCreatingReferral(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/create-referral-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          adminKey,
+          code: newReferralCode,
+          name: newReferralName || null
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: `Referral code "${newReferralCode}" created successfully`
+        });
+        setNewReferralCode('');
+        setNewReferralName('');
+        fetchReferralStats(); // Refresh the list
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to create referral code",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Create referral code error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create referral code",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreatingReferral(false);
     }
   };
 
@@ -648,6 +725,15 @@ export default function AdminDashboard() {
         >
           <Bot size={18} />
           Telegram AI Agents
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('referrals');
+            if (adminKey) fetchReferralStats();
+          }}
+          className={`px-4 py-2 ${activeTab === 'referrals' ? 'border-b-2 border-blue-500 font-bold' : 'text-gray-600'}`}
+        >
+          Referrals {referralStats && `(${referralStats.totals.totalCodes})`}
         </button>
       </div>
 
@@ -1316,6 +1402,186 @@ export default function AdminDashboard() {
       {/* Telegram AI Agents Tab */}
       {activeTab === 'telegram-agents' && (
         <TelegramAgentsDashboard />
+      )}
+
+      {/* Referrals Tab */}
+      {activeTab === 'referrals' && (
+        <div>
+          {/* Create New Referral Code */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Create New Referral Code</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">Referral Code</label>
+                  <Input
+                    value={newReferralCode}
+                    onChange={(e) => setNewReferralCode(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''))}
+                    placeholder="e.g., bogdanpromo"
+                    className="font-mono"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium mb-2">Name (Optional)</label>
+                  <Input
+                    value={newReferralName}
+                    onChange={(e) => setNewReferralName(e.target.value)}
+                    placeholder="e.g., Bogdan - Telegram Promoter"
+                  />
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    onClick={handleCreateReferralCode}
+                    disabled={isCreatingReferral || !newReferralCode}
+                  >
+                    {isCreatingReferral ? <Loader2 className="animate-spin" /> : 'Create'}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Referral Statistics Overview */}
+          {referralStats && (
+            <>
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-gray-600">Total Referral Codes</p>
+                    <p className="text-3xl font-bold">{referralStats.totals.totalCodes}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-gray-600">Total Referrals</p>
+                    <p className="text-3xl font-bold">{referralStats.totals.totalReferrals}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <p className="text-gray-600">Total Commissions (SSTL)</p>
+                    <p className="text-3xl font-bold">{referralStats.totals.totalCommissions}</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Referral Codes Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Referral Codes Performance</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-3">Code</th>
+                          <th className="text-left p-3">Name</th>
+                          <th className="text-left p-3">Referral Link</th>
+                          <th className="text-right p-3">Referrals</th>
+                          <th className="text-right p-3">Earnings (SSTL)</th>
+                          <th className="text-center p-3">Status</th>
+                          <th className="text-left p-3">Created</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {referralStats.codes.map((code: any) => (
+                          <tr key={code.id} className="border-b hover:bg-gray-50">
+                            <td className="p-3">
+                              <code className="bg-gray-100 px-2 py-1 rounded">{code.code}</code>
+                            </td>
+                            <td className="p-3">{code.name || '-'}</td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-2">
+                                <code className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                                  smartsentinels.net/hub/airdrop?ref={code.code}
+                                </code>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(`https://smartsentinels.net/hub/airdrop?ref=${code.code}`);
+                                    toast({
+                                      title: "Copied!",
+                                      description: "Referral link copied to clipboard"
+                                    });
+                                  }}
+                                >
+                                  <Copy size={14} />
+                                </Button>
+                              </div>
+                            </td>
+                            <td className="p-3 text-right font-semibold">{code.total_referrals}</td>
+                            <td className="p-3 text-right font-semibold text-green-600">{code.total_earnings}</td>
+                            <td className="p-3 text-center">
+                              <Badge variant={code.is_active ? 'default' : 'secondary'}>
+                                {code.is_active ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </td>
+                            <td className="p-3 text-sm text-gray-600">
+                              {new Date(code.created_at).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Activity */}
+              {referralStats.recentActivity && referralStats.recentActivity.length > 0 && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Recent Referral Activity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-3">Referral Code</th>
+                            <th className="text-left p-3">Referred Wallet</th>
+                            <th className="text-right p-3">Points Earned</th>
+                            <th className="text-right p-3">Commission (5%)</th>
+                            <th className="text-left p-3">Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {referralStats.recentActivity.slice(0, 20).map((activity: any) => (
+                            <tr key={activity.id} className="border-b hover:bg-gray-50">
+                              <td className="p-3">
+                                <code className="bg-gray-100 px-2 py-1 rounded text-sm">{activity.referral_code}</code>
+                              </td>
+                              <td className="p-3 font-mono text-sm">
+                                {activity.referred_wallet.slice(0, 6)}...{activity.referred_wallet.slice(-4)}
+                              </td>
+                              <td className="p-3 text-right">{activity.points_earned}</td>
+                              <td className="p-3 text-right font-semibold text-green-600">{activity.commission_points}</td>
+                              <td className="p-3 text-sm text-gray-600">
+                                {new Date(activity.created_at).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+
+          {!referralStats && (
+            <Card>
+              <CardContent className="pt-6 text-center text-gray-500">
+                <p>Loading referral statistics...</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );

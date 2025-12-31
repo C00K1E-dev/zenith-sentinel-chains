@@ -1531,11 +1531,52 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
 
+              {/* Referred Users */}
+              {referralStats.referredUsers && referralStats.referredUsers.length > 0 && (
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Referred Users ({referralStats.referredUsers.length})</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-3">Referral Code</th>
+                            <th className="text-left p-3">Wallet Address</th>
+                            <th className="text-left p-3">X Handle</th>
+                            <th className="text-left p-3">Telegram</th>
+                            <th className="text-left p-3">Registered</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {referralStats.referredUsers.map((user: any, index: number) => (
+                            <tr key={index} className="border-b hover:bg-gray-50">
+                              <td className="p-3">
+                                <code className="bg-gray-100 px-2 py-1 rounded text-sm">{user.referred_by}</code>
+                              </td>
+                              <td className="p-3 font-mono text-sm">
+                                {user.wallet_address.slice(0, 6)}...{user.wallet_address.slice(-4)}
+                              </td>
+                              <td className="p-3 text-sm">{user.x_handle || '-'}</td>
+                              <td className="p-3 text-sm">{user.telegram_handle || '-'}</td>
+                              <td className="p-3 text-sm text-gray-600">
+                                {new Date(user.submitted_at).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Recent Activity */}
               {referralStats.recentActivity && referralStats.recentActivity.length > 0 && (
                 <Card className="mt-6">
                   <CardHeader>
-                    <CardTitle>Recent Referral Activity</CardTitle>
+                    <CardTitle>Recent Referral Activity (Commissions Earned)</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">

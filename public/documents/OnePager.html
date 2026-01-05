@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SmartSentinels — OnePager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom brand colors - Matching PitchDeck style */
+        :root {
+            --primary: hsl(220, 90%, 56%);
+            --secondary: hsl(280, 60%, 60%);
+            --accent: hsl(170, 70%, 50%);
+            --bg-dark: hsl(220, 25%, 8%);
+            --text-light: #e6e6e6;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(248, 244, 66, 0.2);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .text-primary { color: var(--primary); }
+        .text-secondary { color: var(--secondary); }
+        .text-accent { color: var(--accent); }
+        .bg-card { 
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        
+        .tagline {
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+        
+        .section {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        
+        .section-title {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: inline;
+        }
+        
+        .section-content {
+            display: inline;
+        }
+        
+        strong {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .contact {
+            margin-top: 2rem;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+            .logo-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .title {
+                font-size: 2rem;
+            }
+            .section {
+                padding: 1rem;
+            }
+        }
+        
+        
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            @page {
+                margin: 0.45in 0.55in;
+                size: letter portrait;
+            }
+            
+            body {
+                background-color: white !important;
+                color: #1a1a1a !important;
+                font-size: 11pt;
+                line-height: 1.5;
+                padding: 0;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            
+            .logo-icon {
+                width: 65px;
+                height: 65px;
+            }
+            
+            .title {
+                font-size: 1.75rem;
+                color: #1a1a1a !important;
+            }
+            
+            .tagline {
+                font-size: 10.5pt;
+                line-height: 1.45;
+                margin-bottom: 0.9rem;
+            }
+            
+            .section {
+                margin-bottom: 0.85rem;
+                font-size: 10.5pt;
+                line-height: 1.5;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+            
+            .section-title {
+                color: #2563eb !important;
+                font-size: 11pt;
+            }
+            
+            .contact {
+                margin-top: 1.1rem;
+                font-size: 10pt;
+                border: none !important;
+                padding: 0 !important;
+                text-align: left;
+            }
+            
+            .header {
+                margin-bottom: 0.85rem;
+                border: none !important;
+                padding-bottom: 0.5rem !important;
+            }
+            
+            .fas, .fa {
+                color: #2563eb !important;
+            }
+            
+            strong {
+                color: #1a1a1a !important;
+            }
+            
+            .bg-card {
+                background: transparent !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <img src="/ss-icon.svg" alt="SS Logo" class="logo-icon">
+                <div class="title">SmartSentinels</div>
+            </div>
+        </div>
+
+        <p class="tagline"><strong>SmartSentinels</strong> — Proof of Useful Work for AI Agents<br>
+        <em>Decentralized AI agents that generate verifiable value while minting tokens. Mining the future with Proof of Useful Work.</em></p>
+
+        <div class="section bg-card">
+            <span class="section-title">Problem:</span>
+            <span class="section-content">AI monopolies lead to closed models and biased decisions. Centralized mining wastes energy, risks 51% attacks, and has high entry barriers. Limited access to infrastructure stifles innovation and prices out businesses.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-title">Solution:</span>
+            <span class="section-content">SmartSentinels introduces our model of Proof of Useful Work (PoUW), where AI agents perform real B2B tasks—smart contract audits, customer support, data operations and others—while minting tokens. Anyone can run an AI node using an NVIDIA Jetson Orin or a cloud GPU. NFT/iNFT holders become stakeholders, earning revenue from agent activity.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-title">Traction:</span>
+            <span class="section-content">Proven progress in AI & Web3. Key achievements: BNB Martians founder collaboration, ThirdWeb integration live, first AI Auditor Agent deployed on testnet, NFT/iNFT logic linked to devices for stakeholder rewards.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-title">Market Opportunity:</span>
+            <span class="section-content">AI services projected at $1.8T+ by 2030. Web3 users exceed 400M. Initial verticals—audits, support, B2B AI agents—represent a $6B SAM. Targeting <strong>$30M in revenue</strong> within 36 months.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-title">Tokenomics:</span>
+            <span class="section-content">SSTL Token • BEP-20 • 100M Total Supply • <strong>Deflationary: 10% Burn per Emission.</strong></span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-content"><strong>Allocations:</strong> 40% PoUW Mining, 15% Liquidity, 15% Marketing, 10% Reserve, 10% Team, 10% Fundraising.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-content"><strong>Vesting Schedule:</strong> PoUW Mining – Dynamic minting + 10% burn. Liquidity – 3-year lock. Marketing – 6M cliff + 24M vest. Reserve – 12M cliff + 36M vest. Team – 12M cliff + 36M vest. Fundraising – 6–12M cliff + tiered vest.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-title">Roadmap:</span>
+            <span class="section-content">Q4 2025 – Testnet live. Q1 2026 – Mainnet, NFT/iNFT drop, 10+ agents online. Q2 2026 – Agent marketplace beta, first halving. Q3 2026 – Scale to 50+ devices, governance rollout.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-title">The Ask:</span>
+            <span class="section-content">Strategic Seed Round – $7.5M hybrid equity/token raise. Use of funds: 40% hardware expansion, 30% platform development, 15% liquidity & listings, 15% marketing.</span>
+        </div>
+
+        <div class="section bg-card">
+            <span class="section-title">Team:</span>
+            <span class="section-content">Andrei Galea – Founder (Web3 visionary, blockchain & AI dev). Darius Galea – Co-founder (operations & logistics). Bogdan Panea – CTO (tech strategy & innovation).</span>
+        </div>
+
+        <div class="contact">
+            <strong>Contact:</strong> <i class="fas fa-globe"></i> smartsentinels.net | <i class="fas fa-envelope"></i> office@smartsentinels.net | <i class="fas fa-phone"></i> +40 757 349 647
+        </div>
+    </div>
+</body>
+</html>

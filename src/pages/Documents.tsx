@@ -8,9 +8,9 @@ import { MetaTags } from '@/components/MetaTags';
 const doc_data = [
 	{ name: 'Pitch Deck', file: '/PitchDeck.html', type: 'html' },
 	{ name: 'Investor Brief', file: '/documents/InvestorBrief.html', type: 'html' },
-	{ name: 'Whitepaper', file: '/documents/SmartSentinelsWhitepaper v0.2.pdf', type: 'pdf' },
-	{ name: 'Litepaper', file: '/documents/LightpaperV0.2.pdf', type: 'pdf' },
-	{ name: 'OnePager', file: '/documents/SmartSentinelsOnePager.pdf', type: 'pdf' },
+	{ name: 'Whitepaper', file: '/documents/Whitepaper.html', type: 'html' },
+	{ name: 'Litepaper', file: '/documents/Litepaper.html', type: 'html' },
+	{ name: 'OnePager', file: '/documents/OnePager.html', type: 'html' },
 	{ name: 'Terms and Conditions', file: '/documents/Terms and Conditions.pdf', type: 'pdf' },
 	{ name: 'Privacy Policy', file: '/documents/Privacy Policy.pdf', type: 'pdf' },
 	{ name: 'Disclaimer', file: '/documents/Disclaimer.pdf', type: 'pdf' },

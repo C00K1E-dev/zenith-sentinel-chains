@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SmartSentinels — LitePaper v2.0</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom brand colors - Matching PitchDeck style */
+        :root {
+            --primary: hsl(220, 90%, 56%); /* Blue */
+            --secondary: hsl(280, 60%, 60%); /* Purple */
+            --accent: hsl(170, 70%, 50%); /* Teal */
+            --bg-dark: hsl(220, 25%, 8%); /* Dark background */
+            --text-light: #e6e6e6; /* Light Grey */
+            --card-bg: rgba(255, 255, 255, 0.05); /* Glass effect */
+            --border-color: rgba(248, 244, 66, 0.2); /* Border with opacity */
+            --divider: rgba(230, 230, 230, 0.1); /* Divider */
+            --highlight: hsl(220, 90%, 56%); /* Blue bars */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-y: scroll;
+        }
+        
+        /* Utility classes for colors */
+        .text-primary { color: var(--primary); }
+        .text-secondary { color: var(--secondary); }
+        .text-accent { color: var(--accent); }
+        .bg-primary { background-color: var(--primary); }
+        .bg-secondary { background-color: var(--secondary); }
+        .bg-accent { background-color: var(--accent); }
+        .bg-card { 
+            background-color: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+        .text-text-light { color: var(--text-light); }
+        .border-primary { border-color: var(--primary); }
+        .border-secondary { border-color: var(--secondary); }
+        .border-accent { border-color: var(--accent); }
+        
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+            border-bottom: 1px solid var(--divider);
+        }
+        
+        /* Enhanced Mobile Responsiveness */
+        @media (max-width: 767px) {
+            .section {
+                padding: 2rem 1rem;
+            }
+
+            .text-xs { font-size: 0.625rem; line-height: 1.4; }
+            .text-sm { font-size: 0.75rem; line-height: 1.4; }
+            .text-base { font-size: 0.875rem; line-height: 1.5; }
+            .text-lg { font-size: 1rem; line-height: 1.5; }
+            .text-xl { font-size: 1.125rem; line-height: 1.4; }
+            .text-2xl { font-size: 1.25rem; line-height: 1.3; }
+            .text-3xl { font-size: 1.5rem; line-height: 1.3; }
+            .text-4xl { font-size: 1.75rem; line-height: 1.2; }
+            .text-5xl { font-size: 2rem; line-height: 1.2; }
+        }
+        
+        /* Mobile-friendly tables: Convert to cards - ONLY on screen, NOT in print */
+        @media screen and (max-width: 767px) {
+            /* Mobile-friendly tables: Convert to cards */
+            table {
+                display: block;
+                width: 100%;
+            }
+            
+            thead {
+                display: none; /* Hide table headers on mobile */
+            }
+            
+            tbody {
+                display: block;
+                width: 100%;
+            }
+            
+            tr {
+                display: block;
+                margin-bottom: 1rem;
+                background-color: var(--card-bg);
+                border: 1px solid var(--border-color);
+                border-radius: 0.5rem;
+                padding: 1rem;
+            }
+            
+            td {
+                display: block;
+                text-align: left !important;
+                padding: 0.5rem 0;
+                border: none;
+            }
+            
+            /* Add data labels before each cell */
+            td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--primary);
+                display: block;
+                margin-bottom: 0.25rem;
+                font-size: 0.875rem;
+            }
+            
+            td strong {
+                display: block;
+            }
+            
+            /* Grid to single column on mobile */
+            .grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Adjust card padding */
+            .bg-card {
+                padding: 1rem !important;
+            }
+            
+            /* Hero section adjustments */
+            .hero-section {
+                min-height: 50vh;
+                padding: 2rem 1rem;
+            }
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            line-height: 1.2;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1.5rem 0;
+        }
+        
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--divider);
+        }
+        
+        th {
+            background-color: var(--card-bg);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        
+        .highlight-box {
+            background-color: var(--card-bg);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0.5rem;
+        }
+        
+        ul, ol {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero-section {
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 4rem 1rem;
+            border-bottom: 1px solid var(--divider);
+        }
+        
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            body {
+                background-color: white !important;
+                color: #1a1a1a !important;
+            }
+            
+            /* Reset colors for print */
+            .text-primary, .text-secondary, .text-accent {
+                color: #2563eb !important;
+            }
+            
+            .bg-card {
+                background-color: #f5f5f5 !important;
+                border: 1px solid #d1d5db !important;
+            }
+            
+            .border-primary, .border-secondary, .border-accent {
+                border-color: #2563eb !important;
+            }
+            
+            /* Page breaks */
+            .section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                padding: 0.75rem 1rem;
+            }
+            
+            /* Keep hero and disclaimer on first page */
+            .hero-section {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                min-height: auto;
+                padding: 1.5rem 1rem 0.5rem 1rem;
+            }
+            
+            /* Disclaimer stays with hero on page 1 */
+            #disclaimer {
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+                page-break-after: always !important;
+                break-after: always !important;
+                padding-top: 0.25rem;
+                padding-bottom: 0.5rem;
+            }
+            
+            #disclaimer .highlight-box {
+                padding: 0.5rem 0.75rem;
+                margin: 0.25rem 0;
+            }
+            
+            /* Keep sections compact */
+            .section:nth-of-type(2),
+            .section:nth-of-type(3),
+            .section:nth-of-type(4),
+            .section:nth-of-type(5) {
+                padding: 0.5rem 1rem;
+            }
+            
+            .section:nth-of-type(2) h2,
+            .section:nth-of-type(3) h2,
+            .section:nth-of-type(4) h2,
+            .section:nth-of-type(5) h2 {
+                margin-bottom: 0.5rem;
+            }
+            
+            .section:nth-of-type(2) .space-y-4 > * + *,
+            .section:nth-of-type(3) .space-y-4 > * + *,
+            .section:nth-of-type(4) .space-y-4 > * + *,
+            .section:nth-of-type(5) .space-y-4 > * + * {
+                margin-top: 0.5rem;
+            }
+            
+            .section:nth-of-type(2) ul,
+            .section:nth-of-type(3) ul,
+            .section:nth-of-type(4) ul,
+            .section:nth-of-type(5) ul {
+                margin-bottom: 0.5rem;
+            }
+            
+            .section:nth-of-type(2) li,
+            .section:nth-of-type(3) li,
+            .section:nth-of-type(4) li,
+            .section:nth-of-type(5) li {
+                margin-bottom: 0.25rem;
+            }
+            
+            /* Tokenomics section */
+            #tokenomics {
+                page-break-before: always;
+                break-before: always;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                padding: 0.75rem 1rem;
+            }
+            
+            #tokenomics h2 {
+                margin-bottom: 0.5rem;
+                font-size: 1.5rem;
+            }
+            
+            #tokenomics .bg-card {
+                padding: 0.5rem;
+                margin: 0.5rem 0;
+            }
+            
+            #tokenomics table {
+                font-size: 0.7em;
+            }
+            
+            #tokenomics td, #tokenomics th {
+                padding: 0.35rem 0.4rem;
+            }
+            
+            /* FDV section */
+            #fdv-scenarios {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                padding: 0.75rem 1rem;
+            }
+            
+            #fdv-scenarios h2 {
+                margin-bottom: 0.5rem;
+                font-size: 1.5rem;
+            }
+            
+            #fdv-scenarios table {
+                font-size: 0.7em;
+            }
+            
+            #fdv-scenarios td, #fdv-scenarios th {
+                padding: 0.35rem 0.4rem;
+            }
+            
+            table {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin: 0.5rem 0;
+                font-size: 0.75em;
+            }
+            
+            th, td {
+                padding: 0.4rem 0.5rem;
+            }
+            
+            th {
+                background-color: #e5e7eb !important;
+                color: #1a1a1a !important;
+                font-size: 0.85em;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            .overflow-x-auto {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            .highlight-box {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                background-color: #f9fafb !important;
+                border-left: 4px solid #2563eb !important;
+                padding: 0.75rem;
+                margin: 0.75rem 0;
+            }
+            
+            .bg-card {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                padding: 0.5rem !important;
+                margin-bottom: 0.35rem;
+            }
+            
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+                break-after: avoid;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                color: #1a1a1a !important;
+            }
+            
+            h2 {
+                margin-top: 0.5rem;
+                padding-top: 0.25rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            h3 {
+                margin-top: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            p {
+                margin-bottom: 0.5rem;
+                orphans: 2;
+                widows: 2;
+            }
+            
+            ul, ol {
+                margin-bottom: 0.5rem;
+                margin-top: 0.25rem;
+            }
+            
+            li {
+                margin-bottom: 0.25rem;
+            }
+            
+            .space-y-4 > * + * {
+                margin-top: 0.75rem !important;
+            }
+            
+            .space-y-3 > * + * {
+                margin-top: 0.5rem !important;
+            }
+            
+            .space-y-2 > * + * {
+                margin-top: 0.35rem !important;
+            }
+            
+            /* Remove borders that might not print well */
+            .border-bottom {
+                border-bottom: none !important;
+            }
+            
+            /* Icons print adjustments */
+            .fas, .fa {
+                color: #2563eb !important;
+            }
+            
+            /* Code elements in print */
+            code {
+                background-color: #f3f4f6 !important;
+                padding: 0.15rem 0.35rem !important;
+                border-radius: 0.25rem !important;
+                font-size: 0.9em !important;
+                display: inline !important;
+                word-break: break-word;
+                position: relative !important;
+                vertical-align: baseline !important;
+                margin: 0 !important;
+                float: none !important;
+            }
+            
+            p code, li code, td code {
+                display: inline !important;
+                position: static !important;
+            }
+            
+            .space-y-6 > * + * {
+                margin-top: 1rem !important;
+            }
+            
+            .grid {
+                gap: 0.5rem !important;
+            }
+            
+            /* Footer */
+            footer {
+                page-break-before: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4 text-primary">SmartSentinels</h1>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-2">LitePaper</h2>
+        <p class="text-xl text-accent mt-4">Version 2.0 | October 2025</p>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="section" id="disclaimer">
+        <div class="highlight-box">
+            <h3 class="text-2xl font-bold mb-3 text-accent"><i class="fas fa-exclamation-triangle mr-2"></i>Disclaimer</h3>
+            <p>This document is for informational purposes only. It does not constitute an offer to sell tokens or financial advice. Specifications may evolve as development progresses.</p>
+        </div>
+    </div>
+
+    <!-- Project Overview -->
+    <div class="section">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-rocket mr-3"></i>1. Project Overview: The PoUW Infrastructure Layer</h2>
+        <div class="space-y-4">
+            <p>SmartSentinels is building a decentralized <strong class="text-accent">Verifiable AI Compute Infrastructure</strong> powered by <strong class="text-accent">Proof of Useful Work (PoUW)</strong>. The platform utilizes a global network of specialized AI agents running on energy-efficient edge devices (e.g., Jetson Orin) and cloud GPUs to perform high-value, real-world services for businesses (e.g., verifiable smart contract audits, legal document analysis etc.).</p>
+            
+            <div class="highlight-box">
+                <p class="text-lg font-semibold">This represents a new, high-conviction paradigm: replacing wasteful hash-based mining with verifiable, useful AI computation.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problem & Solution -->
+    <div class="section">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-lightbulb mr-3"></i>2. Problem & Solution</h2>
+        
+        <div class="space-y-6">
+            <div>
+                <h3 class="text-2xl font-semibold mb-4 text-secondary">The Problem:</h3>
+                <ul class="space-y-3">
+                    <li><strong class="text-accent">AI Integrity Gap:</strong> Businesses lack a secure, verifiable way to prove that decentralized AI models were executed correctly and without bias. Centralized cloud compute remains expensive and opaque.</li>
+                    <li><strong class="text-accent">Mining Inefficiency:</strong> Traditional crypto mining consumes massive energy without producing business utility. Web3 needs a low-energy, productive mining model.</li>
+                    <li><strong class="text-accent">Dilution Risk:</strong> Token projects often fail due to weak insider vesting, leading to market dumps upon initial unlocks.</li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-2xl font-semibold mb-4 text-secondary">SmartSentinels Solves:</h3>
+                <ul class="space-y-3">
+                    <li><strong class="text-accent">Verifiable AI Compute:</strong> We ensure transparent, traceable token emissions directly tied to measurable, secure AI output (e.g., audit reports).</li>
+                    <li><strong class="text-accent">Utility-Driven Economy:</strong> PoUW agents turn decentralized computational output into valuable tokens, creating a direct utility-value flywheel defended by a mandatory 10% token burn.</li>
+                    <li><strong class="text-accent">Institutional-Grade Commitment:</strong> Strict vesting schedules and low TGE float protect long-term value against short-term speculation.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Mechanics -->
+    <div class="section">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-cogs mr-3"></i>3. Core Mechanics: PoUW and Deflation</h2>
+        <div class="space-y-4">
+            <p>SmartSentinels' economic structure is defined by its core minting logic, which locks in deflation and incentivizes long-term asset ownership (iNFTs).</p>
+            
+            <h3 class="text-2xl font-semibold mt-6 mb-4 text-secondary">PoUW Mint Distribution (40% Total Supply)</h3>
+            <p>Every token minted by an AI agent is instantly distributed, integrating deflation directly into the utility loop:</p>
+
+            <div class="grid md:grid-cols-2 gap-4 mt-6">
+                <div class="bg-card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-users mr-2"></i>NFT Holders — 60%</h4>
+                    <p>Rewards holders of the iNFTs tied to the active compute agent/device.</p>
+                </div>
+                <div class="bg-card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-university mr-2"></i>Treasury / Staking — 20%</h4>
+                    <p>DAO-Governed Funds for staking rewards and strategic ecosystem grants.</p>
+                </div>
+                <div class="bg-card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-briefcase mr-2"></i>Business Clients — 10%</h4>
+                    <p>Rebates/rewards for clients who utilized the agent (incentivizing usage).</p>
+                </div>
+                <div class="bg-card p-6 rounded-lg">
+                    <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-fire mr-2"></i>Burn — 10%</h4>
+                    <p>Permanently removed from circulation, ensuring net deflationary pressure.</p>
+                </div>
+            </div>
+
+            <div class="highlight-box mt-6">
+                <p><strong class="text-primary">Halving & Scarcity:</strong> Emission rates are automatically reduced by 50% upon reaching specified milestones (Phase H1 at 10M SSTL, etc.), guaranteeing long-term scarcity of the 40M PoUW supply.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Architecture -->
+    <div class="section">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-network-wired mr-3"></i>4. Technical Architecture</h2>
+        
+        <div class="space-y-6">
+            <div class="bg-card p-6 rounded-lg">
+                <h3 class="text-2xl font-semibold mb-4 text-accent"><i class="fas fa-image mr-2"></i>Verifiable AI Identity (iNFT - ERC-7857)</h3>
+                <p>Agents are linked to Intelligent NFTs that track reputation, completed tasks, and mined rewards, ensuring transparent, monetizable ownership of AI assets.</p>
+            </div>
+
+            <div class="bg-card p-6 rounded-lg">
+                <h3 class="text-2xl font-semibold mb-4 text-accent"><i class="fas fa-check-circle mr-2"></i>MCP (Model Context Protocol)</h3>
+                <p>Verifies all work on the Edge Layer, enforces Anti-Abuse Mechanisms (rate limits, reputation scoring), and controls the secure on-chain minting role.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tokenomics -->
+    <div class="section" id="tokenomics">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-coins mr-3"></i>5. Tokenomics</h2>
+        
+        <div class="space-y-4">
+            <div class="bg-card p-6 rounded-lg">
+                <p class="text-lg"><strong class="text-accent">Token Name:</strong> SmartSentinelsToken (SSTL)</p>
+                <p class="text-lg"><strong class="text-accent">Type:</strong> BEP-20</p>
+                <p class="text-lg"><strong class="text-accent">Total Supply:</strong> 100,000,000 SSTL (Fixed Supply — No Inflation)</p>
+            </div>
+
+            <div class="overflow-x-auto mt-6">
+                <table class="bg-card rounded-lg overflow-hidden">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Category</th>
+                            <th class="text-center">%</th>
+                            <th class="text-center">Tokens</th>
+                            <th class="text-left">Vesting / Lockup</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Category"><strong>Proof of Useful Work</strong></td>
+                            <td data-label="%" class="text-center">40%</td>
+                            <td data-label="Tokens" class="text-center">40,000,000 SSTL</td>
+                            <td data-label="Vesting / Lockup">Dynamic Minting, 10% Mandatory Burn per emission. Controlled by Halving Schedule (4 phases).</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Category"><strong>Liquidity & CEX Listings</strong></td>
+                            <td data-label="%" class="text-center">15%</td>
+                            <td data-label="Tokens" class="text-center">15,000,000 SSTL</td>
+                            <td data-label="Vesting / Lockup">7% for DEX (locked 3 years), 8% for CEX (unlocked gradually upon listing)</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Category"><strong>Strategic Reserve</strong></td>
+                            <td data-label="%" class="text-center">10%</td>
+                            <td data-label="Tokens" class="text-center">10,000,000 SSTL</td>
+                            <td data-label="Vesting / Lockup">Locked for 12 months, then linear vesting over 36 months</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Category"><strong>Marketing & Growth</strong></td>
+                            <td data-label="%" class="text-center">15%</td>
+                            <td data-label="Tokens" class="text-center">15,000,000 SSTL</td>
+                            <td data-label="Vesting / Lockup">6-month cliff, then 24-month linear vesting</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Category"><strong>Team Allocation</strong></td>
+                            <td data-label="%" class="text-center">10%</td>
+                            <td data-label="Tokens" class="text-center">10,000,000 SSTL</td>
+                            <td data-label="Vesting / Lockup">12-month cliff, then 36-month linear vesting</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Category"><strong>Fundraising (Seed, Private, Public)</strong></td>
+                            <td data-label="%" class="text-center">10%</td>
+                            <td data-label="Tokens" class="text-center">10,000,000 SSTL</td>
+                            <td data-label="Vesting / Lockup">Seed: 12mo Cliff, 18mo Linear Vesting<br>Private: 6mo Cliff, 12mo Linear Vesting<br>Public: 25% TGE Unlock, 75% 3mo Linear Vesting</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="highlight-box mt-6">
+                <h3 class="text-xl font-semibold mb-3 text-secondary">Critical Market Safety Features:</h3>
+                <ul class="space-y-2">
+                    <li><strong class="text-primary">Initial Circulating Supply (ICS) at TGE: 0.5%.</strong> This extreme low float maximizes scarcity and protects initial price discovery.</li>
+                    <li><strong class="text-primary">Team Commitment:</strong> The core team and strategic reserve are locked for 4 years, meeting the institutional standard and mitigating dumping risk.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fundraising Valuation Strategy -->
+    <div class="section" id="fdv-scenarios">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-chart-line mr-3"></i>6. Fundraising Valuation Strategy (FDV Scenarios)</h2>
+        
+        <div class="space-y-4">
+            <p>The Seed raise will utilize a dynamic pricing model (e.g., LBP/auction) through the Seedify incubation to maximize capital from the 3,000,000 SSTL allocation, anchoring the project at a premium valuation comparable to Tier-1 AI infrastructure projects.</p>
+
+            <div class="overflow-x-auto mt-6">
+                <table class="bg-card rounded-lg overflow-hidden">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Scenario</th>
+                            <th class="text-center">Price Per Token</th>
+                            <th class="text-center">Implied FDV</th>
+                            <th class="text-center">Target Capital Raised</th>
+                            <th class="text-left">Strategic Rationale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Scenario"><strong>Competitive Baseline</strong></td>
+                            <td data-label="Price Per Token" class="text-center">$1.00 USD</td>
+                            <td data-label="Implied FDV" class="text-center">$100,000,000</td>
+                            <td data-label="Target Capital Raised" class="text-center">$3,000,000</td>
+                            <td data-label="Strategic Rationale">The median institutional valuation floor for competitive crypto infrastructure deals. It serves as the lowest end of our market benchmark.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Scenario"><strong>Aggressive Floor (Seed Start)</strong></td>
+                            <td data-label="Price Per Token" class="text-center">$2.50 USD</td>
+                            <td data-label="Implied FDV" class="text-center">$250,000,000</td>
+                            <td data-label="Target Capital Raised" class="text-center">$7,500,000 (Minimum)</td>
+                            <td data-label="Strategic Rationale">The minimum FDV target, validated by robust tokenomics and positioning in the high-growth AI compute sector.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Scenario"><strong>Target Maximized Capital (Seed Avg.)</strong></td>
+                            <td data-label="Price Per Token" class="text-center">$5.00 USD</td>
+                            <td data-label="Implied FDV" class="text-center">$500,000,000</td>
+                            <td data-label="Target Capital Raised" class="text-center">$15,000,000</td>
+                            <td data-label="Strategic Rationale">The goal of the dynamic auction, achieved by high investor demand for the 3% allocation. This validates the project as an immediate unicorn project.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="highlight-box mt-6">
+                <h3 class="text-xl font-semibold mb-3 text-secondary">Vesting Summary (Seed Investors):</h3>
+                <ul class="space-y-2">
+                    <li><strong class="text-primary">Allocation:</strong> 3,000,000 SSTL (3% of supply)</li>
+                    <li><strong class="text-primary">Vesting:</strong> 12-month Cliff, then 18-month Linear Vesting (2.5 years total). This extended lockup compensates early backers for the high valuation entry price.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Use Cases -->
+    <div class="section">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-tasks mr-3"></i>7. Use Cases</h2>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-card p-6 rounded-lg">
+                <h4 class="text-lg font-semibold mb-2 text-accent"><i class="fas fa-shield-alt mr-2"></i>Smart Contract Auditing</h4>
+                <p class="text-sm text-secondary">(live)</p>
+            </div>
+            <div class="bg-card p-6 rounded-lg">
+                <h4 class="text-lg font-semibold mb-2 text-accent"><i class="fas fa-file-alt mr-2"></i>AI-powered Document Analysis</h4>
+                <p class="text-sm text-secondary">(live)</p>
+            </div>
+            <div class="bg-card p-6 rounded-lg">
+                <h4 class="text-lg font-semibold mb-2 text-accent"><i class="fas fa-stethoscope mr-2"></i>Medical Assistant Agents</h4>
+                <p class="text-sm text-secondary">(future)</p>
+            </div>
+            <div class="bg-card p-6 rounded-lg">
+                <h4 class="text-lg font-semibold mb-2 text-accent"><i class="fas fa-headset mr-2"></i>Customer Service Agents</h4>
+                <p class="text-sm text-secondary">(future)</p>
+            </div>
+            <div class="bg-card p-6 rounded-lg">
+                <h4 class="text-lg font-semibold mb-2 text-accent"><i class="fas fa-store mr-2"></i>Local Business Automation</h4>
+                <p class="text-sm">e.g., invoice processing, email replies</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roadmap -->
+    <div class="section">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-road mr-3"></i>8. Roadmap Highlights</h2>
+        
+        <div class="space-y-4">
+            <div class="bg-card p-6 rounded-lg border-l-4 border-primary">
+                <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-calendar-alt mr-2"></i>Q4 2025</h4>
+                <p>MVP launch, PDF audit agent, dashboard release</p>
+            </div>
+            <div class="bg-card p-6 rounded-lg border-l-4 border-secondary">
+                <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-calendar-alt mr-2"></i>Q1 2026</h4>
+                <p>Seed sale close, onboard first business clients</p>
+            </div>
+            <div class="bg-card p-6 rounded-lg border-l-4 border-accent">
+                <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-calendar-alt mr-2"></i>Q2 2026</h4>
+                <p>Add new agents (medical, customer support)</p>
+            </div>
+            <div class="bg-card p-6 rounded-lg border-l-4 border-primary">
+                <h4 class="text-xl font-semibold mb-2 text-accent"><i class="fas fa-calendar-alt mr-2"></i>Q3 2026</h4>
+                <p>PoUW protocol public release + staking</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="section">
+        <h2 class="text-4xl font-bold mb-6 text-primary"><i class="fas fa-bullhorn mr-3"></i>9. Call to Action</h2>
+        
+        <div class="space-y-4">
+            <p class="text-lg">SmartSentinels is building the foundational trust layer for the decentralized AI economy. By replacing wasteful mining with verifiable, useful computation, we are unlocking the next generation of value creation.</p>
+            
+            <div class="highlight-box">
+                <p class="text-lg font-semibold mb-3 text-secondary"><i class="fas fa-handshake mr-2"></i>Commitment:</p>
+                <p>Our 4-year vesting and 10% burn guarantee long-term alignment.</p>
+            </div>
+
+            <div class="bg-card p-8 rounded-lg text-center">
+                <p class="text-2xl font-bold text-primary mb-4">Join the PoUW revolution.</p>
+                <p class="text-xl text-accent">Mint an NFT, run an agent, earn SSTL.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="section text-center">
+        <p class="text-sm text-gray-400">&copy; 2025 SmartSentinels. All rights reserved.</p>
+        <p class="text-xs text-gray-500 mt-2">This document is for informational purposes only and does not constitute financial advice.</p>
+    </div>
+
+</body>
+</html>

@@ -458,7 +458,7 @@ const Index = () => {
                         </a>
                       </Button>
                       <Button asChild variant="outline" size="sm" className="border-primary/30 hover:bg-primary/5">
-                        <a href="/documents/SmartSentinelsWhitepaper v0.2.pdf" target="_blank" rel="noopener noreferrer">
+                        <a href="/documents/Whitepaper.html" target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="w-4 h-4 mr-2" />
                           Whitepaper
                         </a>

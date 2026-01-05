@@ -32,7 +32,7 @@ const founder_data: DataType[] = [
     thumb: "/assets/cto.png",
     title: "Bogdan Panea",
     designasion: "CTO & Backend Developer",
-    linkedin: "",
+    linkedin: "https://www.linkedin.com/in/bogdan-panea-a8578b31b/",
     twitter: ""
   },
 ];

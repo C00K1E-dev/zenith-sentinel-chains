@@ -27,6 +27,14 @@ const founder_data: DataType[] = [
     linkedin: "https://www.linkedin.com/in/darius-galea-a3072418b/",
     twitter: "https://x.com/TommyKHN?s=20"
   },
+  {
+    id: 3,
+    thumb: "/assets/cto.png",
+    title: "Bogdan Panea",
+    designasion: "CTO & Backend Developer",
+    linkedin: "",
+    twitter: ""
+  },
 ];
 
 export default founder_data;

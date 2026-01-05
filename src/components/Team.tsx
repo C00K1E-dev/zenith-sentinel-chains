@@ -19,7 +19,7 @@ const Team = memo(() => {
         >
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-orbitron font-bold mb-3 sm:mb-4">
             <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-              Active Founders
+              Our Team
             </span>
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
@@ -28,7 +28,7 @@ const Team = memo(() => {
         </motion.div>
 
         {/* Team Grid */}
-        <div className="flex flex-wrap justify-center gap-6 sm:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 justify-items-center">
           {founder_data.map((member, index) => (
             <motion.div
               key={member.id}
@@ -63,7 +63,7 @@ const Team = memo(() => {
                   </p>
 
                   {/* Social Links */}
-                  <div className="flex justify-center gap-3 sm:gap-4 mt-3 sm:mt-4">
+                  <div className="flex justify-center gap-3 sm:gap-4 mt-3 sm:mt-4 min-h-[36px] sm:min-h-[40px]">
                     {member.linkedin && (
                       <a
                         href={member.linkedin}

@@ -75,8 +75,8 @@ const Roadmap = memo(() => {
                 {/* Progress Indicator */}
                 <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50">
                   <div className="flex items-center justify-between text-xs">
-                    <span className={`font-medium ${index === 0 ? 'text-primary' : index < 3 ? 'text-primary/70' : 'text-muted-foreground'}`}>
-                      {index === 0 ? 'In Progress' : index < 3 ? 'Upcoming' : 'Planned'}
+                    <span className={`font-medium ${index === 0 ? 'text-green-500' : index === 1 ? 'text-primary' : index < 3 ? 'text-primary/70' : 'text-muted-foreground'}`}>
+                      {index === 0 ? 'Done' : index === 1 ? 'In Progress' : index < 3 ? 'Upcoming' : 'Planned'}
                     </span>
                     <div className="flex gap-1">
                       {Array.from({ length: 6 }).map((_, i) => (
@@ -108,7 +108,7 @@ const Roadmap = memo(() => {
           </p>
           <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-primary">
             <Clock size={14} />
-            <span>Last updated: October 2025</span>
+            <span>Last updated: January 2026</span>
           </div>
         </motion.div>
       </div>

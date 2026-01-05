@@ -8,15 +8,15 @@ interface DataType {
 const road_map_data: DataType[] = [
   {
     id: 1,
-    sub_title: "Q3–Q4 2025 (NOW)",
-    title: "MVP Launch & Fundraising Engine",
-    desc: "Deployed the SSTL smart contract, built and launched the bonding curve fundraising system, activated the PDF Audit AI MVP, and opened the private seed round to early contributors.",
+    sub_title: "Q3–Q4 2025 (DONE)",
+    title: "Phase 1: MVP Launch & PoUW Architecture",
+    desc: "Deployed the SSTL smart contracts, built and launched the PDF Audit AI MVP, built a service that lets users create a telegram agent. Launched Genesis NFT Collection and AI Audit NFT collection.",
   },
   {
     id: 2,
-    sub_title: "Q1 2026",
-    title: "AI Agent Expansion & VC Engagement",
-    desc: "Scaling the number of deployed AI agents on Jetson Orin and UM790 Pro devices. Engaging strategic investors including Binance Labs, SunDAO, and other venture funds. Pitch deck, tokenomics, and MVP are now live.",
+    sub_title: "Q1 2026 (IN PROGRESS)",
+    title: "Phase 2: AI Agent Expansion & VC Engagement",
+    desc: "Scaling the number of deployed AI agents on Jetson Orin and UM790 Pro devices. Engaging strategic investors including Binance Labs, SunDAO, and other venture funds. Pitch deck, tokenomics, and MVP are now live. AIDA Feature rollout, TGE seed round.",
   },
   {
     id: 3,

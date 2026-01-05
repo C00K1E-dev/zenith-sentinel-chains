@@ -195,7 +195,7 @@ const SMARTSENTINELS_KNOWLEDGE = {
   roadmap: [
     {
       phase: "Phase 1 (Q3-Q4 2025 - NOW)",
-      title: "MVP Launch & Fundraising Engine",
+      title: "MVP Launch & PoUW Architecture",
       status: "In Progress",
       details: "Deployed SSTL smart contract, built bonding curve fundraising system, activated PDF Audit AI MVP, and opened private seed round"
     },

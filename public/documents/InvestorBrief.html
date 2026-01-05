@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>SmartSentinels - Investor Brief</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: hsl(220, 90%, 56%);
+            --secondary: hsl(280, 60%, 60%);
+            --accent: hsl(170, 70%, 50%);
+            --bg-dark: hsl(220, 25%, 8%);
+            --text-light: #e6e6e6;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(59, 130, 246, 0.3);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+        }
+        .gradient-text {
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(34, 197, 94, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+            border-left: 4px solid var(--primary);
+        }
+        
+        /* Print Styles */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            @page {
+                size: A4;
+                margin: 1.5cm;
+            }
+            
+            body { 
+                background: white !important; 
+                color: #1a1a1a !important;
+                font-size: 11pt;
+                line-height: 1.5;
+            }
+            
+            .glass-card, .metric-card, .highlight-box { 
+                background: #f8f9fa !important; 
+                border-color: #dee2e6 !important;
+                box-shadow: none !important;
+            }
+            
+            .gradient-text { 
+                color: #3b82f6 !important; 
+                -webkit-text-fill-color: #3b82f6 !important;
+                background: none !important;
+            }
+            
+            .no-print { display: none !important; }
+            
+            /* Page break controls */
+            section.glass-card {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 20pt;
+            }
+            
+            /* Force page breaks before major sections */
+            .page-break-before {
+                page-break-before: always;
+                break-before: page;
+            }
+            
+            /* Prevent orphaned headers */
+            h2, h3, h4 {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            
+            /* Keep grid items together */
+            .metric-card,
+            .grid > div,
+            .space-y-4 > div {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Ensure tables don't break awkwardly */
+            table, tr, td, th {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Header and footer print handling */
+            header {
+                position: relative;
+                page-break-after: avoid;
+            }
+            
+            footer {
+                page-break-before: avoid;
+            }
+            
+            /* Fix text colors for print */
+            .text-gray-300, .text-gray-400, .text-gray-500 {
+                color: #4a5568 !important;
+            }
+            
+            .text-white {
+                color: #1a1a1a !important;
+            }
+            
+            .text-green-400 {
+                color: #22543d !important;
+            }
+            
+            .text-blue-400, .text-primary {
+                color: #2b6cb0 !important;
+            }
+            
+            .text-purple-400 {
+                color: #6b46c1 !important;
+            }
+            
+            .text-yellow-400, .text-orange-400 {
+                color: #b7791f !important;
+            }
+            
+            .text-pink-400 {
+                color: #b83280 !important;
+            }
+            
+            /* Background colors for print */
+            [class*="bg-gradient"], [class*="bg-blue"], [class*="bg-green"], 
+            [class*="bg-purple"], [class*="bg-yellow"], [class*="bg-orange"],
+            [class*="bg-pink"], [class*="bg-gray"], [class*="bg-white/"] {
+                background: #f8f9fa !important;
+                border: 1px solid #dee2e6 !important;
+            }
+            
+            /* Ensure links are visible */
+            a {
+                color: #2b6cb0 !important;
+                text-decoration: underline;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="py-6 px-4 border-b border-blue-500/20">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="/assets/logo.png" alt="SmartSentinels" class="w-10 h-10" onerror="this.style.display='none'">
+                <span class="text-xl font-bold gradient-text">SmartSentinels</span>
+            </div>
+            <div class="text-sm text-gray-400">
+                <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 font-medium">Investor Brief</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-10 space-y-10">
+        <!-- Title Section -->
+        <section class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                <span class="gradient-text">SmartSentinels</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-300 mb-2">The Future of Decentralized AI Compute</p>
+            <p class="text-gray-400">Investment Document • January 2026</p>
+        </section>
+
+        <!-- Live Traction Metrics -->
+        <section class="glass-card p-6 md:p-8">
+            <div class="flex items-center gap-2 mb-6">
+                <i class="fas fa-chart-line text-green-400 text-xl"></i>
+                <h2 class="text-2xl font-bold text-white">Traction Metrics</h2>
+                <span class="ml-auto px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm font-medium">
+                    <i class="fas fa-calendar-alt text-xs mr-1"></i> Since Dec 16, 2025
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div class="metric-card rounded-xl p-5 text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-white mb-1">152.51K</div>
+                    <div class="text-gray-400 text-sm">Pageviews</div>
+                    <div class="text-green-400 text-xs mt-2"><i class="fas fa-arrow-up mr-1"></i>Growing</div>
+                </div>
+                <div class="metric-card rounded-xl p-5 text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-white mb-1">22.26K</div>
+                    <div class="text-gray-400 text-sm">Visits</div>
+                    <div class="text-green-400 text-xs mt-2"><i class="fas fa-arrow-up mr-1"></i>Growing</div>
+                </div>
+                <div class="metric-card rounded-xl p-5 text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-white mb-1">15.5K</div>
+                    <div class="text-gray-400 text-sm">Unique Visitors</div>
+                    <div class="text-green-400 text-xs mt-2"><i class="fas fa-arrow-up mr-1"></i>Growing</div>
+                </div>
+                <div class="metric-card rounded-xl p-5 text-center">
+                    <div class="text-3xl md:text-4xl font-bold text-white mb-1">6.56K</div>
+                    <div class="text-gray-400 text-sm">Wallet Connections</div>
+                    <div class="text-green-400 text-xs mt-2"><i class="fas fa-arrow-up mr-1"></i>Growing</div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-white/10">
+                <h3 class="text-sm font-semibold text-gray-400 mb-3">Wallet Provider Distribution</h3>
+                <div class="flex flex-wrap gap-3">
+                    <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-sm"><i class="fas fa-wallet mr-1"></i> MetaMask (Primary)</span>
+                    <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm">User Wallet</span>
+                    <span class="px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-sm">Rabby</span>
+                    <span class="px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm">OKX Wallet</span>
+                    <span class="px-3 py-1 rounded-full bg-blue-400/20 text-blue-300 text-sm">Coinbase Wallet</span>
+                    <span class="px-3 py-1 rounded-full bg-gray-500/20 text-gray-400 text-sm">Others</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Growth -->
+        <section class="glass-card p-6 md:p-8">
+            <div class="flex items-center gap-2 mb-6">
+                <i class="fas fa-users text-purple-400 text-xl"></i>
+                <h2 class="text-2xl font-bold text-white">Community Growth</h2>
+                <span class="ml-auto px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm font-medium">
+                    <i class="fas fa-rocket text-xs mr-1"></i> Rapid Growth
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <!-- X (Twitter) -->
+                <div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-white/10 rounded-xl p-5">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
+                            <svg viewBox="0 0 24 24" class="w-5 h-5 text-white" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-white font-semibold">X (Twitter)</div>
+                            <div class="text-gray-500 text-xs">Since Dec 16, 2025</div>
+                        </div>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <div class="text-gray-500 text-sm line-through">100+</div>
+                            <div class="text-3xl font-bold text-white">1,748</div>
+                            <div class="text-gray-400 text-sm">Followers</div>
+                        </div>
+                        <div class="text-green-400 text-sm font-bold">
+                            <i class="fas fa-arrow-up mr-1"></i>+1,648%
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telegram -->
+                <div class="bg-gradient-to-br from-blue-900/30 to-blue-950/30 border border-blue-500/20 rounded-xl p-5">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                            <i class="fab fa-telegram text-blue-400 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-white font-semibold">Telegram</div>
+                            <div class="text-gray-500 text-xs">Since Dec 16, 2025</div>
+                        </div>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <div class="text-gray-500 text-sm line-through">18</div>
+                            <div class="text-3xl font-bold text-white">1,089</div>
+                            <div class="text-gray-400 text-sm">Members</div>
+                        </div>
+                        <div class="text-green-400 text-sm font-bold">
+                            <i class="fas fa-arrow-up mr-1"></i>+5,950%
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Binance Square -->
+                <div class="bg-gradient-to-br from-yellow-900/20 to-yellow-950/20 border border-yellow-500/20 rounded-xl p-5">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                            <svg viewBox="0 0 126.61 126.61" class="w-5 h-5 text-yellow-400" fill="currentColor">
+                                <path d="M38.73 53.2l24.59-24.58 24.6 24.6 14.3-14.31L63.32 0 24.43 38.9l14.3 14.3zM0 63.31l14.3-14.3 14.31 14.3-14.31 14.3zM38.73 73.41l24.59 24.59 24.6-24.6 14.31 14.29-38.9 38.91-38.91-38.88 14.3-14.31zM98 63.31l14.3-14.3 14.31 14.3-14.31 14.3z"/>
+                                <path d="M77.83 63.3L63.32 48.78 52.59 59.51l-1.246 1.245-2.045 2.046 14.51 14.52 14.51-14.51.51-.5z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-white font-semibold">Binance Square</div>
+                            <div class="text-gray-500 text-xs">Active Channel</div>
+                        </div>
+                    </div>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <div class="text-gray-500 text-sm">Current</div>
+                            <div class="text-3xl font-bold text-white">1,102</div>
+                            <div class="text-gray-400 text-sm">Followers</div>
+                        </div>
+                        <div class="text-green-400 text-sm font-bold">
+                            <i class="fas fa-arrow-up mr-1"></i>Growing
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <div class="flex items-center gap-2 text-green-400">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="font-semibold">Total Community Reach: 3,900+ members across all platforms</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Campaigns & Pipeline -->
+        <section class="glass-card p-6 md:p-8 page-break-before">
+            <div class="flex items-center gap-2 mb-6">
+                <i class="fas fa-bullhorn text-orange-400 text-xl"></i>
+                <h2 class="text-2xl font-bold text-white">Active Campaigns & Pipeline</h2>
+            </div>
+
+            <!-- Airdrop Campaign -->
+            <div class="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/30 rounded-xl p-5 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                            <i class="fas fa-parachute-box text-purple-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Airdrop Campaign</h3>
+                            <div class="text-purple-400 text-sm">Ongoing • Token Distribution</div>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-sm font-medium animate-pulse">
+                        <i class="fas fa-circle text-xs mr-1"></i> Live
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white/5 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-white">2,750+</div>
+                        <div class="text-gray-400 text-sm">Registrants</div>
+                        <div class="text-green-400 text-xs mt-1"><i class="fas fa-arrow-up mr-1"></i>Increasing</div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-white">368.54%</div>
+                        <div class="text-gray-400 text-sm">Click-Through Rate</div>
+                        <div class="text-green-400 text-xs mt-1"><i class="fas fa-arrow-up mr-1"></i>Above Average</div>
+                    </div>
+                </div>
+                <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                    <p class="text-gray-300 text-sm">
+                        <i class="fas fa-info-circle text-blue-400 mr-2"></i>
+                        Token holders will be updated on <strong class="text-white">BNB Chain Explorer</strong> once the campaign ends.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Upcoming Campaigns -->
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fas fa-calendar-alt text-blue-400"></i>
+                Upcoming & Planned Campaigns
+            </h3>
+
+            <div class="space-y-4">
+                <!-- Micro3 Campaign -->
+                <div class="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                                <i class="fas fa-cubes text-blue-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Micro3 Partnership Campaign</h4>
+                                <div class="text-blue-400 text-sm">Jan 19 - Feb 20, 2026</div>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-sm font-medium">
+                            <i class="fas fa-star mr-1"></i> Honored Partner
+                        </span>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-3">Featured as <strong class="text-white">Honored Partner</strong> in Micro3's upcoming campaign with confirmed marketing support from major ecosystems.</p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 rounded bg-yellow-500/20 text-yellow-400 text-xs font-medium">BNB Chain</span>
+                        <span class="px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs font-medium">Linea</span>
+                        <span class="px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-xs font-medium">Arbitrum</span>
+                        <span class="px-2 py-1 rounded bg-purple-500/20 text-purple-400 text-xs font-medium">Soneium</span>
+                    </div>
+                </div>
+
+                <!-- theMiracle Campaign -->
+                <div class="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30 rounded-xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                            <i class="fas fa-magic text-pink-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white">theMiracle Campaign</h4>
+                            <div class="text-pink-400 text-sm">Planned • Genesis NFT Focus</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 text-sm">Marketing campaign focused on the <strong class="text-white">Genesis NFT Collection</strong> launch and promotion.</p>
+                </div>
+            </div>
+
+            <!-- Business Development Pipeline -->
+            <h3 class="text-lg font-bold text-white mb-4 mt-6 flex items-center gap-2">
+                <i class="fas fa-handshake text-green-400"></i>
+                Business Development Pipeline
+            </h3>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <!-- Launchpad Integration -->
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                            <i class="fas fa-rocket text-green-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white">Launchpad Integrations</h4>
+                            <span class="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 text-xs">In Discussion</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm">Integrating our AI Auditor service with launchpads to provide automated security audits for new projects — creating a new revenue stream.</p>
+                </div>
+
+                <!-- NFT Marketplace Listing -->
+                <div class="bg-white/5 border border-white/10 rounded-xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                            <i class="fas fa-store text-orange-400"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white">NFT Marketplace Listing</h4>
+                            <span class="px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 text-xs">In Discussion</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 text-sm">Listing Genesis NFT Collection on major NFT marketplace — <strong class="text-white">Magic Eden</strong> most probable for cross-chain visibility.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Executive Summary -->
+        <section class="glass-card p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-bullseye text-blue-400"></i>
+                Executive Summary
+            </h2>
+            <p class="text-gray-300 mb-4">
+                SmartSentinels is a premium decentralized AI compute network built on a <strong class="text-white">Proof of Useful Work (PoUW)</strong> model, ensuring that AI agents perform verifiable, valuable tasks, generating real economic value instead of wasted compute energy.
+            </p>
+            <div class="highlight-box p-4 rounded-r-lg">
+                <p class="text-lg font-semibold text-white">Our Core Belief: AI That Works, Earns, and Proves It.</p>
+            </div>
+        </section>
+
+        <!-- Problems We Solve -->
+        <section class="glass-card p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                Critical Industry Problems We Address
+            </h2>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-5">
+                    <div class="text-red-400 font-bold mb-2"><i class="fas fa-lock mr-2"></i>Opaque AI Monopolies</div>
+                    <p class="text-gray-400 text-sm">Restricting access and inflating costs for essential AI services.</p>
+                </div>
+                <div class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-5">
+                    <div class="text-orange-400 font-bold mb-2"><i class="fas fa-bolt mr-2"></i>Wasteful Compute Power</div>
+                    <p class="text-gray-400 text-sm">Billions spent on PoW/PoC that generates zero business value.</p>
+                </div>
+                <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-5">
+                    <div class="text-yellow-400 font-bold mb-2"><i class="fas fa-coins mr-2"></i>Unsustainable Token Models</div>
+                    <p class="text-gray-400 text-sm">Inflationary models leading to early token dumps.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Investment Opportunity -->
+        <section class="glass-card p-6 md:p-8 border-2 border-blue-500/50 page-break-before">
+            <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-gem text-blue-400"></i>
+                Investment Opportunity
+            </h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <div class="text-4xl font-bold gradient-text mb-2">$7.5M</div>
+                    <div class="text-gray-400">Seed Round (Token)</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-bold gradient-text mb-2">$100M</div>
+                    <div class="text-gray-400">Fully Diluted Valuation (FDV)</div>
+                </div>
+            </div>
+            <p class="text-gray-300 mt-4">
+                Strategic pricing for a project set to command a premium in the high-growth <strong class="text-white">$1.8 Trillion+ Global AI Services market</strong>.
+            </p>
+        </section>
+
+        <!-- Premium Moat -->
+        <section class="glass-card p-6 md:p-8 page-break-before">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <i class="fas fa-shield-alt text-purple-400"></i>
+                💎 The Premium Moat: Utility, Verifiability & Scarcity
+            </h2>
+            
+            <div class="space-y-6">
+                <!-- Tech Superiority -->
+                <div class="bg-purple-500/10 border border-purple-500/30 rounded-xl p-5">
+                    <h3 class="text-lg font-bold text-purple-400 mb-3">1. Technological & Product Superiority (PoUW)</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span><strong class="text-white">Proof of Useful Work:</strong> Tokens minted only after AI agent completes and cryptographically verifies a real-world task.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span><strong class="text-white">Proprietary AI Engine:</strong> Custom-trained on ETA Registry and all 37 SWC vulnerabilities. Zero false positives.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-400 mt-1"></i>
+                            <span><strong class="text-white">Real Utility:</strong> Audits in minutes (not weeks) for $500 vs. $5,000+. Verified PDF reports with IPFS storage.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Revenue Strategy -->
+                <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-5">
+                    <h3 class="text-lg font-bold text-green-400 mb-3">2. Revenue & Scaling Strategy</h3>
+                    
+                    <div class="overflow-x-auto mb-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-white/10">
+                                    <th class="text-left py-2 text-gray-400">Service/Product</th>
+                                    <th class="text-left py-2 text-gray-400">Description</th>
+                                    <th class="text-right py-2 text-gray-400">Pricing</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-300">
+                                <tr class="border-b border-white/5">
+                                    <td class="py-3 font-medium text-white">Fast AI SC Audit</td>
+                                    <td class="py-3">Smart Contract Auditing Service</td>
+                                    <td class="py-3 text-right text-green-400 font-bold">$500/audit</td>
+                                </tr>
+                                <tr class="border-b border-white/5">
+                                    <td class="py-3 font-medium text-white">Telegram AI Agent</td>
+                                    <td class="py-3">Subscription-based AI service</td>
+                                    <td class="py-3 text-right text-green-400 font-bold">From $99/month</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 font-medium text-white">Tokenized AI Agents</td>
+                                    <td class="py-3">Custom agents with NFT Collection</td>
+                                    <td class="py-3 text-right text-green-400 font-bold">Tokenized Value Stream</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="text-center p-4 bg-white/5 rounded-lg">
+                            <div class="text-2xl font-bold text-white">$3M</div>
+                            <div class="text-gray-400 text-sm">Year 1 Revenue Target</div>
+                        </div>
+                        <div class="text-center p-4 bg-white/5 rounded-lg">
+                            <div class="text-2xl font-bold text-white">$30M</div>
+                            <div class="text-gray-400 text-sm">Year 3 Revenue Goal</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tokenomics -->
+        <section class="glass-card p-6 md:p-8 page-break-before">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <i class="fas fa-coins text-yellow-400"></i>
+                💸 SSTL Tokenomics: Engineered for Scarcity
+            </h2>
+            
+            <div class="overflow-x-auto mb-6">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-white/10">
+                            <th class="text-left py-2 text-gray-400">Token Feature</th>
+                            <th class="text-left py-2 text-gray-400">Detail</th>
+                            <th class="text-left py-2 text-gray-400">Impact</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-300">
+                        <tr class="border-b border-white/5">
+                            <td class="py-3 font-medium text-white">Total Supply</td>
+                            <td class="py-3">100 Million (BEP-20)</td>
+                            <td class="py-3 text-blue-400">Hard-capped supply</td>
+                        </tr>
+                        <tr class="border-b border-white/5">
+                            <td class="py-3 font-medium text-white">Deflationary Burn</td>
+                            <td class="py-3">Hard-coded 10% Burn per emission</td>
+                            <td class="py-3 text-blue-400">Creates scarcity as network grows</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 font-medium text-white">Liquidity Lockup</td>
+                            <td class="py-3">15 Million Tokens reserved</td>
+                            <td class="py-3 text-blue-400">3-year lock</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="highlight-box p-4 rounded-r-lg">
+                <h4 class="font-bold text-white mb-2">The Value Flywheel</h4>
+                <p class="text-gray-300">
+                    More AI Tasks → Increased $SSTL Demand (payments & staking) → Scarcity (burns & lockups) → <strong class="text-green-400">Value Appreciation</strong>
+                </p>
+            </div>
+        </section>
+
+        <!-- Traction Highlights -->
+        <section class="glass-card p-6 md:p-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <i class="fas fa-rocket text-blue-400"></i>
+                🗺️ Traction Highlights
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold text-white mb-3">Product Achievements</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-green-400 mt-1"></i>
+                            Smart contract audit agent surpassing competitors
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-green-400 mt-1"></i>
+                            Context-aware AI with zero false positives
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-green-400 mt-1"></i>
+                            AIDA healthcare agent in alpha (Romania)
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white mb-3">Strategic Partnerships</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 font-medium">StudioBlockchain</span>
+                        <span class="px-3 py-2 rounded-lg bg-purple-500/20 text-purple-400 font-medium">Micro3</span>
+                        <span class="px-3 py-2 rounded-lg bg-green-500/20 text-green-400 font-medium">The Miracle</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Capital Deployment -->
+        <section class="glass-card p-6 md:p-8 page-break-before">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                <i class="fas fa-chart-pie text-green-400"></i>
+                Capital Deployment ($7.5M Ask)
+            </h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="text-center p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                    <div class="text-3xl font-bold text-blue-400">40%</div>
+                    <div class="text-gray-400 text-sm mt-1">Hardware Expansion</div>
+                </div>
+                <div class="text-center p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                    <div class="text-3xl font-bold text-purple-400">30%</div>
+                    <div class="text-gray-400 text-sm mt-1">Platform Development</div>
+                </div>
+                <div class="text-center p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                    <div class="text-3xl font-bold text-green-400">15%</div>
+                    <div class="text-gray-400 text-sm mt-1">Token Listings</div>
+                </div>
+                <div class="text-center p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+                    <div class="text-3xl font-bold text-orange-400">15%</div>
+                    <div class="text-gray-400 text-sm mt-1">Marketing</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="glass-card p-8 md:p-10 text-center border-2 border-green-500/50">
+            <h2 class="text-2xl md:text-3xl font-bold mb-4">
+                Join SmartSentinels
+            </h2>
+            <p class="text-xl text-gray-300 mb-6">
+                Building the world's first <span class="text-green-400 font-bold">deflationary AI mining economy</span>.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://www.smartsentinels.net" target="_blank" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg transition-colors">
+                    <i class="fas fa-globe mr-2"></i>www.smartsentinels.net
+                </a>
+                <a href="mailto:office@smartsentinels.net" class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-colors">
+                    <i class="fas fa-envelope mr-2"></i>office@smartsentinels.net
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 px-4 border-t border-white/10 text-center text-gray-500 text-sm">
+        <p>© 2026 SmartSentinels. All rights reserved.</p>
+    </footer>
+</body>
+</html>

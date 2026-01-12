@@ -476,6 +476,12 @@ class GeminiServiceBeta {
       return response;
     } catch (error) {
       console.error('Gemini API error:', error);
+      // Log more details for debugging
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       return "Oops, something broke. Try again?";
     }
   }
@@ -1150,12 +1156,27 @@ export class TelegramBotServiceBeta {
   }
 
   private async sendMessage(chatId: number, text: string, replyToMessageId?: number) {
-    return await this.apiRequest('sendMessage', {
-      chat_id: chatId,
-      text: text,
-      reply_to_message_id: replyToMessageId,
-      parse_mode: 'Markdown'
-    });
+    // Try with Markdown first, fallback to plain text if parsing fails
+    try {
+      return await this.apiRequest('sendMessage', {
+        chat_id: chatId,
+        text: text,
+        reply_to_message_id: replyToMessageId,
+        parse_mode: 'Markdown'
+      });
+    } catch (error: any) {
+      // If Markdown parsing fails, send as plain text
+      if (error.message?.includes("can't parse entities")) {
+        console.log('[BETA] Markdown parsing failed, sending as plain text');
+        return await this.apiRequest('sendMessage', {
+          chat_id: chatId,
+          text: text,
+          reply_to_message_id: replyToMessageId
+          // No parse_mode = plain text
+        });
+      }
+      throw error;
+    }
   }
 
   private async sendChatAction(chatId: number, action: string) {

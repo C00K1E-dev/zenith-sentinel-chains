@@ -715,9 +715,18 @@ export class TelegramBotServiceBeta {
       const isMentioned = this.isBotMentioned(text);
       const hasTriggers = this.shouldRespond(text);
       
+      // Check if Alpha or another bot is mentioned - if so, back off
+      const otherBotMentioned = this.isOtherBotMentioned(text);
+      
       // Decide if we should respond
       let shouldRespond = false;
       let responseReason = '';
+      
+      // PRIORITY CHECK: If another bot is mentioned, don't interfere
+      if (otherBotMentioned && !isMentioned) {
+        console.log(`[BETA] Other bot mentioned, backing off`);
+        return;
+      }
       
       if (isPrivateChat) {
         shouldRespond = !isOnCooldown;
@@ -837,6 +846,25 @@ export class TelegramBotServiceBeta {
     ];
     
     return namePatterns.some(pattern => pattern.test(lowerText));
+  }
+
+  // Check if Alpha or other bots are mentioned
+  private isOtherBotMentioned(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    
+    // Alpha bot patterns
+    const alphaPatterns = [
+      /\balpha\b/i,           // "alpha" as standalone word
+      /hey\s+alpha/i,         // "hey alpha"
+      /hi\s+alpha/i,          // "hi alpha"
+      /yo\s+alpha/i,          // "yo alpha"
+      /@alpha\b/i,            // "@alpha"
+      /alpha[,!?\s]/i,        // "alpha," "alpha!" "alpha?" "alpha "
+      /^alpha$/i,             // just "alpha"
+      /@SS_ALPHA_BOT/i        // full bot username
+    ];
+    
+    return alphaPatterns.some(pattern => pattern.test(lowerText));
   }
 
   private shouldRespond(text: string): boolean {

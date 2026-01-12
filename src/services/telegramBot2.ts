@@ -728,10 +728,23 @@ export class TelegramBotServiceBeta {
         const securityTriggers = ['scam', 'legit', 'safe', 'rug', 'audit'];
         const isSecurityQuestion = securityTriggers.some(t => text.toLowerCase().includes(t));
         
+        // Check if this is a social link question - ALWAYS respond to these
+        const lowerText = text.toLowerCase();
+        const isSocialLinkQuestion = 
+          lowerText.includes('twitter') || lowerText.includes(' x ') || lowerText.includes(' x?') ||
+          lowerText.includes('telegram link') || lowerText.includes('socials') || 
+          lowerText.includes('social media') || lowerText.includes('website') || 
+          lowerText.includes('links') || lowerText.includes('tiktok') || 
+          lowerText.includes('linkedin');
+        
         if (isSecurityQuestion) {
           // Let Alpha handle security questions
           console.log(`[BETA] Deferring security question to Alpha`);
           shouldRespond = false;
+        } else if (isSocialLinkQuestion) {
+          // ALWAYS respond to social link questions - 100%
+          shouldRespond = true;
+          responseReason = 'social_links';
         } else {
           // For community/hype triggers, respond 40% of the time
           shouldRespond = Math.random() < 0.40;

@@ -710,9 +710,18 @@ export class TelegramBotService {
         const criticalTriggers = ['contract address', 'token address', 'bscscan', 'how to buy', 'where to buy'];
         const isCriticalQuestion = criticalTriggers.some(t => text.toLowerCase().includes(t));
         
-        if (isSecurityQuestion || isCriticalQuestion) {
+        // Check if this is a social link question - ALWAYS respond to these
+        const lowerText = text.toLowerCase();
+        const isSocialLinkQuestion = 
+          lowerText.includes('twitter') || lowerText.includes(' x ') || lowerText.includes(' x?') ||
+          lowerText.includes('telegram link') || lowerText.includes('socials') || 
+          lowerText.includes('social media') || lowerText.includes('website') || 
+          lowerText.includes('links') || lowerText.includes('tiktok') || 
+          lowerText.includes('linkedin');
+        
+        if (isSecurityQuestion || isCriticalQuestion || isSocialLinkQuestion) {
           shouldRespond = true;
-          responseReason = isSecurityQuestion ? 'security_question' : 'critical_info';
+          responseReason = isSecurityQuestion ? 'security_question' : (isSocialLinkQuestion ? 'social_links' : 'critical_info');
         } else {
           // For other triggers, respond 30% of the time
           shouldRespond = Math.random() < 0.30;

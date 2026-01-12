@@ -863,6 +863,22 @@ export class TelegramBotServiceBeta {
       'ai agent'
     ];
     
+    // Social links & community resources - Beta handles these
+    const socialTriggers = [
+      'twitter',
+      ' x ',
+      ' x?',
+      'telegram link',
+      'socials',
+      'social media',
+      'website',
+      'links',
+      'where can i find',
+      'how to follow',
+      'tiktok',
+      'linkedin'
+    ];
+    
     // General vibes - respond but with moderate probability
     const vibesTriggers = [
       'wen moon',
@@ -895,6 +911,7 @@ export class TelegramBotServiceBeta {
       communityTriggers.some(trigger => lowerText.includes(trigger)) ||
       generalTriggers.some(trigger => lowerText.includes(trigger)) ||
       practicalTriggers.some(trigger => lowerText.includes(trigger)) ||
+      socialTriggers.some(trigger => lowerText.includes(trigger)) ||
       vibesTriggers.some(trigger => lowerText.includes(trigger))
     );
   }

@@ -863,6 +863,22 @@ export class TelegramBotService {
       'safe?'
     ];
     
+    // Social links & community resources - Alpha can handle these too
+    const socialTriggers = [
+      'twitter',
+      ' x ',
+      ' x?',
+      'telegram link',
+      'socials',
+      'social media',
+      'website',
+      'links',
+      'where can i find',
+      'how to follow',
+      'tiktok',
+      'linkedin'
+    ];
+    
     // Project name mentions - respond but with low probability (Beta might handle)
     const projectTriggers = [
       'smartsentinels',
@@ -874,6 +890,7 @@ export class TelegramBotService {
     return (
       technicalTriggers.some(trigger => lowerText.includes(trigger)) ||
       securityTriggers.some(trigger => lowerText.includes(trigger)) ||
+      socialTriggers.some(trigger => lowerText.includes(trigger)) ||
       projectTriggers.some(trigger => lowerText.includes(trigger))
     );
   }

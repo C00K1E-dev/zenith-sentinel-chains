@@ -1029,30 +1029,12 @@ export class TelegramBotService {
   }
 
   private async sendMessage(chatId: number, text: string, replyToMessageId?: number) {
-    let result;
-    
-    // Try with Markdown first, fallback to plain text if parsing fails
-    try {
-      result = await this.apiRequest('sendMessage', {
-        chat_id: chatId,
-        text: text,
-        reply_to_message_id: replyToMessageId,
-        parse_mode: 'Markdown'
-      });
-    } catch (error: any) {
-      // If Markdown parsing fails, send as plain text
-      if (error.message?.includes("can't parse entities")) {
-        console.log('[ALPHA] Markdown parsing failed, sending as plain text');
-        result = await this.apiRequest('sendMessage', {
-          chat_id: chatId,
-          text: text,
-          reply_to_message_id: replyToMessageId
-          // No parse_mode = plain text
-        });
-      } else {
-        throw error;
-      }
-    }
+    const result = await this.apiRequest('sendMessage', {
+      chat_id: chatId,
+      text: text,
+      reply_to_message_id: replyToMessageId
+      // No parse_mode = plain text (links still work!)
+    });
     
     // Check if this is a roast - if so, trigger Beta to defend!
     if (this.isRoastMessage(text)) {

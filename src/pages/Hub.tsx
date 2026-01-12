@@ -18,6 +18,18 @@ const SidebarMarketplace = lazy(() => import('@/components/sidebarComponents/sid
 const SidebarStaking = lazy(() => import('@/components/sidebarComponents/sidebarStaking'));
 const SidebarAirdrop = lazy(() => import('@/components/sidebarComponents/sidebarAirdrop'));
 const SidebarSeedRound = lazy(() => import('@/components/sidebarComponents/sidebarSeedRound'));
+const SolanaNFTs = lazy(() => import('./hub/SolanaNFTs'));
+const SolanaAgents = lazy(() => import('./hub/SolanaAgents'));
+const SolanaGeneralStats = lazy(() => import('./hub/SolanaGeneralStats'));
+const SolanaAirdrop = lazy(() => import('./hub/SolanaAirdrop'));
+const SolanaAudit = lazy(() => import('./hub/SolanaAudit'));
+const SolanaDevices = lazy(() => import('./hub/SolanaDevices'));
+const SolanaCreateAgent = lazy(() => import('./hub/SolanaCreateAgent'));
+const SolanaMarketplace = lazy(() => import('./hub/SolanaMarketplace'));
+const SolanaStaking = lazy(() => import('./hub/SolanaStaking'));
+const SolanaMyNFTs = lazy(() => import('./hub/SolanaMyNFTs'));
+const SolanaMyAgents = lazy(() => import('./hub/SolanaMyAgents'));
+const SolanaMyRewards = lazy(() => import('./hub/SolanaMyRewards'));
 
 const Hub = () => {
   const [collapsed, setCollapsed] = useState(window.innerWidth < 768);
@@ -190,6 +202,18 @@ const Hub = () => {
             <Route path="create-agent" element={<Suspense fallback={<Loading />}><SidebarCreateAgent /></Suspense>} />
             <Route path="marketplace" element={<Suspense fallback={<Loading />}><SidebarMarketplace /></Suspense>} />
             <Route path="staking" element={<Suspense fallback={<Loading />}><SidebarStaking /></Suspense>} />
+            {/* Solana Routes */}
+            <Route path="solana-general-stats" element={<Suspense fallback={<Loading />}><SolanaGeneralStats /></Suspense>} />
+            <Route path="solana-airdrop" element={<Suspense fallback={<Loading />}><SolanaAirdrop /></Suspense>} />
+            <Route path="solana-nfts" element={<Suspense fallback={<Loading />}><SolanaNFTs /></Suspense>} />
+            <Route path="solana-audit" element={<Suspense fallback={<Loading />}><SolanaAudit /></Suspense>} />
+            <Route path="solana-devices" element={<Suspense fallback={<Loading />}><SolanaDevices /></Suspense>} />
+            <Route path="solana-create-agent" element={<Suspense fallback={<Loading />}><SolanaCreateAgent /></Suspense>} />
+            <Route path="solana-marketplace" element={<Suspense fallback={<Loading />}><SolanaMarketplace /></Suspense>} />
+            <Route path="solana-staking" element={<Suspense fallback={<Loading />}><SolanaStaking /></Suspense>} />
+            <Route path="solana-my-nfts" element={<Suspense fallback={<Loading />}><SolanaMyNFTs /></Suspense>} />
+            <Route path="solana-my-agents" element={<Suspense fallback={<Loading />}><SolanaMyAgents /></Suspense>} />
+            <Route path="solana-my-rewards" element={<Suspense fallback={<Loading />}><SolanaMyRewards /></Suspense>} />
           </Routes>
         </div>
         </main>

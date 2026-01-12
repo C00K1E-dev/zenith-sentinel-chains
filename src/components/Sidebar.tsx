@@ -22,6 +22,11 @@ import { createThirdwebClient } from "thirdweb";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { bsc, bscTestnet } from "thirdweb/chains";
 import { cn } from '@/lib/utils';
+import { useChain } from '@/contexts/ChainContext';
+import SidebarChainSelector from './SidebarChainSelector';
+import SolflareConnectPrompt from './SolflareConnectPrompt';
+import SolanaFeaturesInDevelopment from './SolanaFeaturesInDevelopment';
+import SolflareWalletButton from './SolflareWalletButton';
 
 const thirdwebClient = createThirdwebClient({
   clientId: import.meta.env.VITE_THIRDWEB_CLIENT_ID,
@@ -43,6 +48,7 @@ interface SidebarProps {
 const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const location = useLocation();
   const account = useActiveAccount();
+  const { selectedChain, chainConfig, isSolflareConnected, setIsSolflareConnected } = useChain();
 
   const menuItems: SidebarItem[] = useMemo(() => [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
@@ -54,6 +60,17 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
     { name: 'Create Agent', path: '/hub/create-agent', icon: Bot, badge: 'New' },
     { name: 'Marketplace', path: '/hub/marketplace', icon: Store, badge: 'Soon' },
     { name: 'Staking', path: '/hub/staking', icon: Coins, badge: 'Soon' },
+  ], []);
+
+  const solanaMenuItems: SidebarItem[] = useMemo(() => [
+    { name: 'General Stats', path: '/hub/solana-general-stats', icon: BarChart3 },
+    { name: 'Airdrop', path: '/hub/solana-airdrop', icon: Gift, badge: 'New' },
+    { name: 'NFTs & iNFTs Hub', path: '/hub/solana-nfts', icon: ImageIcon },
+    { name: 'AI Audit - Smart Contract', path: '/hub/solana-audit', icon: Shield },
+    { name: 'Device Monitoring', path: '/hub/solana-devices', icon: Monitor },
+    { name: 'Create Agent', path: '/hub/solana-create-agent', icon: Bot, badge: 'New' },
+    { name: 'Marketplace', path: '/hub/solana-marketplace', icon: Store, badge: 'Soon' },
+    { name: 'Staking', path: '/hub/solana-staking', icon: Coins, badge: 'Soon' },
   ], []);
 
   const myStatsItems: SidebarItem[] = useMemo(() => [
@@ -73,6 +90,22 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const handleToggle = useCallback(() => {
     setCollapsed(!collapsed);
   }, [collapsed, setCollapsed]);
+
+  // Handle Solflare wallet connection
+  const handleSolflareConnect = useCallback(async () => {
+    try {
+      const solflare = (window as any).solflare;
+      if (solflare) {
+        await solflare.connect();
+        setIsSolflareConnected(true);
+      } else {
+        // Redirect to Solflare installation if not installed
+        window.open('https://solflare.com/', '_blank');
+      }
+    } catch (error) {
+      console.error('Error connecting to Solflare:', error);
+    }
+  }, [setIsSolflareConnected]);
 
   // Memoize ConnectButton props to prevent unnecessary re-renders
   const connectButtonProps = useMemo(() => ({
@@ -172,86 +205,278 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       </div>
 
       {/* Wallet Connection */}
-      <div className="px-4 pt-4 pb-4 relative z-0">
-        {!collapsed && (
-          <ConnectButton
-            {...connectButtonProps}
-            connectButton={{
-              label: "Connect Wallet",
-              style: expandedConnectButtonStyle,
-            }}
-            detailsButton={{
-              style: detailsButtonStyle,
-            }}
-          />
-        )}
-        {collapsed && (
-          <div className="flex justify-center relative overflow-hidden">
-            <ConnectButton
-              {...connectButtonProps}
-              connectButton={{
-                label: "",
-                style: collapsedConnectButtonStyle,
-              }}
-              detailsButton={{
-                render: () => (
-                  <div
-                    className="w-10 h-10 bg-primary/20 text-primary border border-primary/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-primary/30"
-                  >
-                    <Wallet size={20} />
-                  </div>
-                ),
-              }}
-            />
-            {!account && (
-              <Wallet
-                size={20}
-                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"
+      <div className="px-4 pt-4 pb-4 relative z-10">
+        {/* Chain Selector - Always visible */}
+        <div className={cn("mb-3 relative z-20", collapsed && "flex justify-center")}>
+          <SidebarChainSelector collapsed={collapsed} />
+        </div>
+
+        {/* Show wallet connection only for BNB Chain */}
+        {selectedChain === 'bnb' && (
+          <>
+            {!collapsed && (
+              <ConnectButton
+                {...connectButtonProps}
+                connectButton={{
+                  label: "Connect Wallet",
+                  style: expandedConnectButtonStyle,
+                }}
+                detailsButton={{
+                  style: detailsButtonStyle,
+                }}
               />
             )}
+            {collapsed && (
+              <div className="flex justify-center relative overflow-hidden">
+                <ConnectButton
+                  {...connectButtonProps}
+                  connectButton={{
+                    label: "",
+                    style: collapsedConnectButtonStyle,
+                  }}
+                  detailsButton={{
+                    render: () => (
+                      <div
+                        className="w-10 h-10 bg-primary/20 text-primary border border-primary/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-primary/30"
+                      >
+                        <Wallet size={20} />
+                      </div>
+                    ),
+                  }}
+                />
+                {!account && (
+                  <Wallet
+                    size={20}
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10"
+                  />
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Solana: Show Solflare connection prompt or wallet button */}
+        {selectedChain === 'solana' && (
+          <>
+            {!collapsed ? (
+              <>
+                {!isSolflareConnected ? (
+                  <SolflareConnectPrompt onConnect={handleSolflareConnect} />
+                ) : (
+                  <SolflareWalletButton onDisconnect={() => setIsSolflareConnected(false)} />
+                )}
+              </>
+            ) : (
+              <div className="flex justify-center">
+                {!isSolflareConnected ? (
+                  <button
+                    onClick={handleSolflareConnect}
+                    className="w-10 h-10 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all duration-200 group relative"
+                  >
+                    <Wallet size={20} />
+                    {/* Tooltip */}
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
+                      Connect Solflare
+                    </div>
+                  </button>
+                ) : (
+                  <div className="relative group">
+                    <div className="w-10 h-10 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all duration-200">
+                      <Wallet size={20} />
+                    </div>
+                    {/* Tooltip */}
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
+                      Solflare Connected
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Coming Soon chains: Show info message */}
+        {(selectedChain === 'sui' || selectedChain === 'base') && !collapsed && (
+          <div className="glass-card border border-yellow-500/30 rounded-lg p-4 bg-yellow-500/5">
+            <p className="text-sm font-semibold text-white text-center mb-2">
+              {chainConfig.label} - Coming Soon
+            </p>
+            <p className="text-xs text-muted-foreground text-center">
+              We're working on bringing SmartSentinels to {chainConfig.label}. Stay tuned for updates!
+            </p>
           </div>
         )}
-      </div>      {/* My Stats Section */}
-      <div className="px-4 pt-2 pb-2">
-        {!collapsed && (
-          <h3 className="text-xs font-display font-bold text-primary/70 uppercase tracking-wider mb-2">
-            My Stats
-          </h3>
-        )}
-        <div className="space-y-1">
-          {myStatsItems.map((item) => {
+      </div>      {/* My Stats Section - Only show for BNB Chain */}
+      {selectedChain === 'bnb' && (
+        <div className="px-4 pt-2 pb-2">
+          {!collapsed && (
+            <h3 className="text-xs font-display font-bold text-primary/70 uppercase tracking-wider mb-2">
+              My Stats
+            </h3>
+          )}
+          <div className="space-y-1">
+            {myStatsItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group relative text-sm font-medium',
+                    active
+                      ? 'bg-primary/20 text-primary border border-primary/30'
+                      : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+                    collapsed && 'justify-center px-2'
+                  )}
+                >
+                  <Icon size={20} className={cn(active && 'text-primary')} />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1">{item.name}</span>
+                      {item.badge && (
+                        <span className={cn(
+                          "px-2 py-0.5 text-xs rounded-full font-medium",
+                          item.badge === 'New'
+                            ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                            : "bg-primary/20 text-primary border border-primary/30"
+                        )}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </>
+                  )}
+
+                  {/* Tooltip for collapsed state */}
+                  {collapsed && (
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
+                      {item.name}
+                      {item.badge && (
+                        <span className={cn(
+                          "ml-2 px-2 py-0.5 text-xs rounded-full font-medium",
+                          item.badge === 'New'
+                            ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                            : "bg-primary/20 text-primary"
+                        )}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Solana Stats Section - Show when Solana chain is selected and connected */}
+      {selectedChain === 'solana' && isSolflareConnected && (
+        <div className="px-4 pt-2 pb-2">
+          {!collapsed && (
+            <h3 className="text-xs font-display font-bold text-purple-400/70 uppercase tracking-wider mb-2">
+              Solana Stats
+            </h3>
+          )}
+          <div className="space-y-1">
+            {[
+              { name: 'My Solana NFTs', path: '/hub/solana-my-nfts', icon: ImageIcon },
+              { name: 'My Solana Agents', path: '/hub/solana-my-agents', icon: Bot },
+              { name: 'My Devices', path: '/hub/my-devices', icon: HardDrive, badge: 'Soon' },
+              { name: 'My Rewards', path: '/hub/solana-my-rewards', icon: Award },
+            ].map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group relative text-sm font-medium',
+                    active
+                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                      : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+                    collapsed && 'justify-center px-2'
+                  )}
+                >
+                  <Icon size={20} className={cn(active && 'text-purple-400')} />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1">{item.name}</span>
+                      {item.badge ? (
+                        <span className="px-2 py-0.5 text-xs rounded-full font-medium bg-primary/20 text-primary border border-primary/30">
+                          {item.badge}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-xs rounded-full font-medium bg-purple-500/20 text-purple-400 border border-purple-500/40">
+                          Dev
+                        </span>
+                      )}
+                    </>
+                  )}
+
+                  {/* Tooltip for collapsed state */}
+                  {collapsed && (
+                    <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
+                      {item.name}
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Separator */}
+      {(selectedChain === 'bnb' || (selectedChain === 'solana' && isSolflareConnected)) && (
+        <div className="border-t border-white/10 mx-4 mb-2"></div>
+      )}
+
+      {/* Menu Items - Show for BNB Chain and connected Solana */}
+      {(selectedChain === 'bnb' || (selectedChain === 'solana' && isSolflareConnected)) && (
+        <nav className="flex-1 px-4 pt-3 pb-4 space-y-2 overflow-hidden">
+          {(selectedChain === 'bnb' ? menuItems : solanaMenuItems).map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
+            const isSolana = selectedChain === 'solana';
 
             return (
               <Link
                 key={item.name}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group relative text-sm font-medium',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-medium',
+                  item.name === 'Seed Funding / Token Sale' && 'mt-1',
                   active
-                    ? 'bg-primary/20 text-primary border border-primary/30'
+                    ? isSolana
+                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                      : 'bg-primary/20 text-primary border border-primary/30'
                     : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
-                  collapsed && 'justify-center px-2'
+                  collapsed && 'justify-center'
                 )}
               >
-                <Icon size={20} className={cn(active && 'text-primary')} />
+                <Icon size={20} className={cn(active && (isSolana ? 'text-purple-400' : 'text-primary'))} />
                 {!collapsed && (
                   <>
-                    <span className="flex-1">{item.name}</span>
+                    <span className="flex-1 text-sm">{item.name}</span>
                     {item.badge && (
                       <span className={cn(
                         "px-2 py-0.5 text-xs rounded-full font-medium",
                         item.badge === 'New'
                           ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
-                          : "bg-primary/20 text-primary border border-primary/30"
+                          : isSolana
+                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                            : "bg-primary/20 text-primary border border-primary/30"
                       )}>
                         {item.badge}
                       </span>
                     )}
                   </>
                 )}
-
+                
                 {/* Tooltip for collapsed state */}
                 {collapsed && (
                   <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
@@ -271,90 +496,30 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
               </Link>
             );
           })}
-        </div>
-      </div>
 
-      {/* Separator */}
-      <div className="border-t border-white/10 mx-4 mb-2"></div>
-
-      {/* Menu Items */}
-      <nav className="flex-1 px-4 pt-3 pb-4 space-y-2 overflow-hidden">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActive(item.path);
-
-          return (
-            <Link
-              key={item.name}
-              to={item.path}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-medium',
-                item.name === 'Seed Funding / Token Sale' && 'mt-1',
-                active
-                  ? 'bg-primary/20 text-primary border border-primary/30'
-                  : 'text-muted-foreground hover:bg-white/5 hover:text-foreground',
-                collapsed && 'justify-center'
-              )}
-            >
-              <Icon size={20} className={cn(active && 'text-primary')} />
-              {!collapsed && (
-                <>
-                  <span className="flex-1 text-sm">{item.name}</span>
-                  {item.badge && (
-                    <span className={cn(
-                      "px-2 py-0.5 text-xs rounded-full font-medium",
-                      item.badge === 'New'
-                        ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
-                        : "bg-primary/20 text-primary border border-primary/30"
-                    )}>
-                      {item.badge}
-                    </span>
-                  )}
-                </>
-              )}
-              
-              {/* Tooltip for collapsed state */}
-              {collapsed && (
-                <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-border/30 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-medium">
-                  {item.name}
-                  {item.badge && (
-                    <span className={cn(
-                      "ml-2 px-2 py-0.5 text-xs rounded-full font-medium",
-                      item.badge === 'New'
-                        ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
-                        : "bg-primary/20 text-primary"
-                    )}>
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
-              )}
-            </Link>
-          );
-        })}
-
-        {/* Back to Homepage Button */}
-        <Link
-          to="/"
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-medium',
-            'text-muted-foreground hover:bg-white/5 hover:text-foreground',
-            collapsed && 'justify-center'
-          )}
-        >
-          <Home size={20} />
-          {!collapsed && (
-            <span className="flex-1 text-sm">Back to Homepage</span>
-          )}
-          
-          {/* Tooltip for collapsed state */}
-          {collapsed && (
-            <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-orbitron">
-              Back to Homepage
-            </div>
-          )}
-        </Link>
-      </nav>
+          {/* Back to Homepage Button */}
+          <Link
+            to="/"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150 group relative font-medium',
+              'text-muted-foreground hover:bg-white/5 hover:text-foreground',
+              collapsed && 'justify-center'
+            )}
+          >
+            <Home size={20} />
+            {!collapsed && (
+              <span className="flex-1 text-sm">Back to Homepage</span>
+            )}
+            
+            {/* Tooltip for collapsed state */}
+            {collapsed && (
+              <div className="absolute left-full ml-2 px-3 py-2 bg-card border border-white/10 rounded-lg text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-50 font-orbitron">
+                Back to Homepage
+              </div>
+            )}
+          </Link>
+        </nav>
+      )}
     </aside>
   );
 });

@@ -10,6 +10,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { bsc, bscTestnet } from 'wagmi/chains';
 import { injected, metaMask } from 'wagmi/connectors';
 import { lazy, Suspense } from 'react';
+import { ChainProvider } from './contexts/ChainContext';
 
 // Lazy load pages for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -51,26 +52,28 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <WagmiProvider config={config}>
         <ThirdwebProvider>
-          <C15TCookieProvider>
-            <TooltipProvider>
-              <ScamWarning />
-              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-                <Toaster />
-                <Sonner />
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/documents" element={<Documents />} />
-                    <Route path="/news" element={<News />} />
-                    <Route path="/admin-dashboard" element={<AdminDashboard />} />
-                    <Route path="/hub/*" element={<Hub />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </BrowserRouter>
-            </TooltipProvider>
-          </C15TCookieProvider>
+          <ChainProvider>
+            <C15TCookieProvider>
+              <TooltipProvider>
+                <ScamWarning />
+                <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                  <Toaster />
+                  <Sonner />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/documents" element={<Documents />} />
+                      <Route path="/news" element={<News />} />
+                      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                      <Route path="/hub/*" element={<Hub />} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </BrowserRouter>
+              </TooltipProvider>
+            </C15TCookieProvider>
+          </ChainProvider>
         </ThirdwebProvider>
       </WagmiProvider>
     </QueryClientProvider>

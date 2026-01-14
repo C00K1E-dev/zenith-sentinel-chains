@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Loader2 } from 'lucide-react';
 import { useChain, CHAIN_CONFIGS, ChainType } from '@/contexts/ChainContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface SidebarChainSelectorProps {
@@ -9,6 +10,8 @@ interface SidebarChainSelectorProps {
 
 const SidebarChainSelector: React.FC<SidebarChainSelectorProps> = ({ collapsed }) => {
   const { selectedChain, setSelectedChain, chainConfig } = useChain();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +35,43 @@ const SidebarChainSelector: React.FC<SidebarChainSelectorProps> = ({ collapsed }
   const handleChainSelect = (chain: ChainType) => {
     setSelectedChain(chain);
     setIsOpen(false);
+    
+    // Navigate to the appropriate route for the selected chain
+    const currentPath = location.pathname;
+    
+    // Create a mapping of route equivalents
+    const routeMapping: Record<string, { bnb: string; solana: string }> = {
+      '/hub': { bnb: '/hub', solana: '/hub' },
+      '/hub/general-stats': { bnb: '/hub/general-stats', solana: '/hub/solana-general-stats' },
+      '/hub/solana-general-stats': { bnb: '/hub/general-stats', solana: '/hub/solana-general-stats' },
+      '/hub/airdrop': { bnb: '/hub/airdrop', solana: '/hub/solana-airdrop' },
+      '/hub/solana-airdrop': { bnb: '/hub/airdrop', solana: '/hub/solana-airdrop' },
+      '/hub/nfts': { bnb: '/hub/nfts', solana: '/hub/solana-nfts' },
+      '/hub/solana-nfts': { bnb: '/hub/nfts', solana: '/hub/solana-nfts' },
+      '/hub/audit': { bnb: '/hub/audit', solana: '/hub/solana-audit' },
+      '/hub/solana-audit': { bnb: '/hub/audit', solana: '/hub/solana-audit' },
+      '/hub/devices': { bnb: '/hub/devices', solana: '/hub/solana-devices' },
+      '/hub/solana-devices': { bnb: '/hub/devices', solana: '/hub/solana-devices' },
+      '/hub/create-agent': { bnb: '/hub/create-agent', solana: '/hub/solana-create-agent' },
+      '/hub/solana-create-agent': { bnb: '/hub/create-agent', solana: '/hub/solana-create-agent' },
+      '/hub/marketplace': { bnb: '/hub/marketplace', solana: '/hub/solana-marketplace' },
+      '/hub/solana-marketplace': { bnb: '/hub/marketplace', solana: '/hub/solana-marketplace' },
+      '/hub/staking': { bnb: '/hub/staking', solana: '/hub/solana-staking' },
+      '/hub/solana-staking': { bnb: '/hub/staking', solana: '/hub/solana-staking' },
+    };
+    
+    // Check if current path has a mapping
+    const mapping = routeMapping[currentPath];
+    if (mapping) {
+      const targetRoute = chain === 'bnb' ? mapping.bnb : mapping.solana;
+      if (targetRoute !== currentPath) {
+        navigate(targetRoute);
+      }
+    } else {
+      // If no specific mapping found, navigate to the chain's general stats
+      const defaultRoute = chain === 'bnb' ? '/hub/general-stats' : '/hub/solana-general-stats';
+      navigate(defaultRoute);
+    }
   };
 
   const getStatusBadge = (status: string) => {

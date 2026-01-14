@@ -1,12 +1,15 @@
 import React from 'react';
-import { ExternalLink } from 'lucide-react';
+import ReactDOM from 'react-dom';
+import { ExternalLink, X } from 'lucide-react';
 import { useChain } from '@/contexts/ChainContext';
 
 interface SolflareConnectPromptProps {
   onConnect: () => void;
+  onClose?: () => void;
+  isModal?: boolean;
 }
 
-const SolflareConnectPrompt: React.FC<SolflareConnectPromptProps> = ({ onConnect }) => {
+const SolflareConnectPrompt: React.FC<SolflareConnectPromptProps> = ({ onConnect, onClose, isModal = false }) => {
   const { chainConfig } = useChain();
 
   const handleInstallSolflare = () => {
@@ -17,15 +20,11 @@ const SolflareConnectPrompt: React.FC<SolflareConnectPromptProps> = ({ onConnect
     window.open('https://solflare.com/download', '_blank');
   };
 
-  return (
+  const content = (
     <div className="px-4 py-6 space-y-4">
       {/* Header */}
       <div className="text-center space-y-2">
-        <img
-          src={chainConfig.logo}
-          alt="Solana"
-          className="w-12 h-12 mx-auto rounded-full"
-        />
+        <img src="/assets/solflare.webp" alt="Solflare" className="w-12 h-12 mx-auto" />
         <h3 className="text-lg font-display font-bold text-white">
           Connect Solflare Wallet
         </h3>
@@ -43,9 +42,7 @@ const SolflareConnectPrompt: React.FC<SolflareConnectPromptProps> = ({ onConnect
         >
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-purple-500/10 border border-purple-500/30 group-hover:bg-purple-500/20 transition-all duration-200">
-              <svg className="w-6 h-6 text-purple-400" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
-              </svg>
+              <img src="/assets/solflare.webp" alt="Solflare" className="w-6 h-6" />
             </div>
             <div className="flex-1 text-left">
               <p className="text-sm font-semibold text-white">Browser Extension</p>
@@ -97,6 +94,37 @@ const SolflareConnectPrompt: React.FC<SolflareConnectPromptProps> = ({ onConnect
         </p>
       </div>
     </div>
+  );
+
+  // If not modal mode, render inline
+  if (!isModal) {
+    return content;
+  }
+
+  // Modal mode - render via portal
+  return ReactDOM.createPortal(
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/60 z-[9998]" 
+        onClick={onClose}
+      />
+      
+      {/* Modal Content */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md bg-[#0f1729] border border-purple-500/30 rounded-2xl shadow-2xl z-[9999]">
+        {/* Close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
+        )}
+        {content}
+      </div>
+    </>,
+    document.body
   );
 };
 

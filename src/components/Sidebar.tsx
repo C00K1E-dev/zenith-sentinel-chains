@@ -49,6 +49,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const location = useLocation();
   const account = useActiveAccount();
   const { selectedChain, chainConfig, isSolflareConnected, setIsSolflareConnected } = useChain();
+  const [showSolflareConnectModal, setShowSolflareConnectModal] = useState(false);
 
   const menuItems: SidebarItem[] = useMemo(() => [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
@@ -98,6 +99,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       if (solflare) {
         await solflare.connect();
         setIsSolflareConnected(true);
+        setShowSolflareConnectModal(false);
       } else {
         // Redirect to Solflare installation if not installed
         window.open('https://solflare.com/', '_blank');
@@ -261,7 +263,13 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
             {!collapsed ? (
               <>
                 {!isSolflareConnected ? (
-                  <SolflareConnectPrompt onConnect={handleSolflareConnect} />
+                  <button
+                    onClick={() => setShowSolflareConnectModal(true)}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white rounded-xl px-4 py-3 transition-all duration-200 flex items-center justify-center gap-2 font-semibold shadow-lg shadow-purple-500/25"
+                  >
+                    <img src="/assets/solflare.webp" alt="Solflare" className="w-5 h-5" />
+                    <span className="text-sm font-semibold">Connect Solflare</span>
+                  </button>
                 ) : (
                   <SolflareWalletButton onDisconnect={() => setIsSolflareConnected(false)} />
                 )}
@@ -270,7 +278,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
               <div className="flex justify-center">
                 {!isSolflareConnected ? (
                   <button
-                    onClick={handleSolflareConnect}
+                    onClick={() => setShowSolflareConnectModal(true)}
                     className="w-10 h-10 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all duration-200 group relative"
                   >
                     <Wallet size={20} />
@@ -371,8 +379,8 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
         </div>
       )}
 
-      {/* Solana Stats Section - Show when Solana chain is selected and connected */}
-      {selectedChain === 'solana' && isSolflareConnected && (
+      {/* Solana Stats Section - Show when Solana chain is selected */}
+      {selectedChain === 'solana' && (
         <div className="px-4 pt-2 pb-2">
           {!collapsed && (
             <h3 className="text-xs font-display font-bold text-purple-400/70 uppercase tracking-wider mb-2">
@@ -431,12 +439,12 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
       )}
 
       {/* Separator */}
-      {(selectedChain === 'bnb' || (selectedChain === 'solana' && isSolflareConnected)) && (
+      {(selectedChain === 'bnb' || selectedChain === 'solana') && (
         <div className="border-t border-white/10 mx-4 mb-2"></div>
       )}
 
-      {/* Menu Items - Show for BNB Chain and connected Solana */}
-      {(selectedChain === 'bnb' || (selectedChain === 'solana' && isSolflareConnected)) && (
+      {/* Menu Items - Show for BNB Chain and Solana */}
+      {(selectedChain === 'bnb' || selectedChain === 'solana') && (
         <nav className="flex-1 px-4 pt-3 pb-4 space-y-2 overflow-hidden">
           {(selectedChain === 'bnb' ? menuItems : solanaMenuItems).map((item) => {
             const Icon = item.icon;
@@ -519,6 +527,15 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
             )}
           </Link>
         </nav>
+      )}
+
+      {/* Solflare Connect Modal */}
+      {showSolflareConnectModal && (
+        <SolflareConnectPrompt 
+          onConnect={handleSolflareConnect} 
+          onClose={() => setShowSolflareConnectModal(false)}
+          isModal={true}
+        />
       )}
     </aside>
   );

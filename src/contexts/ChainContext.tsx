@@ -1,6 +1,22 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export type ChainType = 'bnb' | 'solana' | 'sui' | 'base';
+
+// Helper function to detect chain from URL path
+const getChainFromPath = (pathname: string): ChainType | null => {
+  if (pathname.includes('solana-') || pathname.includes('/solana')) {
+    return 'solana';
+  }
+  // Add more chain detection as needed
+  // if (pathname.includes('sui-') || pathname.includes('/sui')) {
+  //   return 'sui';
+  // }
+  // if (pathname.includes('base-') || pathname.includes('/base')) {
+  //   return 'base';
+  // }
+  return null;
+};
 
 export interface ChainStatus {
   label: string;
@@ -46,11 +62,37 @@ interface ChainContextType {
 
 const ChainContext = createContext<ChainContextType | undefined>(undefined);
 
+// Get initial chain from URL on page load
+const getInitialChain = (): ChainType => {
+  const pathname = window.location.pathname;
+  return getChainFromPath(pathname) || 'bnb';
+};
+
 export const ChainProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selectedChain, setSelectedChain] = useState<ChainType>('bnb');
+  const [selectedChain, setSelectedChain] = useState<ChainType>(getInitialChain);
   const [isSolflareConnected, setIsSolflareConnected] = useState(false);
+  
+  // Get current location to detect chain from URL
+  let location: { pathname: string } | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    location = useLocation();
+  } catch {
+    // useLocation may fail if not within Router context (e.g., during initial render)
+    location = { pathname: window.location.pathname };
+  }
 
   const chainConfig = CHAIN_CONFIGS[selectedChain];
+
+  // Auto-detect chain from URL path on route changes
+  useEffect(() => {
+    if (location) {
+      const detectedChain = getChainFromPath(location.pathname);
+      if (detectedChain && detectedChain !== selectedChain) {
+        setSelectedChain(detectedChain);
+      }
+    }
+  }, [location?.pathname]);
 
   // Check if Solflare is connected on mount and chain change
   useEffect(() => {

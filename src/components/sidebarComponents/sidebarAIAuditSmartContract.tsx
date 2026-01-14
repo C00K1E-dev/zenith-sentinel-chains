@@ -600,11 +600,10 @@ const generateAuditHTML = (auditData: AuditData): string => {
   };
 
   const getScoreColor = (score: number): string => {
-    if (score >= 90) return '#10B981';
-    if (score >= 80) return '#34D399';
-    if (score >= 70) return '#F59E0B';
-    if (score >= 60) return '#F97316';
-    return '#EF4444';
+    if (score >= 90) return '#10B981'; // Green - Excellent
+    if (score >= 80) return '#F59E0B'; // Yellow/Orange - Good
+    if (score >= 60) return '#F97316'; // Orange - Fair/Poor
+    return '#EF4444'; // Red - Critical
   };
 
   const currentDate = new Date().toLocaleDateString('en-US', { 

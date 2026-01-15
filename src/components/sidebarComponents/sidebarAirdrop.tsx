@@ -173,6 +173,13 @@ const SidebarAirdrop = memo(() => {
   
   // Airdrop campaign status - SET TO TRUE TO END CAMPAIGN
   const AIRDROP_ENDED = true;
+  
+  // FINAL CAMPAIGN RESULTS (for reference only - not displayed):
+  // Total Participants: 3,810 users
+  // Total Points Distributed: 122,500 points
+  // Token Conversion: 1 point = 1 SSTL token
+  // Max Individual Score: 140 points (17 users)
+  // Average Points per User: 32.15 points
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 'connect-metamask',
@@ -1254,7 +1261,7 @@ const SidebarAirdrop = memo(() => {
                       theMiracle
                       <ExternalLink size={12} />
                     </a>
-                    {' '}has officially ended. Thank you to all participants who completed tasks and earned points!
+                    {' '}has officially ended. Thank you to all <strong>3,810 participants</strong> who completed tasks and earned a total of <strong>122,500 points</strong>!
                   </p>
                   <p className={styles.infoText} style={{ marginBottom: '0.75rem' }}>
                     <strong>Next Steps:</strong> Information regarding token claims and TGE (Token Generation Event) will be posted on our official channels after careful verification and timing coordination.

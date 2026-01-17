@@ -170,6 +170,16 @@ const SidebarAirdrop = memo(() => {
   const [userPoints, setUserPoints] = useState(0);
   const [isMetaMaskWallet, setIsMetaMaskWallet] = useState(false);
   const [metaMaskBonusApplied, setMetaMaskBonusApplied] = useState(false);
+  
+  // Airdrop campaign status - SET TO TRUE TO END CAMPAIGN
+  const AIRDROP_ENDED = true;
+  
+  // FINAL CAMPAIGN RESULTS (for reference only - not displayed):
+  // Total Participants: 3,810 users
+  // Total Points Distributed: 122,500 points
+  // Token Conversion: 1 point = 1 SSTL token
+  // Max Individual Score: 140 points (17 users)
+  // Average Points per User: 32.15 points
   const [tasks, setTasks] = useState<Task[]>([
     {
       id: 'connect-metamask',
@@ -736,6 +746,16 @@ const SidebarAirdrop = memo(() => {
     console.log('Task found:', task);
     if (!task || task.completed) return;
 
+    // Prevent task completion if airdrop has ended
+    if (AIRDROP_ENDED) {
+      toast({
+        title: "Campaign Ended",
+        description: "The airdrop campaign has concluded. No new tasks can be completed.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!account?.address) {
       toast({
         title: "Wallet Not Connected",
@@ -1191,23 +1211,101 @@ const SidebarAirdrop = memo(() => {
             <Gift className="text-primary" size={32} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                SSTL Airdrop Campaign
-              </span>
-            </h1>
-            <p className="text-xs text-foreground">Complete tasks to earn points and claim SSTL tokens</p>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl font-bold">
+                <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  SSTL Airdrop Campaign
+                </span>
+              </h1>
+              {AIRDROP_ENDED && (
+                <Badge 
+                  variant="destructive" 
+                  className="bg-red-500 text-white animate-pulse px-3 py-1 text-sm font-bold"
+                >
+                  ENDED
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-foreground">
+              {AIRDROP_ENDED ? "Campaign has concluded - Check official channels for TGE updates" : "Complete tasks to earn points and claim SSTL tokens"}
+            </p>
           </div>
         </div>
       </motion.div>
 
+      {/* Campaign Ended Notice */}
+      {AIRDROP_ENDED && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <Card className={styles.infoCard}>
+            <CardContent className="pt-6">
+              <div className={styles.metamaskInfo} style={{ padding: '1rem', background: 'linear-gradient(to right, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1), hsl(var(--accent) / 0.1))', borderRadius: '8px', border: '2px solid #dc2626', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                <img 
+                  src="/assets/MetaMask-icon-fox.svg" 
+                  alt="MetaMask" 
+                  style={{ width: '48px', height: '48px', flexShrink: 0, marginTop: '0.25rem' }}
+                />
+                <div style={{ flex: 1 }}>
+                  <p className={styles.infoText} style={{ marginBottom: '0.75rem' }}>
+                    <strong>🏁 Campaign Concluded:</strong> This exclusive campaign brought to you by{' '}
+                    <a 
+                      href="https://www.themiracle.io/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={styles.infoLink}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', pointerEvents: 'auto', cursor: 'pointer' }}
+                    >
+                      theMiracle
+                      <ExternalLink size={12} />
+                    </a>
+                    {' '}has officially ended. Thank you to all <strong>3,810 participants</strong> who completed tasks and earned a total of <strong>122,500 points</strong>!
+                  </p>
+                  <p className={styles.infoText} style={{ marginBottom: '0.75rem' }}>
+                    <strong>Next Steps:</strong> Information regarding token claims and TGE (Token Generation Event) will be posted on our official channels after careful verification and timing coordination.
+                  </p>
+                  <p className={styles.infoText} style={{ marginBottom: '1rem' }}>
+                    <strong>Timeline:</strong> TGE is expected in late Q1 2026, but may occur sooner based on development progress.
+                  </p>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <a 
+                      href="https://twitter.com/SmartSentinels_" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={styles.infoLink}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: 'hsl(220, 90%, 56%)', color: 'white', borderRadius: '6px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 'bold' }}
+                    >
+                      Follow X Updates
+                      <ExternalLink size={14} />
+                    </a>
+                    <a 
+                      href="https://t.me/SmartSentinelsCommunity" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={styles.infoLink}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', backgroundColor: 'hsl(280, 60%, 60%)', color: 'white', borderRadius: '6px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 'bold' }}
+                    >
+                      Join Telegram
+                      <ExternalLink size={14} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
       {/* Info Section - Campaign Details */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-      >
-        <Card className={styles.infoCard}>
+      {!AIRDROP_ENDED && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className={styles.infoCard}>
           <CardContent className="pt-6">
             <div className={styles.metamaskInfo} style={{ padding: '1rem', background: 'linear-gradient(to right, hsl(var(--primary) / 0.1), hsl(var(--secondary) / 0.1), hsl(var(--accent) / 0.1))', borderRadius: '8px', border: '1px solid hsl(var(--primary) / 0.3)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
               <img 
@@ -1238,10 +1336,11 @@ const SidebarAirdrop = memo(() => {
             </div>
           </CardContent>
         </Card>
-      </motion.div>
+        </motion.div>
+      )}
 
       {/* Registration Status Warning */}
-      {!isRegistered && (
+      {!isRegistered && !AIRDROP_ENDED && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1261,8 +1360,9 @@ const SidebarAirdrop = memo(() => {
                     onClick={() => setRegistrationFormOpen(true)}
                     size="sm"
                     style={{ backgroundColor: '#dc2626', color: 'white' }}
+                    disabled={AIRDROP_ENDED}
                   >
-                    Complete Registration Now
+                    {AIRDROP_ENDED ? 'Campaign Ended' : 'Complete Registration Now'}
                   </Button>
                 </div>
               </div>
@@ -1316,17 +1416,20 @@ const SidebarAirdrop = memo(() => {
 
             <Button 
               onClick={handleClaimTokens}
-              disabled={isClaiming || userPoints < 100}
+              disabled={AIRDROP_ENDED || isClaiming || userPoints < 100}
               className={styles.claimButton}
               size="lg"
             >
               <Coins className="mr-2" size={20} />
-              {isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
+              {AIRDROP_ENDED ? 'Campaign Ended' : isClaiming ? 'Claiming...' : 'Claim SSTL Tokens'}
             </Button>
 
             <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/30 rounded-lg">
               <p className="text-xs sm:text-sm text-foreground text-center leading-relaxed">
-                ℹ️ Tokens will be available to claim at the end of this campaign. Your points determine your token allocation.
+                {AIRDROP_ENDED 
+                  ? "🏆 Campaign concluded! Your final points: " + userPoints.toLocaleString() + ". Follow our official channels for TGE and claim updates."
+                  : "ℹ️ Tokens will be available to claim at the end of this campaign. Your points determine your token allocation."
+                }
               </p>
             </div>
           </CardContent>
@@ -1434,11 +1537,14 @@ const SidebarAirdrop = memo(() => {
                                 }}
                                 size="sm"
                                 className={styles.taskButton}
+                                disabled={AIRDROP_ENDED}
                               >
-                                Start
-                                <ExternalLink size={14} className="ml-1" />
+                                {AIRDROP_ENDED ? 'Ended' : 'Start'}
+                                {!AIRDROP_ENDED && <ExternalLink size={14} className="ml-1" />}
                               </Button>
-                              <span className="text-xs text-red-600">Complete task and retry</span>
+                              <span className="text-xs text-red-600">
+                                {AIRDROP_ENDED ? 'Campaign concluded' : 'Complete task and retry'}
+                              </span>
                             </div>
                           ) : task.type === 'nft' ? (
                             // NFT Tasks: Show Mint button if no NFT, otherwise Claim Points button
@@ -1448,13 +1554,15 @@ const SidebarAirdrop = memo(() => {
                                   <>
                                     <Button
                                       onClick={() => handleNFTVerification(task.id)}
-                                      disabled={checkingNFTs}
+                                      disabled={checkingNFTs || AIRDROP_ENDED}
                                       size="sm"
                                       className={styles.taskButton}
                                     >
-                                      {checkingNFTs ? 'Checking...' : 'Claim Points'}
+                                      {AIRDROP_ENDED ? 'Ended' : checkingNFTs ? 'Checking...' : 'Claim Points'}
                                     </Button>
-                                    <span className="text-xs text-green-500">✓ {genesisNFTBalance} NFT{genesisNFTBalance !== 1 ? 's' : ''} owned</span>
+                                    <span className="text-xs text-green-500">
+                                      {AIRDROP_ENDED ? 'Campaign concluded' : `✓ ${genesisNFTBalance} NFT${genesisNFTBalance !== 1 ? 's' : ''} owned`}
+                                    </span>
                                   </>
                                 ) : (
                                   <>
@@ -1462,11 +1570,14 @@ const SidebarAirdrop = memo(() => {
                                       onClick={() => window.location.href = '/hub/nfts'}
                                       size="sm"
                                       className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
+                                      disabled={AIRDROP_ENDED}
                                     >
                                       <Sparkles size={14} className="mr-1" />
-                                      Mint NFT
+                                      {AIRDROP_ENDED ? 'Ended' : 'Mint NFT'}
                                     </Button>
-                                    <span className="text-xs text-gray-500">Points awarded automatically when minted</span>
+                                    <span className="text-xs text-gray-500">
+                                      {AIRDROP_ENDED ? 'Campaign concluded' : 'Points awarded automatically when minted'}
+                                    </span>
                                   </>
                                 )
                               ) : task.id === 'mint-audit' ? (
@@ -1474,13 +1585,15 @@ const SidebarAirdrop = memo(() => {
                                   <>
                                     <Button
                                       onClick={() => handleNFTVerification(task.id)}
-                                      disabled={checkingNFTs}
+                                      disabled={checkingNFTs || AIRDROP_ENDED}
                                       size="sm"
                                       className={styles.taskButton}
                                     >
-                                      {checkingNFTs ? 'Checking...' : 'Claim Points'}
+                                      {AIRDROP_ENDED ? 'Ended' : checkingNFTs ? 'Checking...' : 'Claim Points'}
                                     </Button>
-                                    <span className="text-xs text-green-500">✓ {aiAuditNFTBalance} NFT{aiAuditNFTBalance !== 1 ? 's' : ''} owned</span>
+                                    <span className="text-xs text-green-500">
+                                      {AIRDROP_ENDED ? 'Campaign concluded' : `✓ ${aiAuditNFTBalance} NFT${aiAuditNFTBalance !== 1 ? 's' : ''} owned`}
+                                    </span>
                                   </>
                                 ) : (
                                   <>
@@ -1488,22 +1601,37 @@ const SidebarAirdrop = memo(() => {
                                       onClick={() => window.location.href = '/hub/nfts'}
                                       size="sm"
                                       className={`${styles.taskButton} bg-gradient-to-r from-purple-600 to-pink-600`}
+                                      disabled={AIRDROP_ENDED}
                                     >
                                       <Shield size={14} className="mr-1" />
-                                      Mint NFT
+                                      {AIRDROP_ENDED ? 'Ended' : 'Mint NFT'}
                                     </Button>
-                                    <span className="text-xs text-gray-500">Points awarded automatically when minted</span>
+                                    <span className="text-xs text-gray-500">
+                                      {AIRDROP_ENDED ? 'Campaign concluded' : 'Points awarded automatically when minted'}
+                                    </span>
                                   </>
                                 )
                               ) : null}
+                            </div>
+                          ) : AIRDROP_ENDED ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <Button
+                                disabled
+                                size="sm"
+                                className="opacity-50 cursor-not-allowed"
+                              >
+                                Ended
+                              </Button>
+                              <span className="text-xs text-gray-500">Campaign concluded</span>
                             </div>
                           ) : (
                             <Button
                               onClick={() => handleTaskComplete(task.id)}
                               size="sm"
                               className={styles.taskButton}
+                              disabled={AIRDROP_ENDED}
                             >
-                              {task.id === 'fill-form' ? (
+                              {AIRDROP_ENDED ? 'Ended' : task.id === 'fill-form' ? (
                                 <>
                                   Fill Form
                                   <ExternalLink size={14} className="ml-1" />

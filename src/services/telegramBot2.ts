@@ -262,7 +262,11 @@ const SMARTSENTINELS_KNOWLEDGE = {
     "What NFT collections are there?": "3 collections: 1) Genesis Collection (0.1 BNB) - 1000 max, lifetime rewards + 10% revenue share from future collections + 100% staking boost. 2) AI Audit Collection (0.074 BNB) - earn from every audit. 3) AIDA Collection - coming soon, medical AI rewards!",
     "What is the Genesis NFT?": "The foundation of SmartSentinels! Limited to 1,000 NFTs at 0.1 BNB. Benefits: 10% revenue share from ALL future NFT sales, 100% staking boost, priority access to new features, and LIFETIME perpetual rewards. OG status forever!",
     "Wen moon?": "Ser, we're building actual AI infrastructure, not hopium! 😄 But seriously—40% of supply allocated for PoUW rewards, and 10% of each emission gets burned = deflationary. Real utility + scarcity = natural price discovery. Moon when we onboard businesses!",
-    "Is this a scam?": "If we were a scam, would we: Build actual AI agents? Get audited? Partner with BNB Chain, NVIDIA? Have a real team on LinkedIn? Launch a working MVP? Deploy AI in Romanian medical clinics? Nah fam, we're here to revolutionize how AI creates value. DYOR and join us! 🛡️"
+    "Is this a scam?": "If we were a scam, would we: Build actual AI agents? Get audited? Partner with BNB Chain, NVIDIA? Have a real team on LinkedIn? Launch a working MVP? Deploy AI in Romanian medical clinics? Nah fam, we're here to revolutionize how AI creates value. DYOR and join us! 🛡️",
+    "What are your socials?": "Got you fam! Telegram: https://t.me/SmartSentinelsCommunity | Twitter: https://x.com/SmartSentinels_ | Website: https://smartsentinels.net | LinkedIn: https://www.linkedin.com/company/smartsentinels/ | TikTok: https://www.tiktok.com/@smartsentinels_official",
+    "Twitter link?": "https://x.com/SmartSentinels_ 🐦",
+    "Telegram link?": "https://t.me/SmartSentinelsCommunity 💬",
+    "Website?": "https://smartsentinels.net 🌐"
   }
 };
 
@@ -377,10 +381,12 @@ CONVERSATION RULES:
    - "That's pretty solid" instead of just "That's good"
    - "Lol" or "lmao" when something's actually funny (rarely)
 
-8. VERIFIED URLS ONLY:
+8. WHEN ASKED FOR LINKS (Twitter, Telegram, socials, website):
+   - ALWAYS respond immediately with the links
+   - Be casual: "Here you go fam", "Got you", "Yeah, here's the links"
    - Website: https://smartsentinels.net
    - Telegram: https://t.me/SmartSentinelsCommunity
-   - Twitter: https://x.com/SmartSentinels_
+   - Twitter/X: https://x.com/SmartSentinels_
    - LinkedIn: https://www.linkedin.com/company/smartsentinels/
    - TikTok: https://www.tiktok.com/@smartsentinels_official
    - BSCScan: https://bscscan.com/address/0x56317dbCCd647C785883738fac9308ebcA063aca
@@ -431,7 +437,7 @@ class GeminiServiceBeta {
 
       // Adaptive token limits based on question type
       const tokenLimits = {
-        simple: 250,      // Greetings, short comments, acknowledgments
+        simple: 400,      // Greetings, short comments, acknowledgments, LINKS
         question: 600,    // Regular questions needing explanation
         detailed: 1000    // Complex topics like tokenomics, roadmap, how it works
       };
@@ -470,6 +476,12 @@ class GeminiServiceBeta {
       return response;
     } catch (error) {
       console.error('Gemini API error:', error);
+      // Log more details for debugging
+      if (error instanceof Error) {
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
       return "Oops, something broke. Try again?";
     }
   }
@@ -703,9 +715,18 @@ export class TelegramBotServiceBeta {
       const isMentioned = this.isBotMentioned(text);
       const hasTriggers = this.shouldRespond(text);
       
+      // Check if Alpha or another bot is mentioned - if so, back off
+      const otherBotMentioned = this.isOtherBotMentioned(text);
+      
       // Decide if we should respond
       let shouldRespond = false;
       let responseReason = '';
+      
+      // PRIORITY CHECK: If another bot is mentioned, don't interfere
+      if (otherBotMentioned && !isMentioned) {
+        console.log(`[BETA] Other bot mentioned, backing off`);
+        return;
+      }
       
       if (isPrivateChat) {
         shouldRespond = !isOnCooldown;
@@ -722,10 +743,23 @@ export class TelegramBotServiceBeta {
         const securityTriggers = ['scam', 'legit', 'safe', 'rug', 'audit'];
         const isSecurityQuestion = securityTriggers.some(t => text.toLowerCase().includes(t));
         
+        // Check if this is a social link question - ALWAYS respond to these
+        const lowerText = text.toLowerCase();
+        const isSocialLinkQuestion = 
+          lowerText.includes('twitter') || lowerText.includes(' x ') || lowerText.includes(' x?') ||
+          lowerText.includes('telegram link') || lowerText.includes('socials') || 
+          lowerText.includes('social media') || lowerText.includes('website') || 
+          lowerText.includes('links') || lowerText.includes('tiktok') || 
+          lowerText.includes('linkedin');
+        
         if (isSecurityQuestion) {
           // Let Alpha handle security questions
           console.log(`[BETA] Deferring security question to Alpha`);
           shouldRespond = false;
+        } else if (isSocialLinkQuestion) {
+          // ALWAYS respond to social link questions - 100%
+          shouldRespond = true;
+          responseReason = 'social_links';
         } else {
           // For community/hype triggers, respond 40% of the time
           shouldRespond = Math.random() < 0.40;
@@ -814,6 +848,25 @@ export class TelegramBotServiceBeta {
     return namePatterns.some(pattern => pattern.test(lowerText));
   }
 
+  // Check if Alpha or other bots are mentioned
+  private isOtherBotMentioned(text: string): boolean {
+    const lowerText = text.toLowerCase();
+    
+    // Alpha bot patterns
+    const alphaPatterns = [
+      /\balpha\b/i,           // "alpha" as standalone word
+      /hey\s+alpha/i,         // "hey alpha"
+      /hi\s+alpha/i,          // "hi alpha"
+      /yo\s+alpha/i,          // "yo alpha"
+      /@alpha\b/i,            // "@alpha"
+      /alpha[,!?\s]/i,        // "alpha," "alpha!" "alpha?" "alpha "
+      /^alpha$/i,             // just "alpha"
+      /@SS_ALPHA_BOT/i        // full bot username
+    ];
+    
+    return alphaPatterns.some(pattern => pattern.test(lowerText));
+  }
+
   private shouldRespond(text: string): boolean {
     const lowerText = text.toLowerCase();
     
@@ -857,6 +910,22 @@ export class TelegramBotServiceBeta {
       'ai agent'
     ];
     
+    // Social links & community resources - Beta handles these
+    const socialTriggers = [
+      'twitter',
+      ' x ',
+      ' x?',
+      'telegram link',
+      'socials',
+      'social media',
+      'website',
+      'links',
+      'where can i find',
+      'how to follow',
+      'tiktok',
+      'linkedin'
+    ];
+    
     // General vibes - respond but with moderate probability
     const vibesTriggers = [
       'wen moon',
@@ -889,6 +958,7 @@ export class TelegramBotServiceBeta {
       communityTriggers.some(trigger => lowerText.includes(trigger)) ||
       generalTriggers.some(trigger => lowerText.includes(trigger)) ||
       practicalTriggers.some(trigger => lowerText.includes(trigger)) ||
+      socialTriggers.some(trigger => lowerText.includes(trigger)) ||
       vibesTriggers.some(trigger => lowerText.includes(trigger))
     );
   }
@@ -1117,8 +1187,8 @@ export class TelegramBotServiceBeta {
     return await this.apiRequest('sendMessage', {
       chat_id: chatId,
       text: text,
-      reply_to_message_id: replyToMessageId,
-      parse_mode: 'Markdown'
+      reply_to_message_id: replyToMessageId
+      // No parse_mode = plain text (links still work!)
     });
   }
 

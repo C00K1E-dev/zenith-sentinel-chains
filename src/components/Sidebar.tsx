@@ -54,7 +54,7 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
   const menuItems: SidebarItem[] = useMemo(() => [
     { name: 'General Stats', path: '/hub/general-stats', icon: BarChart3 },
     // { name: 'Seed Round', path: '/hub/seed-round', icon: DollarSign }, // Hidden - needs testing before production
-    { name: 'Airdrop', path: '/hub/airdrop', icon: Gift, badge: 'New' },
+    { name: 'Airdrop', path: '/hub/airdrop', icon: Gift, badge: 'Ended' },
     { name: 'NFTs & iNFTs Hub', path: '/hub/nfts', icon: ImageIcon },
     { name: 'AI Audit - Smart Contract', path: '/hub/audit', icon: Shield },
     { name: 'Device Monitoring', path: '/hub/devices', icon: Monitor },
@@ -475,6 +475,8 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                         "px-2 py-0.5 text-xs rounded-full font-medium",
                         item.badge === 'New'
                           ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                          : item.badge === 'Ended'
+                          ? "bg-red-500/20 text-red-400 border border-red-500/40"
                           : isSolana
                             ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
                             : "bg-primary/20 text-primary border border-primary/30"
@@ -494,6 +496,8 @@ const Sidebar = memo(({ collapsed, setCollapsed }: SidebarProps) => {
                         "ml-2 px-2 py-0.5 text-xs rounded-full font-medium",
                         item.badge === 'New'
                           ? "bg-green-500/20 text-green-400 border border-green-500/40 pulse-glow-green"
+                          : item.badge === 'Ended'
+                          ? "bg-red-500/20 text-red-400 border border-red-500/40"
                           : "bg-primary/20 text-primary"
                       )}>
                         {item.badge}

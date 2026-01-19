@@ -95,6 +95,24 @@ const renderTextWithLinks = (text: string) => {
 const News = () => {
   const newsItems: NewsItem[] = [
     {
+      id: 7,
+      title: 'SmartSentinels Lands in Micro3\'s Lunar New Year - The Tale of Pegasus',
+      date: 'January 19, 2026',
+      emoji: '🧧',
+      content: `🧧 We're landing in @Micro3io's Lunar New Year – The Tale of Pegasus and we're bringing AI Powered Utility through #PoUW.
+
+Complete tasks, explore the ecosystem and take part in a $10,000 prize pool.
+
+SmartSentinels everywhere 👀
+👉 https://micro3.io/lunar-new-year
+
+<div style="margin: 20px 0; display: flex; justify-content: center;">
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">🧧 We&#39;re landing in <a href="https://twitter.com/Micro3io?ref_src=twsrc%5Etfw">@Micro3io</a> &#39;s Lunar New Year – The Tale of Pegasus and we&#39;re bringing AI Powered Utility through <a href="https://twitter.com/hashtag/PoUW?src=hash&amp;ref_src=twsrc%5Etfw">#PoUW</a>.<br><br>Complete tasks, explore the ecosystem and take part in a $10,000 prize pool.<br><br>SmartSentinels everywhere 👀<br>👉 <a href="https://t.co/ru7pbL9Nkx">https://t.co/ru7pbL9Nkx</a><a href="https://twitter.com/hashtag/Web3?src=hash&amp;ref_src=twsrc%5Etfw">#Web3</a> <a href="https://twitter.com/hashtag/AI?src=hash&amp;ref_src=twsrc%5Etfw">#AI</a> <a href="https://twitter.com/hashtag/BNBchain?src=hash&amp;ref_src=twsrc%5Etfw">#BNBchain</a>… <a href="https://t.co/740vZfWgYI">pic.twitter.com/740vZfWgYI</a></p>&mdash; SmartSentinels (@SmartSentinels_) <a href="https://twitter.com/SmartSentinels_/status/2013163213349654531?ref_src=twsrc%5Etfw">January 19, 2026</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</div>
+
+Join this exciting celebration and be part of the SmartSentinels community as we showcase our AI-powered utility and PoUW technology in this special Lunar New Year event.`
+    },
+    {
       id: 6,
       title: 'Join Us at 4AI Twitter Space: AI Identity & Data Protection',
       date: 'December 24, 2025',
